@@ -1,5 +1,6 @@
 import { Layout } from './components/Layout';
   import { MovieList } from './components/Movies/MovieList';
+  import { AddMovie } from './components/Movies/AddMovie';
   import { useAuth } from './contexts/AuthContext';
   import './App.css';
 
@@ -11,7 +12,7 @@ import { Layout } from './components/Layout';
         {user ? (
           <>
             <h2>Filmes da Lista</h2>
-            {/* Futuramente, o campo de adicionar filme (TMDB) entra aqui em cima */}
+            <AddMovie />
             <MovieList />
           </>
         ) : (
