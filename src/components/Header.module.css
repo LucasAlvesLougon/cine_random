@@ -1,0 +1,14 @@
+.header {
+    background-color: #1a1a1a;
+    padding: 1rem 2rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e50914; /* Vermelho estilo Netflix */
+}
+
+.title {
+    margin: 0;
+    font-size: 1.5rem;
+}

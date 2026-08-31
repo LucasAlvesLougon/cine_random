@@ -1,12 +1,23 @@
+import {Layout} from './components/Layout';
+import {Loading} from './components/Loading';
 import './App.css'
 
-    function App() {
-      return (
+function App() {
+  const estaCarregando = false;
+  
+  return (
+    <Layout>
+      {}
+      {estaCarregando ? (
+        <Loading />
+      ) : (
         <div>
-          <h1>Sorteador de Filmes</h1>
-          <p>Nosso React está rodando!</p>
+          <h2>Bem-vindo à sua lista de filmes!</h2>
+          <p>Aqui entrarão os cards dos filmes na próxima tarefa.</p>
         </div>
-      )
-    }
+      )}
+    </Layout>
+  );
+}
 
-    export default App
+export default App
