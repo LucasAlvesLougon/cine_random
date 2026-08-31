@@ -1,0 +1,60 @@
+.container {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #444;
+}
+
+.commentList {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.commentItem {
+    background-color: #333;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.commentHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    color: #ccc;
+    font-size: 0.8rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #555;
+    resize: none;
+}
+
+.footerForm {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btnSubmit {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}

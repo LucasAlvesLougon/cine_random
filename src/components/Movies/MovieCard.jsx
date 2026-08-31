@@ -1,10 +1,13 @@
+import { useState } from 'react'; // IMPORTAR useState
+import { CommentSection } from '../Comments/CommentSection'; // IMPORTAR O NOVO COMPONENTE
 import styles from './MovieCard.module.css';
 
-// Recebemos o filme via "props"
 export function MovieCard({ movie, onToggleWatched, onDelete }) {
+    // NOVO ESTADO: controla se a aba de comentários está aberta ou fechada
+    const [showComments, setShowComments] = useState(false);
+
     return (
     <div className={styles.card}>
-        {/* Se não tiver pôster, colocamos um cinza */}
         {movie.posterUrl ? (
         <img src={movie.posterUrl} alt={movie.title} className={styles.poster} />
         ) : (
@@ -23,6 +26,19 @@ export function MovieCard({ movie, onToggleWatched, onDelete }) {
             Remover
             </button>
         </div>
+
+        {/* NOVO BOTÃO: Mostra/Esconde comentários */}
+        <button
+            onClick={() => setShowComments(!showComments)}
+            style={{ width: '100%', marginTop: '10px', padding: '5px' }}
+        >
+            {showComments ? "Ocultar Comentários" : "Ver Comentários"}
+        </button>
+
+        {/* RENDERIZAÇÃO CONDICIONAL: Só mostra a sessão se showComments for true */}
+        {showComments && (
+            <CommentSection movieId={movie.id} />
+        )}
         </div>
     </div>
     );
