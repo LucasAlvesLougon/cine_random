@@ -1,23 +1,27 @@
-import {Layout} from './components/Layout';
-import {Loading} from './components/Loading';
-import './App.css'
+import { Layout } from './components/Layout';
+  import { MovieList } from './components/Movies/MovieList';
+  import { useAuth } from './contexts/AuthContext';
+  import './App.css';
 
-function App() {
-  const estaCarregando = false;
-  
-  return (
-    <Layout>
-      {}
-      {estaCarregando ? (
-        <Loading />
-      ) : (
-        <div>
-          <h2>Bem-vindo à sua lista de filmes!</h2>
-          <p>Aqui entrarão os cards dos filmes na próxima tarefa.</p>
-        </div>
-      )}
-    </Layout>
-  );
-}
+  function App() {
+    const { user } = useAuth(); // Pegamos o usuário do estado global
 
-export default App
+    return (
+      <Layout>
+        {user ? (
+          <>
+            <h2>Filmes da Lista</h2>
+            {/* Futuramente, o campo de adicionar filme (TMDB) entra aqui em cima */}
+            <MovieList />
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <h2>Bem-vindo ao Sorteador de Filmes</h2>
+            <p>Faça login pelo cabeçalho para ver a sua lista de filmes.</p>
+          </div>
+        )}
+      </Layout>
+    );
+  }
+
+  export default App;
