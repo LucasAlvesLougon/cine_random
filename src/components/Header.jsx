@@ -6,20 +6,20 @@ export function Header() {
 
     return (
     <header className={styles.header}>
-        <h1 className={styles.title}>🎬 Sorteador de Filmes</h1>
+        <h1 className={styles.title}>
+            <span className={styles.brandPurple}>Cine</span>Random
+        </h1>
 
         <div>
         {user ? (
-            // Se o usuário existir (estiver logado), mostra os dados e botão Sair
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span>Olá, {user.displayName || user.email}!</span>
-            <button onClick={logout} style={{ padding: '5px 10px', cursor: 'pointer' }}>
+            <div className={styles.userInfo}>
+            <span>Olá, <strong>{user.displayName || user.email}</strong>!</span>
+            <button onClick={logout} className={styles.btnAction}>
                 Sair
             </button>
             </div>
         ) : (
-            // Se não estiver logado, mostra botão de Entrar
-            <button onClick={loginGoogle} style={{ padding: '5px 10px', cursor: 'pointer' }}>
+            <button onClick={loginGoogle} className={styles.btnLogin}>
             Entrar com Google
             </button>
         )}

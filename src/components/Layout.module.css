@@ -6,8 +6,8 @@
 
 .mainContent {
     flex: 1;
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
     width: 100%;
+    margin: 0 auto;
+    max-width: 1600px; /* Aumentamos de 1200px para 1600px. Se quiser infinito, basta apagar esta linha! */
+    /* Removemos o 'padding: 2rem;' daqui, pois os componentes já têm seus próprios respiros laterais */
 }

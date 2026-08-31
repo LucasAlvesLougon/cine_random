@@ -1,0 +1,50 @@
+:root {
+    --bg:           #000000;
+    --bg-elevated:  #1c1c1e;
+    --bg-card:      #1c1c1e;
+    --border:       rgba(255, 255, 255, 0.15);
+    --text:         #f5f5f7;
+    --text-secondary:#86868b;
+    --text-faint:   #424245;
+    --primary:      #ffffff;
+    --primary-text: #000000;
+    --green:        #32d74b;
+    --red:          #ff453a;
+    --gold:         #ffd60a;
+    --radius:       18px;
+    --radius-sm:    10px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+#root {
+    position: relative;
+    min-height: 100vh;
+    z-index: 1;
+}
+
+/* Imagem de Fundo Sala de Cinema Desfocada */
+#root::before {
+    content: '';
+    position: fixed;
+    /* Estouramos as bordas negativas para o desfoque não criar uma "borda branca" na tela */
+    top: -50px; left: -50px; right: -50px; bottom: -50px;
+    background: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
+    
+    /* Ajustei para ser mais brilhante e menos desfocado para você conseguir enxergar! */
+    filter: blur(15px) brightness(0.7) contrast(1.1);
+    z-index: -1;
+    pointer-events: none;
+}

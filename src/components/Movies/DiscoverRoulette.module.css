@@ -1,0 +1,123 @@
+.container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 30px 40px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.container h3 {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.container p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.filtersSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filterRow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filterLabel {
+    font-size: 14px;
+    color: var(--text-faint);
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.chipGroup {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+}
+
+.chipActive {
+    background: var(--primary);
+    color: var(--primary-text);
+    border-color: var(--primary);
+}
+
+.actionsBlock {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.drawBtn {
+    background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    width: 100%;
+}
+
+.drawBtn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2c2c2e, #3c3c3e);
+    transform: scale(1.01);
+}
+
+.drawBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+    .container { padding: 20px; }
+    .header { flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .container p { display: none; }
+    .filterRow { flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; overflow: hidden; }
+    .chipGroup { 
+        flex-wrap: nowrap; 
+        overflow-x: auto; 
+        width: 100%; 
+        padding-bottom: 8px; 
+        /* Hide scrollbar for a cleaner look */
+        -ms-overflow-style: none; 
+        scrollbar-width: none; 
+    }
+    .chipGroup::-webkit-scrollbar { display: none; }
+    .actionsBlock { padding-top: 16px; }
+}

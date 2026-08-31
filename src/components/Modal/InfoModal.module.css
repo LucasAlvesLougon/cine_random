@@ -1,0 +1,250 @@
+.overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, .85); backdrop-filter: blur(15px);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    z-index: 110; overflow-y: auto;
+}
+
+/* Fundo ultra escuro e bordas arredondadas suaves */
+.modal {
+    width: 100%; max-width: 820px;
+    background: #000000;
+    border-radius: 20px; text-align: left; overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, .9);
+    margin: auto; color: #f5f5f7;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Botão de fechar estilo vidro fosco (Frosted Glass) */
+.closeRow {
+    position: absolute; top: 20px; right: 20px; z-index: 20;
+}
+.closeBtn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(30, 30, 30, 0.5); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: bold; transition: background .2s ease;
+}
+.closeBtn:hover { background: rgba(80, 80, 80, 0.8); }
+
+/* --- HERO BANNER (Estilo Apple TV) --- */
+.hero {
+    position: relative; width: 100%; height: 480px;
+    display: flex; align-items: flex-end;
+}
+.heroBackground {
+    position: absolute; inset: 0; z-index: 1;
+}
+.bannerImg {
+    width: 100%; height: 100%; object-fit: cover;
+}
+/* Se não tiver banner, usamos a capa muito borrada para criar um fundo atmosférico */
+.bannerImgBlur {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: blur(50px) brightness(0.5); transform: scale(1.2);
+}
+.heroGradient {
+    position: absolute; inset: 0;
+    /* Degrade que começa transparente em cima e fica totalmente preto embaixo */
+    background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.6) 30%, transparent 100%);
+}
+
+.heroContent {
+    position: relative; z-index: 2;
+    padding: 40px; width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.heroText {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Título Gigante */
+.title {
+    font-size: 3rem; font-weight: 800; margin: 0 0 16px;
+    letter-spacing: -0.03em; line-height: 1.1;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+/* Metadados (Ano, Duração, Gêneros) */
+.metaRow {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 14px;
+    font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7);
+}
+.appleBadge {
+    border: 1px solid rgba(255,255,255,0.4); padding: 2px 6px;
+    border-radius: 4px; font-weight: 700; color: #fff; text-transform: uppercase; font-size: 11px;
+}
+
+/* --- CORPO DA PÁGINA --- */
+.bodySection {
+    padding: 24px 30px;
+}
+
+.contentLayout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.poster {
+    width: 140px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    flex-shrink: 0;
+}
+
+.infoCol {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.synopsis {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+}
+
+.providersBlock { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.providersBlock span { font-size: 12px; text-transform: uppercase; font-weight: 700; color: var(--text-faint); letter-spacing: 0.05em; }
+
+.providersList { display: flex; gap: 10px; flex-wrap: wrap; }
+.providerLogo { width: 36px; height: 36px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit: cover; }
+
+.btnTrailer {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0; /* Impede que o texto amasse o botão */
+    margin-bottom: 4px; /* Alinhamento sutil */
+}
+.btnTrailer:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.fullScreenTrailer {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.trailerBox {
+    width: 90vw;
+    max-width: 1200px;
+    aspect-ratio: 16 / 9;
+    background: black;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 1);
+}
+
+.closeTrailerBtn {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.closeTrailerBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.stremioLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(138, 90, 235, 0.15);
+    border: 1px solid rgba(138, 90, 235, 0.4);
+    color: #d1bcff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    width: fit-content;
+}
+.stremioLink:hover {
+    background: rgba(138, 90, 235, 0.3);
+    transform: translateY(-2px);
+    color: white;
+    border-color: rgba(138, 90, 235, 0.6);
+}
+
+.commentsContainer {
+    padding: 0 40px 40px;
+}
+
+.btnAddToList {
+    background: var(--primary);
+    color: var(--primary-text);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+}
+.btnAddToList:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+.btnAddToList:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsividade para celulares */
+@media (max-width: 600px) {
+    .hero { height: 380px; }
+    .heroContent { padding: 30px 20px; }
+    .title { font-size: 2.2rem; }
+    .bodySection { padding: 0 20px 20px; }
+    .commentsContainer { padding: 0 20px 30px; }
+    .contentLayout { flex-direction: column; }
+}
