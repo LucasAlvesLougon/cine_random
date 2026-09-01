@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './DrawModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { api } from '../../services/api';
 import { getPeriodOfDay } from '../../utils/time';
-
-
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo }) {
     const [isSpinning, setIsSpinning] = useState(true);
@@ -33,8 +30,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
             fetchExtraMovieDetails(winnerMovie.tmdbId).then(extras => {
                 setProviders(extras.watchProviders);
                 if (winnerMovie.id && !onAddToList) {
-                    const movieRef = doc(db, 'lists', 'teste123', 'movies', winnerMovie.id);
-                    updateDoc(movieRef, { watchProviders: extras.watchProviders, trailerKey: extras.trailerKey }).catch(() => {});
+                    // API update would go here if needed
                 }
             });
         }

@@ -1,39 +1,15 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { useMovies } from '../../contexts/MoviesContext';
 import { MovieCard } from './MovieCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './MovieList.module.css';
 
 export function MovieList({ onOpenInfo }) {
-    const [movies, setMovies] = useState([]);
-    const listCode = "teste123";
-
-    useEffect(() => {
-        const moviesRef = collection(db, 'lists', listCode, 'movies');
-        const unsubscribe = onSnapshot(moviesRef, (snapshot) => {
-            const loadedMovies = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setMovies(loadedMovies);
-        });
-        return () => unsubscribe();
-    }, []);
+    const { movies, toggleWatched, deleteMovie } = useMovies();
 
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('');
-
-    const toggleWatched = async (movieId, currentStatus) => {
-        const movieRef = doc(db, 'lists', listCode, 'movies', movieId);
-        await updateDoc(movieRef, { watched: !currentStatus });
-    };
-
-    const deleteMovie = async (movieId) => {
-        const movieRef = doc(db, 'lists', listCode, 'movies', movieId);
-        await deleteDoc(movieRef);
-    };
 
     const availableGenres = Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
 

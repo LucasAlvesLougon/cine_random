@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { useMovies } from '../../contexts/MoviesContext';
 import { fetchRandomMovieByOptions, preloadMovieCache } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +32,7 @@ const SUSPENSE_MESSAGES = [
 
 export function DiscoverRoulette({ onOpenInfo }) {
     const { user } = useAuth();
+    const { movies, addMovie } = useMovies();
     const { addToast } = useToast();
     const [genre, setGenre] = useState('');
     const [decade, setDecade] = useState('');
@@ -63,20 +63,12 @@ export function DiscoverRoulette({ onOpenInfo }) {
 
     const handleAddToList = async (movieData) => {
         try {
-            const moviesRef = collection(db, 'lists', 'teste123', 'movies');
-            
-            const q = query(moviesRef, where("tmdbId", "==", movieData.tmdbId));
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
+            if (movies.some(m => m.tmdbId === movieData.tmdbId)) {
                 addToast(`O filme já está na sua lista!`, 'error');
                 return;
             }
 
-            await addDoc(moviesRef, {
-                ...movieData,
-                addedBy: user?.uid || 'anonimo',
-                createdAt: serverTimestamp()
-            });
+            await addMovie(movieData);
             addToast("Filme adicionado à sua lista!", "success");
             setIsModalOpen(false);
             setWinner(null);

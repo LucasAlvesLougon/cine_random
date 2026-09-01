@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './InfoModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
-import { doc, updateDoc, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { api } from '../../services/api';
+import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 
 export function InfoModal({ isOpen, onClose, movie }) {
     const { addToast } = useToast();
+    const { movies, addMovie, fetchMovies } = useMovies();
     const [providers, setProviders] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
@@ -34,11 +35,7 @@ export function InfoModal({ isOpen, onClose, movie }) {
                 setTrailerKey(extras.trailerKey);
                 
                 if (movie.id) {
-                    const movieRef = doc(db, 'lists', 'teste123', 'movies', movie.id);
-                    updateDoc(movieRef, { 
-                        watchProviders: extras.watchProviders,
-                        trailerKey: extras.trailerKey 
-                    }).catch(() => {});
+                    // API update would go here if needed
                 }
             });
         } else {
@@ -50,17 +47,14 @@ export function InfoModal({ isOpen, onClose, movie }) {
     const handleAddToList = async () => {
         try {
             setIsAdding(true);
-            const moviesRef = collection(db, 'lists', 'teste123', 'movies');
             
-            const q = query(moviesRef, where("tmdbId", "==", movie.tmdbId));
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
+            if (movies.some(m => m.tmdbId === movie.tmdbId)) {
                 addToast(`${movie.title} já está na sua lista!`, 'error');
                 setIsAdding(false);
                 return;
             }
 
-            await addDoc(moviesRef, movie);
+            await addMovie(movie);
             addToast(`${movie.title} foi adicionado à sua lista! 📌`, 'success');
             onClose();
         } catch (error) {

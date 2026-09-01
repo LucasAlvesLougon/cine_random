@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { useMovies } from '../../contexts/MoviesContext';
 import { fetchMovieDetails } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
 import { useToast } from '../../contexts/ToastContext';
@@ -16,7 +15,7 @@ export function AddMovie({ onOpenInfo }) {
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
 
-    const listCode = "teste123";
+    const { movies, addMovie } = useMovies();
 
     const handleAddMovie = async (e) => {
         e.preventDefault();
@@ -25,17 +24,14 @@ export function AddMovie({ onOpenInfo }) {
         try {
             setLoading(true);
             const movieData = await fetchMovieDetails(movieTitle);
-            const moviesRef = collection(db, 'lists', listCode, 'movies');
             
-            const q = query(moviesRef, where("tmdbId", "==", movieData.tmdbId));
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
+            if (movies.some(m => m.tmdbId === movieData.tmdbId)) {
                 addToast(`"${movieData.title}" já existe na sua lista!`, 'error');
                 setMovieTitle('');
                 return;
             }
 
-            await addDoc(moviesRef, movieData);
+            await addMovie(movieData);
             setMovieTitle('');
             addToast(`${movieData.title} foi salvo na lista!`, 'success');
         } catch (error) {
@@ -47,10 +43,7 @@ export function AddMovie({ onOpenInfo }) {
 
     const handleDrawFromList = async () => {
         try {
-            const moviesRef = collection(db, 'lists', listCode, 'movies');
-            const snapshot = await getDocs(moviesRef);
-            const allMovies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const listToDraw = includeWatched ? allMovies : allMovies.filter(m => !m.watched);
+            const listToDraw = includeWatched ? movies : movies.filter(m => !m.watched);
             
             if (listToDraw.length === 0) {
                 addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
