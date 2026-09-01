@@ -1,0 +1,163 @@
+.overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, .85); backdrop-filter: blur(15px);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    z-index: 1000;
+    animation: fadeInOverlay 0.3s ease-out forwards;
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    width: 100%; max-width: 700px; background: rgba(28, 28, 30, 0.75);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
+    padding: 40px; text-align: center; color: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideUpModal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpModal {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- ESTADO DE SORTEIO: CAÇA-NÍQUEIS --- */
+.spinningState { 
+    padding: 20px 0; 
+}
+.slotMachine {
+    height: 100px; /* Altura exata de 1 item */
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    box-shadow: inset 0 20px 30px rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+}
+
+/* Sombras em cima e embaixo para criar a ilusão de um "cilindro" girando para o fundo */
+.slotMachine::before, .slotMachine::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 35px; z-index: 2; pointer-events: none;
+}
+.slotMachine::before { top: 0; background: linear-gradient(to bottom, rgba(28,28,30,1), transparent); }
+.slotMachine::after { bottom: 0; background: linear-gradient(to top, rgba(28,28,30,1), transparent); }
+
+.slotTrack {
+    display: flex;
+    flex-direction: column;
+    /* Velocidade rápida mas nítida */
+    animation: spinSlot var(--spin-duration, 0.4s) linear infinite; 
+    will-change: transform;
+}
+
+.slotItem {
+    height: 100px;
+    min-height: 100px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+@keyframes spinSlot {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(var(--spin-distance, -1500px)); } 
+}
+
+.winnerContent { 
+    display: flex; flex-direction: column; text-align: left; 
+    animation: revealWinner 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes revealWinner {
+    from { opacity: 0; transform: translateY(15px); filter: blur(10px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.winnerHeader { margin: 0 0 24px; font-size: 1.2rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
+
+.movieInfoCard {
+    display: flex; gap: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 24px;
+    border-radius: 16px;
+    transition: transform 0.2s, background 0.2s;
+    cursor: pointer;
+}
+.movieInfoCard:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+}
+.winnerPoster {
+    width: 180px; border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+.loaded {
+    opacity: 1;
+}
+.movieDetails { display: flex; flex-direction: column; gap: 12px; }
+.movieTitle { margin: 0; font-size: 1.8rem; font-weight: 800; }
+.movieMeta { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+.movieSynopsis { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.6; margin: 0; }
+
+.providersBlock { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.providersBlock span { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-faint); letter-spacing: 0.05em; }
+.providersList { display: flex; gap: 8px; flex-wrap: wrap; }
+.providerLogo { width: 32px; height: 32px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit: cover; }
+
+.stremioLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(138, 90, 235, 0.15);
+    border: 1px solid rgba(138, 90, 235, 0.4);
+    color: #d1bcff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    transition: all 0.2s;
+    width: fit-content;
+}
+.stremioLink:hover {
+    background: rgba(138, 90, 235, 0.3);
+    transform: translateY(-2px);
+    color: white;
+    border-color: rgba(138, 90, 235, 0.6);
+}
+
+.modalActions { display: flex; gap: 12px; margin-top: 24px; }
+.btnAddToList {
+    flex: 2; background: var(--primary); color: var(--primary-text);
+    padding: 14px; font-weight: 600; border-radius: 14px; border: none; cursor: pointer;
+    font-size: 15px; transition: transform 0.2s;
+}
+.btnAddToList:hover { transform: scale(1.02); }
+
+.closeButton {
+    flex: 1; background: rgba(255,255,255,0.1); color: white; border: none;
+    padding: 14px; font-weight: 600; border-radius: 14px; cursor: pointer;
+    font-size: 15px; transition: background 0.2s;
+}
+.closeButton:hover { background: rgba(255,255,255,0.2); }
+
+@media (max-width: 500px) {
+    .movieInfoCard { flex-direction: column; text-align: center; }
+    .winnerPoster { width: 140px; height: 210px; }
+    .modalActions { flex-direction: column; }
+}

@@ -1,0 +1,73 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 30px;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.brandRed {
+    background: linear-gradient(135deg, #fa8b8b, #f65c5c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.userInfo strong {
+    color: var(--text);
+}
+
+.btnAction {
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color .15s ease;
+    padding: 0;
+}
+
+.btnAction:hover {
+    color: var(--red);
+}
+
+.btnLogin {
+    background: var(--primary);
+    color: var(--primary-text);
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 20px; /* Pill */
+    cursor: pointer;
+    transition: opacity .15s ease, transform .15s ease;
+}
+
+.btnLogin:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
