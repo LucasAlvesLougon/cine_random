@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 :root {
     --bg:           #000000;
     --bg-elevated:  #1c1c1e;
@@ -13,7 +15,7 @@
     --gold:         #ffd60a;
     --radius:       18px;
     --radius-sm:    10px;
-    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -25,6 +27,7 @@ body {
     background-color: var(--bg);
     color: var(--text);
     font-family: var(--font);
+    letter-spacing: -0.02em;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
 }
