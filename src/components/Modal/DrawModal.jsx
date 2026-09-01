@@ -4,21 +4,21 @@ import styles from './DrawModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { getPeriodOfDay } from '../../utils/time';
 
-const SLOT_ITEMS = [
-    "O Poderoso Chefão", "Matrix", "Interestelar", "Vingadores", "O Iluminado", 
-    "Pulp Fiction", "Avatar", "Clube da Luta", "A Origem", "Batman", 
-    "Forrest Gump", "O Senhor dos Anéis", "Star Wars", "De Volta Para o Futuro", "Jurassic Park",
-    // Loop
-    "O Poderoso Chefão", "Matrix", "Interestelar", "Vingadores", "O Iluminado", 
-    "Pulp Fiction", "Avatar", "Clube da Luta", "A Origem", "Batman", 
-    "Forrest Gump", "O Senhor dos Anéis", "Star Wars", "De Volta Para o Futuro", "Jurassic Park"
-];
+
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo }) {
     const [isSpinning, setIsSpinning] = useState(true);
     const [spinTitle, setSpinTitle] = useState('');
     const [providers, setProviders] = useState([]);
+    const [posterLoaded, setPosterLoaded] = useState(false);
+    const period = getPeriodOfDay();
+
+    // Resetar estado da imagem quando um novo filme for sorteado
+    useEffect(() => {
+        setPosterLoaded(false);
+    }, [winnerMovie?.tmdbId]);
 
     // Efeito para buscar os provedores caso o filme sorteado seja antigo e não tenha
     useEffect(() => {
@@ -42,19 +42,42 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
 
     useEffect(() => {
         if (isOpen) {
-            if (!winnerMovie) {
-                setIsSpinning(true);
-            } else {
-                // Suspense digno de cassino! Roda por 2.5s para apreciar o caça-níqueis
-                const timer = setTimeout(() => {
-                    setIsSpinning(false);
-                }, 2500);
-                return () => clearTimeout(timer);
-            }
+            setIsSpinning(true);
+            const timer = setTimeout(() => {
+                setIsSpinning(false);
+            }, 2500); // Exatos 2.5s de suspense
+            return () => clearTimeout(timer);
         }
-    }, [isOpen, winnerMovie]);
+    }, [isOpen]);
 
     if (!isOpen) return null;
+
+    const DEFAULT_SLOT_ITEMS = [
+        "O Poderoso Chefão", "Matrix", "Interestelar", "Vingadores", "O Iluminado", 
+        "Pulp Fiction", "Avatar", "Clube da Luta", "A Origem", "Batman", 
+        "Forrest Gump", "O Senhor dos Anéis", "Star Wars", "De Volta Para o Futuro", "Jurassic Park"
+    ];
+
+    let baseItems = unwatchedMovies && unwatchedMovies.length > 0 
+        ? unwatchedMovies.map(m => m.title) 
+        : DEFAULT_SLOT_ITEMS;
+
+    // Se a lista de filmes for muito pequena (ex: só 2 filmes), repetimos até ter no mínimo 15 
+    // para garantir que o caça-níqueis tenha "massa" suficiente para girar rápido sem quebrar
+    while (baseItems.length < 15) {
+        baseItems = [...baseItems, ...baseItems];
+    }
+    
+    // Duplicamos a lista final para garantir o loop perfeito de 50%
+    const SLOT_ITEMS = [...baseItems, ...baseItems];
+    
+    // Distância exata da metade da lista
+    const spinDistance = (SLOT_ITEMS.length / 2) * 100;
+    
+    // O segredo do loop perfeito: a duração TEM que escalar de acordo com a distância
+    // Se não, listas gigantes giram na velocidade da luz e quebram a interface.
+    // Cada item leva exatos 0.025s para passar na tela.
+    const spinDuration = (SLOT_ITEMS.length / 2) * 0.025;
 
     return createPortal(
     <div className={styles.overlay} onClick={onClose}>
@@ -62,13 +85,19 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
         
         {isSpinning || !winnerMovie ? (
             <div className={styles.spinningState}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '16px' }}>O destino está escolhendo...</h2>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-secondary)', margin: '0 0 24px' }}>O destino está escolhendo...</h2>
                 
                 <div className={styles.slotMachine}>
-                    <div className={styles.slotTrack}>
-                        {SLOT_ITEMS.map((item, index) => (
+                    <div 
+                        className={styles.slotTrack}
+                        style={{ 
+                            '--spin-distance': `-${spinDistance}px`,
+                            '--spin-duration': `${spinDuration}s`
+                        }}
+                    >
+                        {SLOT_ITEMS.map((title, index) => (
                             <div key={index} className={styles.slotItem}>
-                                {item}
+                                {title}
                             </div>
                         ))}
                     </div>
@@ -77,7 +106,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
             </div>
         ) : (
             <div className={styles.winnerContent}>
-                <h2 className={styles.winnerHeader}>Sugestão da Noite:</h2>
+                <h2 className={styles.winnerHeader}>Sugestão da {period}:</h2>
                 
                 <div 
                     className={styles.movieInfoCard}
@@ -88,7 +117,12 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                         }
                     }}
                 >
-                    <img src={winnerMovie.posterUrl} alt={winnerMovie.title} className={styles.winnerPoster} />
+                    <img 
+                        src={winnerMovie.posterUrl} 
+                        alt={winnerMovie.title} 
+                        className={`${styles.winnerPoster} ${posterLoaded ? styles.loaded : ''}`}
+                        onLoad={() => setPosterLoaded(true)}
+                    />
                     <div className={styles.movieDetails}>
                         <h3 className={styles.movieTitle}>{winnerMovie.title}</h3>
                         <div className={styles.movieMeta}>

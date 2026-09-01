@@ -7,9 +7,80 @@
 
 .filterBar {
     display: flex;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
     padding: 0 40px;
     margin-bottom: 24px;
+}
+
+.filterButtons {
+    display: flex;
+    gap: 12px;
+}
+
+.searchInput {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    width: 250px;
+    transition: all 0.2s;
+    outline: none;
+    backdrop-filter: blur(10px);
+}
+.searchInput:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.searchInput::placeholder {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 700px) {
+    .filterBar { flex-direction: column; align-items: stretch; padding: 0 20px; }
+    .searchInput { width: 100%; }
+    .genreBar { padding: 0 20px; }
+    .grid { padding: 0 20px; }
+}
+
+.genreBar {
+    display: flex;
+    gap: 8px;
+    padding: 0 40px;
+    margin-bottom: 24px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.genreBar::-webkit-scrollbar { display: none; }
+
+.genreChip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.genreChip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+}
+
+.genreChipActive {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .filterBtn {

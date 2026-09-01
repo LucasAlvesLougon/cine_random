@@ -14,6 +14,7 @@ export function AddMovie({ onOpenInfo }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
+    const [includeWatched, setIncludeWatched] = useState(false);
 
     const listCode = "teste123";
 
@@ -49,21 +50,21 @@ export function AddMovie({ onOpenInfo }) {
             const moviesRef = collection(db, 'lists', listCode, 'movies');
             const snapshot = await getDocs(moviesRef);
             const allMovies = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const unwatched = allMovies.filter(m => !m.watched);
+            const listToDraw = includeWatched ? allMovies : allMovies.filter(m => !m.watched);
             
-            if (unwatched.length === 0) {
-                addToast("Nenhum filme não assistido na sua lista! Adicione novos filmes.", 'error');
+            if (listToDraw.length === 0) {
+                addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
                 return;
             }
             
-            setUnwatchedMovies(unwatched);
-            const randomIndex = Math.floor(Math.random() * unwatched.length);
+            setUnwatchedMovies(listToDraw);
+            const randomIndex = Math.floor(Math.random() * listToDraw.length);
             
             setWinner(null);
             setIsModalOpen(true);
             
             setTimeout(() => {
-                setWinner(unwatched[randomIndex]);
+                setWinner(listToDraw[randomIndex]);
             }, 300);
             
         } catch (error) {
@@ -94,8 +95,26 @@ export function AddMovie({ onOpenInfo }) {
                 </button>
             </form>
 
+            <div className={styles.toggleWrapper}>
+                <button 
+                    type="button"
+                    className={`${styles.toggleBtn} ${includeWatched ? styles.toggleActive : ''}`}
+                    onClick={() => setIncludeWatched(!includeWatched)}
+                >
+                    <span className={styles.toggleText}>
+                        {includeWatched ? 'Incluindo filmes assistidos' : 'Ignorando filmes assistidos'}
+                    </span>
+                    <div className={styles.toggleIndicator}>
+                        <div className={styles.toggleKnob}></div>
+                    </div>
+                </button>
+            </div>
+
             <button onClick={handleDrawFromList} className={styles.drawBtn}>
-                Sortear da Nossa Lista 🎲
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                </svg>
+                Me Surpreenda
             </button>
         </div>
 

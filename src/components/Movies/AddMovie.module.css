@@ -31,6 +31,68 @@
     gap: 12px;
 }
 
+.toggleWrapper {
+    width: 100%;
+}
+
+.toggleBtn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.toggleText {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.toggleActive .toggleText {
+    color: var(--text);
+}
+
+.toggleIndicator {
+    width: 36px;
+    height: 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.toggleKnob {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.toggleActive .toggleIndicator {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.toggleActive .toggleKnob {
+    transform: translateX(16px);
+    background: #1c1c1e;
+}
+
 .actionsBlock {
     margin-top: auto;
     display: flex;
@@ -39,21 +101,42 @@
 }
 
 .drawBtn {
-    background: var(--primary);
-    color: var(--primary-text);
-    border: none;
+    background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
     border-radius: 12px;
     padding: 16px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
     width: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawBtn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 4s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    15% { left: 200%; }
+    100% { left: 200%; }
 }
 
 .drawBtn:hover {
+    background: linear-gradient(135deg, #2c2c2e, #3c3c3e);
     transform: scale(1.01);
-    opacity: 0.9;
+    box-shadow: 0 0 20px rgba(255,255,255,0.05);
 }
 
 .input {

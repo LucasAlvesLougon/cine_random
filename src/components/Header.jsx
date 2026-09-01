@@ -7,7 +7,7 @@ export function Header() {
     return (
     <header className={styles.header}>
         <h1 className={styles.title}>
-            <span className={styles.brandPurple}>Cine</span>Random
+            <span className={styles.brandRed}>Cine</span>Random
         </h1>
 
         <div>

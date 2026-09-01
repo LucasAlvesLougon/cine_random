@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './InfoModal.module.css';
-import { CommentSection } from '../Comments/CommentSection';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { doc, updateDoc, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -13,6 +12,15 @@ export function InfoModal({ isOpen, onClose, movie }) {
     const [trailerKey, setTrailerKey] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
+
+    const [bannerLoaded, setBannerLoaded] = useState(false);
+    const [posterLoaded, setPosterLoaded] = useState(false);
+
+    // Reseta o estado das imagens quando o filme muda
+    useEffect(() => {
+        setBannerLoaded(false);
+        setPosterLoaded(false);
+    }, [movie?.tmdbId]);
 
     useEffect(() => {
         if (!isOpen || !movie) return;
@@ -78,9 +86,19 @@ export function InfoModal({ isOpen, onClose, movie }) {
                 <div className={styles.hero}>
                     <div className={styles.heroBackground}>
                         {movie.backdropUrl ? (
-                            <img src={movie.backdropUrl} alt="Banner" className={styles.bannerImg} />
+                            <img 
+                                src={movie.backdropUrl} 
+                                alt="Banner" 
+                                className={`${styles.bannerImg} ${bannerLoaded ? styles.loaded : ''}`} 
+                                onLoad={() => setBannerLoaded(true)}
+                            />
                         ) : (
-                            <img src={movie.posterUrl} alt="Fundo Borrado" className={styles.bannerImgBlur} />
+                            <img 
+                                src={movie.posterUrl} 
+                                alt="Fundo Borrado" 
+                                className={`${styles.bannerImgBlur} ${bannerLoaded ? styles.loaded : ''}`} 
+                                onLoad={() => setBannerLoaded(true)}
+                            />
                         )}
                         <div className={styles.heroGradient}></div>
                     </div>
@@ -109,7 +127,12 @@ export function InfoModal({ isOpen, onClose, movie }) {
                 <div className={styles.bodySection}>
                     <div className={styles.contentLayout}>
                         {!movie.backdropUrl && (
-                            <img src={movie.posterUrl} alt={movie.title} className={styles.poster} />
+                            <img 
+                                src={movie.posterUrl} 
+                                alt={movie.title} 
+                                className={`${styles.poster} ${posterLoaded ? styles.loaded : ''}`} 
+                                onLoad={() => setPosterLoaded(true)}
+                            />
                         )}
                         <div className={styles.infoCol}>
                             <p className={styles.synopsis}>{movie.synopsis}</p>
@@ -135,27 +158,41 @@ export function InfoModal({ isOpen, onClose, movie }) {
                     </div>
                 </div>
 
-                {/* --- COMENTÁRIOS --- */}
-                {movie.id ? (
-                    <div className={styles.commentsContainer}>
-                        <CommentSection movieId={movie.id} />
-                    </div>
-                ) : (
-                    <div className={styles.commentsContainer}>
-                        <div style={{ textAlign: 'center', margin: '40px 0' }}>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '1.1rem' }}>
-                                Para liberar a área de comentários e avaliações, adicione este filme à sua lista! 📌
-                            </p>
-                            <button 
-                                onClick={handleAddToList} 
-                                disabled={isAdding}
-                                className={styles.btnAddToList}
+                {/* --- LETTERBOXD --- */}
+                <div className={styles.commentsContainer}>
+                    <div style={{ textAlign: 'center', margin: '40px 0 20px', padding: '30px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                        <h3 style={{ margin: '0 0 12px', fontSize: '1.2rem', fontWeight: '700' }}>Opinião da Comunidade</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', maxWidth: '400px', margin: '0 auto 24px' }}>
+                            Quer ver o que outras pessoas estão achando deste filme? Leia as avaliações no Letterboxd.
+                        </p>
+                        
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                            <a 
+                                href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className={styles.letterboxdBtn}
                             >
-                                {isAdding ? 'Adicionando...' : 'Adicionar à Lista 📌'}
-                            </button>
+                                <svg viewBox="0 0 100 32" height="14" style={{ marginRight: '10px' }}>
+                                    <circle cx="16" cy="16" r="16" fill="#00e054" />
+                                    <circle cx="50" cy="16" r="16" fill="#40bcf4" />
+                                    <circle cx="84" cy="16" r="16" fill="#ff8000" />
+                                </svg>
+                                Letterboxd
+                            </a>
+                            
+                            {!movie.id && (
+                                <button 
+                                    onClick={handleAddToList} 
+                                    disabled={isAdding}
+                                    className={styles.btnAddToList}
+                                >
+                                    {isAdding ? 'Adicionando...' : 'Salvar na Lista 📌'}
+                                </button>
+                            )}
                         </div>
                     </div>
-                )}
+                </div>
 
             </div>
         </div>

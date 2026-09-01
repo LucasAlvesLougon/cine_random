@@ -20,8 +20,8 @@
     letter-spacing: -0.02em;
 }
 
-.brandPurple {
-    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+.brandRed {
+    background: linear-gradient(135deg, #fa8b8b, #f65c5c);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
