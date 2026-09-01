@@ -1,11 +1,10 @@
-﻿import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 
 const MoviesContext = createContext();
 
-export function MoviesProvider({ children }) {
+export function MoviesProvider({ children, listCode }) {
     const [movies, setMovies] = useState([]);
-    const listCode = 'teste123';
 
     const fetchMovies = async () => {
         try {
@@ -25,11 +24,23 @@ export function MoviesProvider({ children }) {
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) { fetchMovies(); }
-        const interval = setInterval(() => {
-            if (localStorage.getItem('access_token')) fetchMovies();
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+        
+        // Conexão WebSocket para receber atualizações em tempo real (Fase 3.3)
+        const wsUrl = api.defaults.baseURL.replace('http', 'ws') + '/lists/ws/' + listCode;
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onmessage = (event) => {
+            if (event.data === 'refresh') {
+                fetchMovies();
+            }
+        };
+
+        return () => {
+            if (ws.readyState === 1) { // 1 is open
+                ws.close();
+            }
+        };
+    }, [listCode]);
 
     const addMovie = async (movieData) => {
         await api.post('/lists/' + listCode + '/movies', movieData);
@@ -37,12 +48,12 @@ export function MoviesProvider({ children }) {
     };
 
     const toggleWatched = async (movieId) => {
-        await api.put('/movies/' + movieId + '/toggle-watched');
+        await api.put('/lists/movies/' + movieId + '/toggle-watched');
         fetchMovies();
     };
 
     const deleteMovie = async (movieId) => {
-        await api.delete('/movies/' + movieId);
+        await api.delete('/lists/movies/' + movieId);
         fetchMovies();
     };
 
