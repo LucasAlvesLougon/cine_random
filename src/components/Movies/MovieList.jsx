@@ -20,7 +20,7 @@ export function MovieList({ onOpenInfo }) {
         const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
         return matchesFilter && matchesSearch && matchesGenre;
-    });
+    }).sort((a, b) => b.id - a.id);
 
     return (
     <>
