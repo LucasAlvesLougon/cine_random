@@ -13,6 +13,9 @@ export function formatUserName(email) {
     // Troca pontos, underscores e traços por espaços
     const words = prefix.replace(/[._-]/g, ' ').split(' ').filter(w => w.length > 0);
     
-    // Capitaliza cada palavra
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    // Pega só a primeira palavra (o primeiro nome)
+    const firstName = words[0];
+    
+    // Capitaliza a primeira letra
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 }

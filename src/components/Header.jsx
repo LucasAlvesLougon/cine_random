@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'; // Puxando nosso hook!
 import { formatUserName } from '../utils/format';
 
 export function Header() {
-    const { user, loginGoogle, logout } = useAuth(); // Pega os dados do contexto
+    const { user, logout } = useAuth(); // Pega os dados do contexto
 
     const displayName = formatUserName(user?.email);
     const initial = displayName.charAt(0).toUpperCase();
@@ -15,7 +15,7 @@ export function Header() {
         </h1>
 
         <div>
-        {user ? (
+        {user && (
             <div className={styles.userInfo}>
             <span className={styles.greetingText}>Olá, <strong>{displayName}</strong>!</span>
             <div className={styles.avatar}>{initial}</div>
@@ -23,10 +23,6 @@ export function Header() {
                 Sair
             </button>
             </div>
-        ) : (
-            <button onClick={loginGoogle} className={styles.btnLogin}>
-            Entrar com Google
-            </button>
         )}
         </div>
     </header>
