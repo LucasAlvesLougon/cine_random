@@ -15,20 +15,20 @@ describe('MatchModal', () => {
         expect(container.querySelector('.overlay')).toBeNull();
     });
 
-    it('deve renderizar o primeiro filme não assistido e permitir votar', () => {
+    it('deve renderizar um filme não assistido e permitir votar', () => {
         render(
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
 
-        expect(screen.getByText('Filme A')).toBeInTheDocument();
+        expect(screen.getByText(/Filme (A|B)/)).toBeInTheDocument();
         expect(screen.getByText('💚 Assistir')).toBeInTheDocument();
         expect(screen.getByText('✕ Passar')).toBeInTheDocument();
 
-        // Clica em curtir o Filme A
+        // Clica em curtir o primeiro filme
         fireEvent.click(screen.getByText('💚 Assistir'));
 
-        // Avança para o Filme B
-        expect(screen.getByText('Filme B')).toBeInTheDocument();
+        // Avança para o segundo filme no contador
+        expect(screen.getByText('2 de 2')).toBeInTheDocument();
     });
 
     it('deve exibir a tela de resultado ao concluir os votos', () => {
@@ -36,9 +36,9 @@ describe('MatchModal', () => {
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
 
-        // Vota no Filme A
+        // Vota no primeiro filme
         fireEvent.click(screen.getByText('💚 Assistir'));
-        // Vota no Filme B
+        // Vota no segundo filme
         fireEvent.click(screen.getByText('✕ Passar'));
 
         // Tela de resultado

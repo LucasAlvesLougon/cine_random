@@ -5,11 +5,23 @@ import { api } from '../../services/api';
 import styles from './MatchModal.module.css';
 
 export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode }) {
-    const unwatched = movies.filter(m => !m.watched);
+    const [deck, setDeck] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [matches, setMatches] = useState([]);
     const [isFinished, setIsFinished] = useState(false);
     const savedMatchesRef = useRef(new Set());
+
+    useEffect(() => {
+        if (isOpen) {
+            const unwatched = movies.filter(m => !m.watched);
+            const shuffled = [...unwatched].sort(() => 0.5 - Math.random());
+            setDeck(shuffled.slice(0, 10));
+            setCurrentIndex(0);
+            setMatches([]);
+            setIsFinished(false);
+            savedMatchesRef.current.clear();
+        }
+    }, [isOpen, movies]);
 
     useEffect(() => {
         if (isFinished && matches.length > 0 && listCode) {
@@ -29,14 +41,14 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
 
     if (!isOpen) return null;
 
-    const currentMovie = unwatched[currentIndex];
+    const currentMovie = deck[currentIndex];
 
     const handleVote = (liked) => {
         if (liked && currentMovie) {
             setMatches(prev => [...prev, currentMovie]);
         }
 
-        if (currentIndex + 1 >= unwatched.length || currentIndex >= 9) { // Max 10 filmes por rodada
+        if (currentIndex + 1 >= deck.length) {
             setIsFinished(true);
         } else {
             setCurrentIndex(prev => prev + 1);
@@ -44,6 +56,9 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
     };
 
     const handleRestart = () => {
+        const unwatched = movies.filter(m => !m.watched);
+        const shuffled = [...unwatched].sort(() => 0.5 - Math.random());
+        setDeck(shuffled.slice(0, 10));
         setCurrentIndex(0);
         setMatches([]);
         setIsFinished(false);
@@ -60,7 +75,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                         <div className={styles.swipeContainer}>
                             <div className={styles.header}>
                                 <span className={styles.badge}>🔥 Match da Galera</span>
-                                <h3 className={styles.counter}>{currentIndex + 1} de {Math.min(unwatched.length, 10)}</h3>
+                                <h3 className={styles.counter}>{currentIndex + 1} de {deck.length}</h3>
                             </div>
 
                             <AnimatePresence mode="popLayout">
