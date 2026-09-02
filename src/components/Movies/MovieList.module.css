@@ -90,6 +90,54 @@
     border-color: rgba(255, 255, 255, 0.3);
 }
 
+.providerBar {
+    display: flex;
+    gap: 8px;
+    padding: 0 40px;
+    margin-bottom: 24px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    max-width: 100%;
+}
+.providerBar::-webkit-scrollbar { display: none; }
+
+.providerChip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.providerChip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+}
+
+.providerChipActive {
+    background: rgba(0, 113, 227, 0.25);
+    color: #fff;
+    border-color: rgba(0, 113, 227, 0.6);
+    box-shadow: 0 2px 10px rgba(0, 113, 227, 0.3);
+}
+
+.chipLogo {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: cover;
+}
+
 .filterBtn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);

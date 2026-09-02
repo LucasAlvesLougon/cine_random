@@ -10,8 +10,15 @@ export function MovieList({ onOpenInfo }) {
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('');
+    const [selectedProvider, setSelectedProvider] = useState('');
 
     const availableGenres = Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
+
+    const availableProviders = Array.from(
+        new Map(
+            movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
+        ).values()
+    ).sort((a, b) => a.name.localeCompare(b.name));
 
     const filteredMovies = movies.filter(movie => {
         const matchesFilter = filter === 'all' || 
@@ -19,7 +26,9 @@ export function MovieList({ onOpenInfo }) {
                               (filter === 'unwatched' && !movie.watched);
         const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
-        return matchesFilter && matchesSearch && matchesGenre;
+        const matchesProvider = selectedProvider === '' || 
+                              (movie.watchProviders && movie.watchProviders.some(p => p.name === selectedProvider));
+        return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
     }).sort((a, b) => b.id - a.id);
 
     return (
@@ -70,6 +79,29 @@ export function MovieList({ onOpenInfo }) {
                         onClick={() => setSelectedGenre(genre)}
                     >
                         {genre}
+                    </button>
+                ))}
+            </div>
+        )}
+
+        {availableProviders.length > 0 && (
+            <div className={styles.providerBar}>
+                <button 
+                    className={`${styles.providerChip} ${selectedProvider === '' ? styles.providerChipActive : ''}`}
+                    onClick={() => setSelectedProvider('')}
+                >
+                    Todos os Streamings
+                </button>
+                {availableProviders.map(prov => (
+                    <button 
+                        key={prov.name}
+                        className={`${styles.providerChip} ${selectedProvider === prov.name ? styles.providerChipActive : ''}`}
+                        onClick={() => setSelectedProvider(prov.name)}
+                    >
+                        {prov.logoUrl && (
+                            <img src={prov.logoUrl} alt={prov.name} className={styles.chipLogo} />
+                        )}
+                        {prov.name}
                     </button>
                 ))}
             </div>

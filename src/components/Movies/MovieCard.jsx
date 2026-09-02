@@ -18,6 +18,17 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
             ) : (
                 <div className={styles.poster} style={{ backgroundColor: '#222' }} />
             )}
+
+            {movie.watchProviders && movie.watchProviders.length > 0 && (
+                <div className={styles.providerBadges} title={movie.watchProviders.map(p => p.name).join(', ')}>
+                    {movie.watchProviders.slice(0, 3).map((p, idx) => (
+                        <img key={idx} src={p.logoUrl} alt={p.name} className={styles.providerBadge} />
+                    ))}
+                    {movie.watchProviders.length > 3 && (
+                        <span className={styles.moreProviders}>+{movie.watchProviders.length - 3}</span>
+                    )}
+                </div>
+            )}
         </div>
 
         <div className={styles.info}>

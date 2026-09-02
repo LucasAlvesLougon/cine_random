@@ -35,6 +35,36 @@
     opacity: 1;
 }
 
+.providerBadges {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(15, 15, 20, 0.75);
+    padding: 3px 6px;
+    border-radius: 6px;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.providerBadge {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.moreProviders {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 0 2px;
+}
+
 .info {
     display: flex;
     flex-direction: column;

@@ -60,4 +60,26 @@ describe('MovieCard', () => {
 
         expect(handleDelete).toHaveBeenCalledWith(1);
     });
+
+    it('deve renderizar badges de provedores de streaming quando existirem', () => {
+        const movieWithProviders = {
+            ...mockMovie,
+            watchProviders: [
+                { name: 'Netflix', logoUrl: 'https://image.tmdb.org/t/p/w200/netflix.png' },
+                { name: 'Max', logoUrl: 'https://image.tmdb.org/t/p/w200/max.png' }
+            ]
+        };
+
+        render(
+            <MovieCard 
+                movie={movieWithProviders} 
+                onToggleWatched={vi.fn()} 
+                onDelete={vi.fn()} 
+                onOpenInfo={vi.fn()} 
+            />
+        );
+
+        expect(screen.getByAltText('Netflix')).toBeInTheDocument();
+        expect(screen.getByAltText('Max')).toBeInTheDocument();
+    });
 });

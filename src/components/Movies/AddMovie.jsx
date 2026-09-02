@@ -15,7 +15,14 @@ export function AddMovie({ onOpenInfo }) {
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
 
+    const [selectedProvider, setSelectedProvider] = useState('');
     const { movies, addMovie } = useMovies();
+
+    const availableProviders = Array.from(
+        new Map(
+            movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
+        ).values()
+    ).sort((a, b) => a.name.localeCompare(b.name));
 
     const handleAddMovie = async (e) => {
         e.preventDefault();
@@ -43,10 +50,18 @@ export function AddMovie({ onOpenInfo }) {
 
     const handleDrawFromList = async () => {
         try {
-            const listToDraw = includeWatched ? movies : movies.filter(m => !m.watched);
+            let listToDraw = includeWatched ? movies : movies.filter(m => !m.watched);
             
+            if (selectedProvider) {
+                listToDraw = listToDraw.filter(m => m.watchProviders && m.watchProviders.some(p => p.name === selectedProvider));
+            }
+
             if (listToDraw.length === 0) {
-                addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
+                if (selectedProvider) {
+                    addToast(`Nenhum filme ${includeWatched ? '' : 'não assistido '}encontrado no streaming "${selectedProvider}".`, 'error');
+                } else {
+                    addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
+                }
                 return;
             }
             
@@ -102,6 +117,22 @@ export function AddMovie({ onOpenInfo }) {
                     </div>
                 </button>
             </div>
+
+            {availableProviders.length > 0 && (
+                <div className={styles.providerSelectWrapper}>
+                    <span className={styles.providerLabel}>Filtrar Sorteio por Streaming:</span>
+                    <select 
+                        className={styles.providerSelect}
+                        value={selectedProvider}
+                        onChange={(e) => setSelectedProvider(e.target.value)}
+                    >
+                        <option value="">Todos os Streamings</option>
+                        {availableProviders.map(p => (
+                            <option key={p.name} value={p.name}>{p.name}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <button onClick={handleDrawFromList} className={styles.drawBtn}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
