@@ -5,6 +5,7 @@ import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { api } from '../../services/api';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
+import { CommentSection } from '../Comments/CommentSection';
 
 export function InfoModal({ isOpen, onClose, movie }) {
     const { addToast } = useToast();
@@ -152,30 +153,29 @@ export function InfoModal({ isOpen, onClose, movie }) {
                     </div>
                 </div>
 
-                {/* --- LETTERBOXD --- */}
-                <div className={styles.commentsContainer}>
-                    <div style={{ textAlign: 'center', margin: '40px 0 20px', padding: '30px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                        <h3 style={{ margin: '0 0 12px', fontSize: '1.2rem', fontWeight: '700' }}>Opinião da Comunidade</h3>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', maxWidth: '400px', margin: '0 auto 24px' }}>
-                            Quer ver o que outras pessoas estão achando deste filme? Leia as avaliações no Letterboxd.
-                        </p>
-                        
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                            <a 
-                                href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className={styles.letterboxdBtn}
-                            >
-                                <svg viewBox="0 0 100 32" height="14" style={{ marginRight: '10px' }}>
-                                    <circle cx="16" cy="16" r="16" fill="#00e054" />
-                                    <circle cx="50" cy="16" r="16" fill="#40bcf4" />
-                                    <circle cx="84" cy="16" r="16" fill="#ff8000" />
-                                </svg>
-                                Letterboxd
-                            </a>
+                {/* --- COMENTÁRIOS / LETTERBOXD --- */}
+                {movie.id ? (
+                    <div className={styles.commentsContainer}>
+                        <CommentSection movieId={movie.id} initialComments={movie.comments || []} />
+                    </div>
+                ) : (
+                    <div className={styles.commentsContainer}>
+                        <div style={{ textAlign: 'center', margin: '40px 0 20px', padding: '30px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                            <h3 style={{ margin: '0 0 12px', fontSize: '1.2rem', fontWeight: '700' }}>Adicione para Comentar</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', maxWidth: '400px', margin: '0 auto 24px' }}>
+                                Salve este filme na sua lista para liberar as avaliações do grupo.
+                            </p>
                             
-                            {!movie.id && (
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                <a 
+                                    href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={styles.letterboxdBtn}
+                                >
+                                    Letterboxd
+                                </a>
+                                
                                 <button 
                                     onClick={handleAddToList} 
                                     disabled={isAdding}
@@ -183,10 +183,10 @@ export function InfoModal({ isOpen, onClose, movie }) {
                                 >
                                     {isAdding ? 'Adicionando...' : 'Salvar na Lista 📌'}
                                 </button>
-                            )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
             </div>
         </div>

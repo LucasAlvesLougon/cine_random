@@ -1,0 +1,91 @@
+.container {
+    padding: 20px 24px 28px;
+}
+
+.heading {
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-secondary); margin: 0 0 16px;
+}
+
+/* MÉDIA E LISTA DE COMENTÁRIOS */
+.avgSection {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+.avgStars { color: var(--gold); font-size: 18px; letter-spacing: 2px; line-height: 1; }
+.avgLabel { font-size: 13px; color: var(--text-secondary); }
+
+.commentList {
+    max-height: 300px; overflow-y: auto;
+}
+.commentList::-webkit-scrollbar { width: 5px; }
+.commentList::-webkit-scrollbar-track { background: transparent; }
+.commentList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.empty {
+    font-size: 13.5px; color: var(--text-faint);
+    text-align: center; padding: 16px 0; margin: 0;
+}
+
+.commentItem {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.commentItem:last-child { border-bottom: none; }
+
+.commentHeader {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.commentAuthor { font-size: 13px; font-weight: 600; flex: 1; color: var(--text); }
+.commentStars { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
+
+.commentText {
+    font-size: 13px; color: var(--text-secondary);
+    margin: 0; line-height: 1.55; word-break: break-word;
+}
+
+/* FORMULÁRIO E ESTRELAS INTERATIVAS */
+.form {
+    margin-top: 18px; padding-top: 18px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+}
+.formHeader { display: flex; align-items: center; justify-content: space-between; }
+.formLabel {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-secondary);
+}
+
+.starInput { display: flex; gap: 2px; }
+.starBtn {
+    background: none; border: none;
+    font-size: 28px; color: var(--border);
+    cursor: pointer; padding: 0; line-height: 1;
+    transition: color .1s ease, transform .1s ease;
+}
+.starBtn:hover { transform: scale(1.15); }
+
+/* A mágica acontece nas classes abaixo que controlaremos via React */
+.starSelected { color: var(--gold); }
+.starHovered { color: var(--gold); opacity: 0.6; }
+
+.textarea {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); font-family: inherit; font-size: 13.5px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    outline: none; resize: vertical; min-height: 70px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-dim); }
+.textarea::placeholder { color: var(--text-faint); }
+
+.btnSubmit {
+    background: var(--purple); color: #fff;
+    border: none; padding: 10px 16px; border-radius: var(--radius-sm);
+    font-family: inherit; font-weight: 600; font-size: 13.5px;
+    cursor: pointer; transition: background .15s ease, transform .15s ease;
+    align-self: flex-end;
+}
+.btnSubmit:hover { background: var(--purple-bright); transform: translateY(-1px); }
