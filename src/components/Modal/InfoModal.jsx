@@ -151,29 +151,29 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
                                 </div>
                             )}
 
-                            <div className={styles.providersBlock} style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div className={styles.providersBlock}>
                                 <span>Ações:</span>
-                                <button 
-                                    onClick={() => setIsShareOpen(true)}
-                                    className={styles.stremioLink}
-                                    style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(37, 211, 102, 0.15)', color: '#25d366', border: '1px solid rgba(37, 211, 102, 0.3)', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', fontWeight: '600' }}
-                                >
-                                    📸 Convite Sessão
-                                </button>
-                                <a 
-                                    href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className={styles.stremioLink}
-                                    style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
-                                >
-                                    <svg viewBox="0 0 100 32" height="12" style={{ marginRight: '6px' }}>
-                                        <circle cx="16" cy="16" r="16" fill="#00e054" />
-                                        <circle cx="50" cy="16" r="16" fill="#40bcf4" />
-                                        <circle cx="84" cy="16" r="16" fill="#ff8000" />
-                                    </svg>
-                                    Letterboxd
-                                </a>
+                                <div className={styles.actionsList}>
+                                    <button 
+                                        onClick={() => setIsShareOpen(true)}
+                                        className={styles.actionBtnShare}
+                                    >
+                                        📸 Convite Sessão
+                                    </button>
+                                    <a 
+                                        href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className={styles.actionBtnLetterboxd}
+                                    >
+                                        <svg viewBox="0 0 100 32" height="12" style={{ marginRight: '6px' }}>
+                                            <circle cx="16" cy="16" r="16" fill="#00e054" />
+                                            <circle cx="50" cy="16" r="16" fill="#40bcf4" />
+                                            <circle cx="84" cy="16" r="16" fill="#ff8000" />
+                                        </svg>
+                                        Letterboxd
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -110,8 +110,12 @@ export function MovieList({ onOpenInfo }) {
         {filteredMovies.length === 0 ? (
             <p style={{ padding: '0 40px', color: 'var(--text-secondary)' }}>Nenhum filme encontrado para este filtro.</p>
         ) : (
-            <motion.div layout className={styles.grid}>
-                <AnimatePresence mode='popLayout'>
+            <>
+                <div className={styles.resultsInfo}>
+                    <span>Exibindo <strong>{filteredMovies.length}</strong> {filteredMovies.length === 1 ? 'filme' : 'filmes'}</span>
+                </div>
+                <motion.div layout className={styles.grid}>
+                    <AnimatePresence mode='popLayout'>
                     {filteredMovies.map(movie => (
                         <motion.div
                             key={movie.id}
@@ -135,6 +139,7 @@ export function MovieList({ onOpenInfo }) {
                     ))}
                 </AnimatePresence>
             </motion.div>
+            </>
         )}
     </>
     );

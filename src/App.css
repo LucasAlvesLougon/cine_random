@@ -124,10 +124,19 @@
 
 .activeListHeader {
     padding: 0 40px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 20px;
+    flex-wrap: wrap;
+}
+
+.activeListHeaderMain {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
 }
 
 .activeListTitle {
@@ -135,6 +144,29 @@
     font-size: 2.2rem;
     font-weight: 800;
     letter-spacing: -0.03em;
+}
+
+.activeListStats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.statsPill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+}
+
+@media (max-width: 768px) {
+    .activeListStats {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {

@@ -20,21 +20,37 @@
     gap: 12px;
 }
 
+.resultsInfo {
+    padding: 0 40px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.resultsInfo strong {
+    color: #fff;
+    font-weight: 700;
+}
+
 .searchInput {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text);
-    padding: 8px 20px;
+    padding: 10px 20px;
     border-radius: 20px;
     font-size: 14px;
-    width: 250px;
-    transition: all 0.2s;
+    width: 300px;
+    transition: all 0.2s ease;
     outline: none;
     backdrop-filter: blur(10px);
 }
 .searchInput:focus {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
 }
 .searchInput::placeholder {
     color: var(--text-secondary);
