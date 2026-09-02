@@ -183,5 +183,5 @@
     .container { padding: 20px; }
     .header p { display: none; }
     .form { flex-direction: column; }
-    .button { padding: 14px; width: 100%; }
+    .button { padding: 16px; width: 100%; }
 }

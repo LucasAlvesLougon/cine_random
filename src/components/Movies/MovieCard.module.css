@@ -108,3 +108,13 @@
     color: #ff453a;
     border-color: rgba(255, 69, 58, 0.3);
 }
+
+@media (max-width: 600px) {
+    .btn {
+        padding: 12px 16px; /* Aumenta a área de toque para perto de 48px */
+        font-size: 13px;
+    }
+    .btnDelete {
+        width: 44px; /* Mais gordinho para o toque do dedo */
+    }
+}

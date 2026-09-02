@@ -13,7 +13,8 @@ export function Header() {
         <div>
         {user ? (
             <div className={styles.userInfo}>
-            <span>Olá, <strong>{user.displayName || user.email}</strong>!</span>
+            <span className={styles.greetingText}>Olá, <strong>{user.email.split('@')[0]}</strong>!</span>
+            <div className={styles.avatar}>{user.email.charAt(0).toUpperCase()}</div>
             <button onClick={logout} className={styles.btnAction}>
                 Sair
             </button>
