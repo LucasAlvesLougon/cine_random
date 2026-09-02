@@ -1,0 +1,242 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.modal {
+    background: #141416;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.closeBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+}
+
+.cardPreview {
+    position: relative;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    padding: 30px 24px 24px;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.65) saturate(1.2);
+}
+
+.backdropFallback {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+}
+
+.overlayGradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20, 20, 22, 1) 0%, rgba(20, 20, 22, 0.7) 50%, rgba(20, 20, 22, 0.3) 100%);
+}
+
+.cardContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.brandBadge {
+    align-self: flex-start;
+    background: rgba(229, 9, 20, 0.85);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    backdrop-filter: blur(6px);
+}
+
+.movieRow {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.poster {
+    width: 65px;
+    height: 95px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    flex-shrink: 0;
+}
+
+.movieDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.meta {
+    margin: 0;
+    font-size: 13px;
+    color: #a1a1a6;
+}
+
+.genres {
+    margin: 0;
+    font-size: 12px;
+    color: #86868b;
+}
+
+.streamingSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.streamingLabel {
+    font-size: 11px;
+    color: #a1a1a6;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.streamingBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.streamingBadge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.streamingBadge img {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+
+.streamingBadge span {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 500;
+}
+
+.codeBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.codeBox span {
+    color: #a1a1a6;
+}
+
+.codeBox strong {
+    color: #ff9f0a;
+    letter-spacing: 0.1em;
+    font-size: 15px;
+}
+
+.actions {
+    padding: 20px;
+    background: #141416;
+    display: flex;
+    gap: 10px;
+}
+
+.btnCopy, .btnShare {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btnCopy {
+    background: #25d366;
+    color: #000;
+}
+
+.btnCopy:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+
+.btnShare {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.btnShare:hover {
+    background: rgba(255, 255, 255, 0.18);
+}

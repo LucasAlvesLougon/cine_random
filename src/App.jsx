@@ -131,7 +131,7 @@ function App() {
             )}
           </div>
           <div className='actionPanels'>
-              <AddMovie onOpenInfo={setSelectedMovie} />
+              <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
               <DiscoverRoulette onOpenInfo={setSelectedMovie} />
           </div>
           <MovieList onOpenInfo={setSelectedMovie} />
@@ -140,6 +140,7 @@ function App() {
             isOpen={!!selectedMovie} 
             onClose={() => setSelectedMovie(null)} 
             movie={selectedMovie} 
+            listCode={activeList?.code}
           />
           <ConfirmModal 
             isOpen={!!listToDelete}

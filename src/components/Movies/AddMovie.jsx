@@ -6,7 +6,7 @@ import { MatchModal } from '../Modal/MatchModal';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './AddMovie.module.css';
 
-export function AddMovie({ onOpenInfo }) {
+export function AddMovie({ onOpenInfo, listCode }) {
     const { addToast } = useToast();
     const [movieTitle, setMovieTitle] = useState('');
     const [loading, setLoading] = useState(false);
@@ -155,6 +155,7 @@ export function AddMovie({ onOpenInfo }) {
             winnerMovie={winner}
             unwatchedMovies={unwatchedMovies}
             onOpenInfo={onOpenInfo}
+            listCode={listCode}
         />
 
         <MatchModal 

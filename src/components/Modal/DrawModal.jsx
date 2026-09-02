@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import styles from './DrawModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { getPeriodOfDay } from '../../utils/time';
+import { ShareCardModal } from './ShareCardModal';
 
-export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo }) {
+export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo, listCode }) {
     const [isSpinning, setIsSpinning] = useState(true);
     const [providers, setProviders] = useState([]);
     const [posterLoaded, setPosterLoaded] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const period = getPeriodOfDay();
 
     // Resetar estado da imagem quando um novo filme for sorteado
@@ -149,6 +151,9 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                 </div>
 
                 <div className={styles.modalActions}>
+                    <button onClick={() => setIsShareModalOpen(true)} className={styles.btnShareAction} title="Compartilhar Sessão">
+                        📸 Convite
+                    </button>
                     {onAddToList && (
                         <button onClick={() => onAddToList(winnerMovie)} className={styles.btnAddToList}>
                             Salvar na Lista 📌
@@ -162,6 +167,13 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
         )}
 
         </div>
+
+        <ShareCardModal 
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            movie={winnerMovie}
+            listCode={listCode}
+        />
     </div>,
     document.body
     );

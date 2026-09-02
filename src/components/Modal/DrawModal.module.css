@@ -142,6 +142,27 @@
 }
 
 .modalActions { display: flex; gap: 12px; margin-top: 24px; }
+
+.btnShareAction {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: #000;
+    font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 14px 18px;
+    transition: transform 0.2s, filter 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btnShareAction:hover {
+    transform: scale(1.03);
+    filter: brightness(1.1);
+}
+
 .btnAddToList {
     flex: 2; background: var(--primary); color: var(--primary-text);
     padding: 14px; font-weight: 600; border-radius: 14px; border: none; cursor: pointer;

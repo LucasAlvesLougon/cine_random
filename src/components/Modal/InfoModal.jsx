@@ -5,14 +5,16 @@ import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { CommentSection } from '../Comments/CommentSection';
+import { ShareCardModal } from './ShareCardModal';
 
-export function InfoModal({ isOpen, onClose, movie }) {
+export function InfoModal({ isOpen, onClose, movie, listCode }) {
     const { addToast } = useToast();
     const { movies, addMovie } = useMovies();
     const [providers, setProviders] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
 
     const [bannerLoaded, setBannerLoaded] = useState(false);
     const [posterLoaded, setPosterLoaded] = useState(false);
@@ -149,8 +151,15 @@ export function InfoModal({ isOpen, onClose, movie }) {
                                 </div>
                             )}
 
-                            <div className={styles.providersBlock} style={{ marginTop: '8px' }}>
-                                <span>Mais detalhes:</span>
+                            <div className={styles.providersBlock} style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <span>Ações:</span>
+                                <button 
+                                    onClick={() => setIsShareOpen(true)}
+                                    className={styles.stremioLink}
+                                    style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(37, 211, 102, 0.15)', color: '#25d366', border: '1px solid rgba(37, 211, 102, 0.3)', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', fontWeight: '600' }}
+                                >
+                                    📸 Convite Sessão
+                                </button>
                                 <a 
                                     href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
                                     target="_blank" 
@@ -216,6 +225,14 @@ export function InfoModal({ isOpen, onClose, movie }) {
                 </div>
             </div>
         )}
+
+        {/* --- MODAL DE CONVITE VISUAL / COMPARTILHAMENTO --- */}
+        <ShareCardModal 
+            isOpen={isShareOpen}
+            onClose={() => setIsShareOpen(false)}
+            movie={movie}
+            listCode={listCode}
+        />
         </>,
         document.body
     );
