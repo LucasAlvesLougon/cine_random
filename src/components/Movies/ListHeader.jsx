@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { HistoryModal } from '../Modal/HistoryModal';
@@ -7,11 +8,18 @@ import { MembersModal } from '../Modal/MembersModal';
 
 export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, onOpenInfo }) {
     const { movies } = useMovies();
+    const { user } = useAuth();
     const { addToast } = useToast();
     const [isEditingName, setIsEditingName] = useState(false);
     const [newListName, setNewListName] = useState(activeList.name);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
+
+    const isOwner = user && activeList && (
+        activeList.owner_id === user.id || 
+        activeList.owner_email === user.email || 
+        activeList.owner === user.email
+    );
 
     const unwatchedCount = movies.filter(m => !m.watched).length;
     const watchedCount = movies.filter(m => m.watched).length;
@@ -134,6 +142,7 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                 isOpen={isMembersOpen}
                 onClose={() => setIsMembersOpen(false)}
                 listCode={activeList.code}
+                isOwner={isOwner}
             />
         </div>
     );

@@ -17,7 +17,7 @@ export function AddMovie({ onOpenInfo, listCode }) {
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
 
-    const [selectedProvider, setSelectedProvider] = useState('');
+    const [selectedProviders, setSelectedProviders] = useState([]);
     const { movies, addMovie } = useMovies();
 
     const availableProviders = Array.from(
@@ -25,6 +25,14 @@ export function AddMovie({ onOpenInfo, listCode }) {
             movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
         ).values()
     ).sort((a, b) => a.name.localeCompare(b.name));
+
+    const toggleProvider = (providerName) => {
+        setSelectedProviders(prev => 
+            prev.includes(providerName)
+                ? prev.filter(p => p !== providerName)
+                : [...prev, providerName]
+        );
+    };
 
     const handleAddMovie = async (e) => {
         e.preventDefault();
@@ -54,13 +62,13 @@ export function AddMovie({ onOpenInfo, listCode }) {
         try {
             let listToDraw = includeWatched ? movies : movies.filter(m => !m.watched);
             
-            if (selectedProvider) {
-                listToDraw = listToDraw.filter(m => m.watchProviders && m.watchProviders.some(p => p.name === selectedProvider));
+            if (selectedProviders.length > 0) {
+                listToDraw = listToDraw.filter(m => m.watchProviders && m.watchProviders.some(p => selectedProviders.includes(p.name)));
             }
 
             if (listToDraw.length === 0) {
-                if (selectedProvider) {
-                    addToast(`Nenhum filme ${includeWatched ? '' : 'não assistido '}encontrado no streaming "${selectedProvider}".`, 'error');
+                if (selectedProviders.length > 0) {
+                    addToast(`Nenhum filme ${includeWatched ? '' : 'não assistido '}encontrado nos streamings selecionados (${selectedProviders.join(', ')}).`, 'error');
                 } else {
                     addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
                 }
@@ -123,16 +131,26 @@ export function AddMovie({ onOpenInfo, listCode }) {
             {availableProviders.length > 0 && (
                 <div className={styles.providerSelectWrapper}>
                     <span className={styles.providerLabel}>Filtrar Sorteio por Streaming:</span>
-                    <select 
-                        className={styles.providerSelect}
-                        value={selectedProvider}
-                        onChange={(e) => setSelectedProvider(e.target.value)}
-                    >
-                        <option value="">Todos os Streamings</option>
+                    <div className={styles.providerChipsContainer}>
+                        <button 
+                            type="button"
+                            className={`${styles.providerFilterChip} ${selectedProviders.length === 0 ? styles.providerFilterChipActive : ''}`}
+                            onClick={() => setSelectedProviders([])}
+                        >
+                            Todos
+                        </button>
                         {availableProviders.map(p => (
-                            <option key={p.name} value={p.name}>{p.name}</option>
+                            <button
+                                key={p.name}
+                                type="button"
+                                className={`${styles.providerFilterChip} ${selectedProviders.includes(p.name) ? styles.providerFilterChipActive : ''}`}
+                                onClick={() => toggleProvider(p.name)}
+                            >
+                                {p.logoUrl && <img src={p.logoUrl} alt={p.name} className={styles.chipLogo} />}
+                                {p.name}
+                            </button>
                         ))}
-                    </select>
+                    </div>
                 </div>
             )}
 

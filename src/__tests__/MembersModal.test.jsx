@@ -45,5 +45,27 @@ describe('MembersModal', () => {
             expect(screen.getByText('👑 Criador da Lista')).toBeInTheDocument();
             expect(screen.getByText('amigo@cinema.com')).toBeInTheDocument();
         });
+
+        // Não deve mostrar botão de remover quando isOwner for false
+        expect(screen.queryByTitle('Remover participante da lista')).toBeNull();
+    });
+
+    it('deve exibir botão de remover participante se o usuário for o criador da lista', async () => {
+        const mockMembers = [
+            { id: 1, email: 'dono@cinema.com', is_owner: true },
+            { id: 2, email: 'amigo@cinema.com', is_owner: false }
+        ];
+
+        api.get.mockResolvedValueOnce({ data: mockMembers });
+
+        render(
+            <ToastProvider>
+                <MembersModal isOpen={true} onClose={vi.fn()} listCode="MBR01" isOwner={true} />
+            </ToastProvider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTitle('Remover participante da lista')).toBeInTheDocument();
+        });
     });
 });

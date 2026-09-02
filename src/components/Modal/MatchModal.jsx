@@ -149,7 +149,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                                     <div 
                                         key={movie.id} 
                                         className={styles.matchItem}
-                                        onClick={() => { onClose(); onOpenInfo(movie); }}
+                                        onClick={() => onOpenInfo(movie)}
                                     >
                                         {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className={styles.matchThumbnail} />}
                                         <div className={styles.matchDetails}>

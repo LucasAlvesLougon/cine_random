@@ -10,7 +10,7 @@ export function MovieList({ onOpenInfo }) {
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('');
-    const [selectedProvider, setSelectedProvider] = useState('');
+    const [selectedProviders, setSelectedProviders] = useState([]);
 
     const availableGenres = Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
 
@@ -20,14 +20,22 @@ export function MovieList({ onOpenInfo }) {
         ).values()
     ).sort((a, b) => a.name.localeCompare(b.name));
 
+    const toggleProvider = (providerName) => {
+        setSelectedProviders(prev => 
+            prev.includes(providerName) 
+                ? prev.filter(p => p !== providerName) 
+                : [...prev, providerName]
+        );
+    };
+
     const filteredMovies = movies.filter(movie => {
         const matchesFilter = filter === 'all' || 
                               (filter === 'watched' && movie.watched) || 
                               (filter === 'unwatched' && !movie.watched);
         const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
-        const matchesProvider = selectedProvider === '' || 
-                              (movie.watchProviders && movie.watchProviders.some(p => p.name === selectedProvider));
+        const matchesProvider = selectedProviders.length === 0 || 
+                              (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
         return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
     }).sort((a, b) => b.id - a.id);
 
@@ -87,16 +95,16 @@ export function MovieList({ onOpenInfo }) {
         {availableProviders.length > 0 && (
             <div className={styles.providerBar}>
                 <button 
-                    className={`${styles.providerChip} ${selectedProvider === '' ? styles.providerChipActive : ''}`}
-                    onClick={() => setSelectedProvider('')}
+                    className={`${styles.providerChip} ${selectedProviders.length === 0 ? styles.providerChipActive : ''}`}
+                    onClick={() => setSelectedProviders([])}
                 >
                     Todos os Streamings
                 </button>
                 {availableProviders.map(prov => (
                     <button 
                         key={prov.name}
-                        className={`${styles.providerChip} ${selectedProvider === prov.name ? styles.providerChipActive : ''}`}
-                        onClick={() => setSelectedProvider(prov.name)}
+                        className={`${styles.providerChip} ${selectedProviders.includes(prov.name) ? styles.providerChipActive : ''}`}
+                        onClick={() => toggleProvider(prov.name)}
                     >
                         {prov.logoUrl && (
                             <img src={prov.logoUrl} alt={prov.name} className={styles.chipLogo} />

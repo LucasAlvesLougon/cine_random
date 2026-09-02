@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import styles from './ConfirmModal.module.css';
 
-export function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
+export function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Excluir' }) {
     if (!isOpen) return null;
 
     return createPortal(
@@ -18,7 +18,7 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
                 <p className={styles.message}>{message}</p>
                 <div className={styles.actions}>
                     <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
-                    <button className={styles.btnConfirm} onClick={() => { onConfirm(); onClose(); }}>Excluir</button>
+                    <button className={styles.btnConfirm} onClick={() => { onConfirm(); onClose(); }}>{confirmText}</button>
                 </div>
             </div>
         </div>,

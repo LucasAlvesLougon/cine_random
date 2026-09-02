@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { ConfirmModal } from './ConfirmModal';
 import styles from './MembersModal.module.css';
 
-export function MembersModal({ isOpen, onClose, listCode }) {
+export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
     const { addToast } = useToast();
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [memberToRemove, setMemberToRemove] = useState(null);
 
     const fetchMembers = useCallback(async () => {
         if (!listCode) return;
@@ -26,6 +28,7 @@ export function MembersModal({ isOpen, onClose, listCode }) {
     useEffect(() => {
         if (isOpen && listCode) {
             fetchMembers();
+            setMemberToRemove(null);
         }
     }, [isOpen, listCode, fetchMembers]);
 
@@ -40,11 +43,12 @@ export function MembersModal({ isOpen, onClose, listCode }) {
         }
     };
 
-    const handleRemoveMember = async (member) => {
-        if (!window.confirm(`Tem certeza que deseja remover ${member.email} da lista?`)) return;
+    const handleConfirmRemove = async () => {
+        if (!memberToRemove) return;
         try {
-            await api.delete(`/lists/${listCode}/members/${member.id}`);
-            addToast(`${member.email} foi removido da lista.`, 'success');
+            await api.delete(`/lists/${listCode}/members/${memberToRemove.id}`);
+            addToast(`${memberToRemove.email} foi removido da lista.`, 'success');
+            setMemberToRemove(null);
             fetchMembers();
         } catch (error) {
             addToast(error.response?.data?.detail || 'Erro ao remover participante.', 'error');
@@ -85,10 +89,10 @@ export function MembersModal({ isOpen, onClose, listCode }) {
                                             <span className={styles.ownerBadge}>👑 Criador da Lista</span>
                                         )}
                                     </div>
-                                    {!member.is_owner && (
+                                    {isOwner && !member.is_owner && (
                                         <button 
                                             className={styles.btnRemoveMember}
-                                            onClick={() => handleRemoveMember(member)}
+                                            onClick={() => setMemberToRemove(member)}
                                             title="Remover participante da lista"
                                         >
                                             ✕
@@ -105,6 +109,15 @@ export function MembersModal({ isOpen, onClose, listCode }) {
                         🎟️ Copiar Código de Convite ({listCode})
                     </button>
                 </div>
+
+                <ConfirmModal 
+                    isOpen={!!memberToRemove}
+                    onClose={() => setMemberToRemove(null)}
+                    onConfirm={handleConfirmRemove}
+                    title="Remover Participante"
+                    message={`Tem certeza que deseja remover ${memberToRemove?.email} desta lista? Esta pessoa não poderá mais acessar nem sortear filmes com o grupo.`}
+                    confirmText="Remover"
+                />
             </div>
         </div>,
         document.body
