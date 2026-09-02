@@ -3,6 +3,7 @@ import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { HistoryModal } from '../Modal/HistoryModal';
+import { MembersModal } from '../Modal/MembersModal';
 
 export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, onOpenInfo }) {
     const { movies } = useMovies();
@@ -10,6 +11,7 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
     const [isEditingName, setIsEditingName] = useState(false);
     const [newListName, setNewListName] = useState(activeList.name);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isMembersOpen, setIsMembersOpen] = useState(false);
 
     const unwatchedCount = movies.filter(m => !m.watched).length;
     const watchedCount = movies.filter(m => m.watched).length;
@@ -92,6 +94,14 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
 
             <div className="activeListStats">
                 <button 
+                    onClick={() => setIsMembersOpen(true)}
+                    className="statsPill"
+                    style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0, 113, 227, 0.15)', borderColor: 'rgba(0, 113, 227, 0.35)', color: '#2997ff' }}
+                    title="Ver participantes da lista"
+                >
+                    👥 Participantes
+                </button>
+                <button 
                     onClick={() => setIsHistoryOpen(true)}
                     className="statsPill"
                     style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(175, 82, 222, 0.15)', borderColor: 'rgba(175, 82, 222, 0.3)', color: '#d8b4fe' }}
@@ -118,6 +128,12 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                 onClose={() => setIsHistoryOpen(false)}
                 listCode={activeList.code}
                 onOpenInfo={onOpenInfo}
+            />
+
+            <MembersModal 
+                isOpen={isMembersOpen}
+                onClose={() => setIsMembersOpen(false)}
+                listCode={activeList.code}
             />
         </div>
     );
