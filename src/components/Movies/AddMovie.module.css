@@ -182,6 +182,6 @@
 @media (max-width: 600px) {
     .container { padding: 20px; }
     .header p { display: none; }
-    .form { display: none; }
-    .button { padding: 14px; }
+    .form { flex-direction: column; }
+    .button { padding: 14px; width: 100%; }
 }
