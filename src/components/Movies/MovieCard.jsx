@@ -5,6 +5,10 @@ import styles from './MovieCard.module.css';
 export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
     const [imgLoaded, setImgLoaded] = useState(false);
 
+    const groupRating = movie.comments && movie.comments.length > 0
+        ? (movie.comments.reduce((acc, c) => acc + (c.rating || 0), 0) / movie.comments.length).toFixed(1)
+        : null;
+
     return (
     <div className={styles.card}>
         <div className={styles.posterWrapper} onClick={() => onOpenInfo(movie)}>
@@ -41,6 +45,14 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
             </h3>
             <div className={styles.meta}>
                 {movie.releaseYear} <span style={{color: 'var(--text-faint)'}}>•</span> ⭐ {movie.tmdbRating}
+                {groupRating && (
+                    <>
+                        <span style={{color: 'var(--text-faint)'}}> • </span>
+                        <span className={styles.groupRating} title={`Média do Grupo: ${groupRating} (${movie.comments.length} avaliações)`}>
+                            👥 ★ {groupRating}
+                        </span>
+                    </>
+                )}
             </div>
 
             <div className={styles.actions}>

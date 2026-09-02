@@ -82,4 +82,25 @@ describe('MovieCard', () => {
         expect(screen.getByAltText('Netflix')).toBeInTheDocument();
         expect(screen.getByAltText('Max')).toBeInTheDocument();
     });
+
+    it('deve exibir a média de notas do grupo quando houver avaliações', () => {
+        const movieWithComments = {
+            ...mockMovie,
+            comments: [
+                { id: 1, user_id: 'user1@test.com', rating: 5, text: 'Ótimo!' },
+                { id: 2, user_id: 'user2@test.com', rating: 4, text: 'Muito bom!' }
+            ]
+        };
+
+        render(
+            <MovieCard 
+                movie={movieWithComments} 
+                onToggleWatched={vi.fn()} 
+                onDelete={vi.fn()} 
+                onOpenInfo={vi.fn()} 
+            />
+        );
+
+        expect(screen.getByText(/4.5/)).toBeInTheDocument();
+    });
 });
