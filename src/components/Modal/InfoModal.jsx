@@ -149,6 +149,24 @@ export function InfoModal({ isOpen, onClose, movie }) {
                                     </a>
                                 </div>
                             )}
+
+                            <div className={styles.providersBlock} style={{ marginTop: '8px' }}>
+                                <span>Mais detalhes:</span>
+                                <a 
+                                    href={`https://letterboxd.com/tmdb/${movie.tmdbId}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={styles.stremioLink}
+                                    style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                                >
+                                    <svg viewBox="0 0 100 32" height="12" style={{ marginRight: '6px' }}>
+                                        <circle cx="16" cy="16" r="16" fill="#00e054" />
+                                        <circle cx="50" cy="16" r="16" fill="#40bcf4" />
+                                        <circle cx="84" cy="16" r="16" fill="#ff8000" />
+                                    </svg>
+                                    Letterboxd
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -173,6 +191,11 @@ export function InfoModal({ isOpen, onClose, movie }) {
                                     rel="noopener noreferrer" 
                                     className={styles.letterboxdBtn}
                                 >
+                                    <svg viewBox="0 0 100 32" height="14" style={{ marginRight: '10px' }}>
+                                        <circle cx="16" cy="16" r="16" fill="#00e054" />
+                                        <circle cx="50" cy="16" r="16" fill="#40bcf4" />
+                                        <circle cx="84" cy="16" r="16" fill="#ff8000" />
+                                    </svg>
                                     Letterboxd
                                 </a>
                                 
