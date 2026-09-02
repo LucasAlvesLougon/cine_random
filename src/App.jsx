@@ -72,6 +72,7 @@ function App() {
             setActiveList={setActiveList}
             onBack={() => setActiveList(null)}
             onDeleteList={(list) => setListToDelete(list)}
+            onOpenInfo={setSelectedMovie}
           />
           <div className='actionPanels'>
               <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />

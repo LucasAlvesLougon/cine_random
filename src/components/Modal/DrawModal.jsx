@@ -1,20 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './DrawModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { getPeriodOfDay } from '../../utils/time';
 import { ShareCardModal } from './ShareCardModal';
+import { api } from '../../services/api';
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo, listCode }) {
     const [isSpinning, setIsSpinning] = useState(true);
     const [providers, setProviders] = useState([]);
     const [posterLoaded, setPosterLoaded] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const hasRecordedRef = useRef(false);
     const period = getPeriodOfDay();
 
     // Resetar estado da imagem quando um novo filme for sorteado
     useEffect(() => {
         setPosterLoaded(false);
+        hasRecordedRef.current = false;
     }, [winnerMovie?.tmdbId]);
 
     // Efeito para buscar os provedores caso o filme sorteado seja antigo e não tenha
@@ -41,10 +44,19 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
             setIsSpinning(true);
             const timer = setTimeout(() => {
                 setIsSpinning(false);
+                if (winnerMovie && listCode && !hasRecordedRef.current) {
+                    hasRecordedRef.current = true;
+                    api.post(`/lists/${listCode}/history`, {
+                        movie_id: winnerMovie.id || null,
+                        movie_title: winnerMovie.title,
+                        movie_poster: winnerMovie.posterUrl || null,
+                        draw_type: 'roulette'
+                    }).catch(err => console.error('Erro ao salvar no histórico:', err));
+                }
             }, 2500); // Exatos 2.5s de suspense
             return () => clearTimeout(timer);
         }
-    }, [isOpen]);
+    }, [isOpen, winnerMovie, listCode]);
 
     if (!isOpen) return null;
 

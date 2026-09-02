@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
+import { HistoryModal } from '../Modal/HistoryModal';
 
-export function ListHeader({ activeList, setActiveList, onBack, onDeleteList }) {
+export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, onOpenInfo }) {
     const { movies } = useMovies();
     const { addToast } = useToast();
     const [isEditingName, setIsEditingName] = useState(false);
     const [newListName, setNewListName] = useState(activeList.name);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const unwatchedCount = movies.filter(m => !m.watched).length;
     const watchedCount = movies.filter(m => m.watched).length;
@@ -90,6 +92,14 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList }) 
 
             <div className="activeListStats">
                 <button 
+                    onClick={() => setIsHistoryOpen(true)}
+                    className="statsPill"
+                    style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(175, 82, 222, 0.15)', borderColor: 'rgba(175, 82, 222, 0.3)', color: '#d8b4fe' }}
+                    title="Ver histórico de filmes sorteados"
+                >
+                    📜 Histórico
+                </button>
+                <button 
                     onClick={handleCopyCode} 
                     className="statsPill"
                     style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -102,6 +112,13 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList }) 
                     {movies.length > 0 && ` (${unwatchedCount} para ver • ${watchedCount} vistos)`}
                 </div>
             </div>
+
+            <HistoryModal 
+                isOpen={isHistoryOpen}
+                onClose={() => setIsHistoryOpen(false)}
+                listCode={activeList.code}
+                onOpenInfo={onOpenInfo}
+            />
         </div>
     );
 }

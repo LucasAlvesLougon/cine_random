@@ -163,6 +163,7 @@ export function AddMovie({ onOpenInfo, listCode }) {
             onClose={() => setIsMatchModalOpen(false)}
             movies={movies}
             onOpenInfo={onOpenInfo}
+            listCode={listCode}
         />
     </div>
     );

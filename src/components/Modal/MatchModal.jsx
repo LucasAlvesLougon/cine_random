@@ -1,13 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../../services/api';
 import styles from './MatchModal.module.css';
 
-export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo }) {
+export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode }) {
     const unwatched = movies.filter(m => !m.watched);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [matches, setMatches] = useState([]);
     const [isFinished, setIsFinished] = useState(false);
+    const savedMatchesRef = useRef(new Set());
+
+    useEffect(() => {
+        if (isFinished && matches.length > 0 && listCode) {
+            matches.forEach(m => {
+                if (!savedMatchesRef.current.has(m.id)) {
+                    savedMatchesRef.current.add(m.id);
+                    api.post(`/lists/${listCode}/history`, {
+                        movie_id: m.id || null,
+                        movie_title: m.title,
+                        movie_poster: m.posterUrl || null,
+                        draw_type: 'match'
+                    }).catch(err => console.error('Erro ao salvar match no histórico:', err));
+                }
+            });
+        }
+    }, [isFinished, matches, listCode]);
 
     if (!isOpen) return null;
 
@@ -29,6 +47,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo }) {
         setCurrentIndex(0);
         setMatches([]);
         setIsFinished(false);
+        savedMatchesRef.current.clear();
     };
 
     return createPortal(

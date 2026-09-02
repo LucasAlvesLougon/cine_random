@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { sendBrowserNotification, requestNotificationPermission } from '../utils/notifications';
 
 const MoviesContext = createContext();
 
@@ -24,13 +25,19 @@ export function MoviesProvider({ children, listCode }) {
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) { fetchMovies(); }
+
+        // Solicita permissão de notificações discretamente
+        requestNotificationPermission();
         
-        // Conexão WebSocket para receber atualizações em tempo real (Fase 3.3)
+        // Conexão WebSocket para receber atualizações em tempo real
         const wsUrl = api.defaults.baseURL.replace('http', 'ws') + '/lists/ws/' + listCode;
         const ws = new WebSocket(wsUrl);
         
         ws.onmessage = (event) => {
             if (event.data === 'refresh') {
+                sendBrowserNotification('🍿 Cine Random', {
+                    body: 'A lista foi atualizada com novidades pela turma!'
+                });
                 fetchMovies();
             }
         };
