@@ -30,6 +30,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Run Automated Tests
+        run: npm test
+
       - name: Build for Production
         run: npm run build
 
