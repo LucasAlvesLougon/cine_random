@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
+import { formatUserName } from '../../utils/format';
 import styles from './CommentSection.module.css';
 
 export function CommentSection({ movieId, initialComments = [] }) {
@@ -21,7 +22,7 @@ export function CommentSection({ movieId, initialComments = [] }) {
         try {
             const response = await api.post(`/lists/movies/${movieId}/comments`, {
                 user_id: user?.email || 'anonimo',
-                user_name: user?.email?.split('@')[0] || 'Usuário',
+                user_name: formatUserName(user?.email),
                 text: text,
                 rating: rating
             });
@@ -55,7 +56,7 @@ export function CommentSection({ movieId, initialComments = [] }) {
                     comments.map(comment => (
                         <div key={comment.id} className={styles.commentItem}>
                             <div className={styles.commentHeader}>
-                                <strong className={styles.commentAuthor}>{comment.user_name}</strong>
+                                <strong className={styles.commentAuthor}>{formatUserName(comment.user_id) || comment.user_name}</strong>
                                 <span className={styles.commentStars}>
                                     {Array(comment.rating).fill('★').join('')}
                                 </span>
