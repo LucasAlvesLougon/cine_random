@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, master, dev]
 
+permissions:
+  contents: write
+
 jobs:
   build-and-lint:
     name: Lint & Build Check
@@ -29,3 +32,35 @@ jobs:
 
       - name: Build for Production
         run: npm run build
+
+  auto-sync:
+    name: Auto Sync Branches (dev <-> master)
+    needs: build-and-lint
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync from dev to master
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          git checkout master
+          git merge origin/dev --ff-only || git merge origin/dev -m "ci: auto-sync dev into master [skip ci]"
+          git push origin master
+
+      - name: Sync from master to dev
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          git checkout dev
+          git merge origin/master --ff-only || git merge origin/master -m "ci: auto-sync master into dev [skip ci]"
+          git push origin dev
