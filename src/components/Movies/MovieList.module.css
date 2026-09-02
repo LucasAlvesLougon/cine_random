@@ -58,8 +58,13 @@
     gap: 8px;
     padding: 0 40px;
     margin-bottom: 24px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    max-width: 100%;
 }
+.genreBar::-webkit-scrollbar { display: none; }
 
 .genreChip {
     background: rgba(255, 255, 255, 0.05);
