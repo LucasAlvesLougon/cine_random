@@ -13,7 +13,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
 
     useEffect(() => {
         if (isOpen) {
-            const unwatched = movies.filter(m => !m.watched);
+            const unwatched = (movies || []).filter(m => !m.watched);
             const shuffled = [...unwatched].sort(() => 0.5 - Math.random());
             setDeck(shuffled.slice(0, 10));
             setCurrentIndex(0);
@@ -21,7 +21,8 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
             setIsFinished(false);
             savedMatchesRef.current.clear();
         }
-    }, [isOpen, movies]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     useEffect(() => {
         if (isFinished && matches.length > 0 && listCode) {

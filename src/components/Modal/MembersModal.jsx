@@ -40,6 +40,17 @@ export function MembersModal({ isOpen, onClose, listCode }) {
         }
     };
 
+    const handleRemoveMember = async (member) => {
+        if (!window.confirm(`Tem certeza que deseja remover ${member.email} da lista?`)) return;
+        try {
+            await api.delete(`/lists/${listCode}/members/${member.id}`);
+            addToast(`${member.email} foi removido da lista.`, 'success');
+            fetchMembers();
+        } catch (error) {
+            addToast(error.response?.data?.detail || 'Erro ao remover participante.', 'error');
+        }
+    };
+
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -74,6 +85,15 @@ export function MembersModal({ isOpen, onClose, listCode }) {
                                             <span className={styles.ownerBadge}>👑 Criador da Lista</span>
                                         )}
                                     </div>
+                                    {!member.is_owner && (
+                                        <button 
+                                            className={styles.btnRemoveMember}
+                                            onClick={() => handleRemoveMember(member)}
+                                            title="Remover participante da lista"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>

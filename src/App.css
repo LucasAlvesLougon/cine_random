@@ -150,6 +150,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .statsPill {
@@ -161,12 +162,6 @@
     color: var(--text-secondary);
     font-weight: 500;
     backdrop-filter: blur(8px);
-}
-
-@media (max-width: 768px) {
-    .activeListStats {
-        display: none;
-    }
 }
 
 @media (max-width: 768px) {
@@ -184,12 +179,27 @@
     
     .activeListHeader {
         padding: 0 20px;
-        gap: 10px;
-        flex-direction: row;
+        gap: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .activeListHeaderMain {
+        width: 100%;
+        display: flex;
         align-items: center;
+        gap: 12px;
+    }
+
+    .activeListStats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
     }
     
     .activeListTitle {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
     }
 }
