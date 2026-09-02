@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { fetchMovieDetails } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
+import { MatchModal } from '../Modal/MatchModal';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './AddMovie.module.css';
 
@@ -11,6 +12,7 @@ export function AddMovie({ onOpenInfo }) {
     const [loading, setLoading] = useState(false);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
@@ -134,12 +136,17 @@ export function AddMovie({ onOpenInfo }) {
                 </div>
             )}
 
-            <button onClick={handleDrawFromList} className={styles.drawBtn}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                </svg>
-                Me Surpreenda
-            </button>
+            <div className={styles.drawButtonsGrid}>
+                <button onClick={handleDrawFromList} className={styles.drawBtn}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                    </svg>
+                    Me Surpreenda
+                </button>
+                <button onClick={() => setIsMatchModalOpen(true)} className={styles.matchBtn}>
+                    🔥 Match da Galera
+                </button>
+            </div>
         </div>
 
         <DrawModal 
@@ -147,6 +154,13 @@ export function AddMovie({ onOpenInfo }) {
             onClose={() => { setIsModalOpen(false); setWinner(null); }}
             winnerMovie={winner}
             unwatchedMovies={unwatchedMovies}
+            onOpenInfo={onOpenInfo}
+        />
+
+        <MatchModal 
+            isOpen={isMatchModalOpen}
+            onClose={() => setIsMatchModalOpen(false)}
+            movies={movies}
             onOpenInfo={onOpenInfo}
         />
     </div>
