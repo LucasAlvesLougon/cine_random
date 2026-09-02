@@ -68,7 +68,7 @@ function App() {
     <Layout>
       {user && activeList ? (
         <MoviesProvider listCode={activeList.code}>
-          <div style={{ padding: '0 40px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="activeListHeader">
             <button 
               onClick={() => setActiveList(null)} 
               title="Voltar para Minhas Listas"
@@ -90,20 +90,20 @@ function App() {
                   }
                 }
                 setIsEditingName(false);
-              }} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              }} style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%' }}>
                 <input 
                   type="text" 
                   value={newListName} 
                   onChange={(e) => setNewListName(e.target.value)} 
                   autoFocus
-                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '8px 12px', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 'bold', outline: 'none' }}
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '8px 12px', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold', outline: 'none', width: '100%' }}
                 />
                 <button type="submit" style={{ background: '#4CAF50', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salvar</button>
                 <button type="button" onClick={() => setIsEditingName(false)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cancelar</button>
               </form>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <h2 style={{ margin: 0, fontSize: '2.2rem', fontWeight: '800', letterSpacing: '-0.03em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                <h2 className="activeListTitle" style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {activeList.name}
                 </h2>
                 <button

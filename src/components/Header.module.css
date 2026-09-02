@@ -71,3 +71,22 @@
     opacity: 0.9;
     transform: translateY(-1px);
 }
+
+@media (max-width: 768px) {
+    .header {
+        padding: 12px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .title {
+        font-size: 1.2rem;
+    }
+    
+    .userInfo {
+        gap: 0.5rem;
+    }
+    
+    .userInfo span {
+        display: none;
+    }
+}
