@@ -157,7 +157,12 @@
 .closeButton:hover { background: rgba(255,255,255,0.2); }
 
 @media (max-width: 500px) {
-    .movieInfoCard { flex-direction: column; text-align: center; }
-    .winnerPoster { width: 140px; height: 210px; }
+    .modal { padding: 24px; margin: 16px; width: auto; max-height: 90vh; overflow-y: auto; }
+    .movieInfoCard { flex-direction: column; text-align: center; padding: 16px; }
+    .winnerPoster { width: 140px; height: auto; margin: 0 auto; }
     .modalActions { flex-direction: column; }
+    .slotItem { font-size: 1.5rem; }
+    .movieTitle { font-size: 1.5rem; }
+    .movieSynopsis { display: none; } /* Esconder sinopse para caber na tela do mobile */
+    .providersList { justify-content: center; }
 }
