@@ -6,16 +6,12 @@ import { useToast } from '../../contexts/ToastContext';
 import styles from './Home.module.css';
 
 export function Home({ onSelectList }) {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const { addToast } = useToast();
     const [lists, setLists] = useState([]);
     const [joinCode, setJoinCode] = useState('');
     const [newListName, setNewListName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
-    
-    useEffect(() => {
-        fetchMyLists();
-    }, []);
 
     const fetchMyLists = async () => {
         try {
@@ -26,6 +22,10 @@ export function Home({ onSelectList }) {
             addToast('Erro ao buscar suas listas', 'error');
         }
     };
+    
+    useEffect(() => {
+        fetchMyLists();
+    }, []);
 
     const handleCreateList = async (e) => {
         e.preventDefault();
@@ -38,7 +38,7 @@ export function Home({ onSelectList }) {
             setIsCreating(false);
             fetchMyLists();
             addToast('Lista criada com sucesso!', 'success');
-        } catch (error) {
+        } catch {
             addToast('Erro ao criar lista', 'error');
         }
     };

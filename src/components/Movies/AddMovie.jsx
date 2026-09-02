@@ -34,7 +34,7 @@ export function AddMovie({ onOpenInfo }) {
             await addMovie(movieData);
             setMovieTitle('');
             addToast(`${movieData.title} foi salvo na lista!`, 'success');
-        } catch (error) {
+        } catch {
             addToast("Não foi possível adicionar o filme. Verifique o nome e tente novamente.", 'error');
         } finally {
             setLoading(false);

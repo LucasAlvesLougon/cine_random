@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { fetchRandomMovieByOptions, preloadMovieCache } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
-import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './DiscoverRoulette.module.css';
 
@@ -31,7 +30,6 @@ const SUSPENSE_MESSAGES = [
 ];
 
 export function DiscoverRoulette({ onOpenInfo }) {
-    const { user } = useAuth();
     const { movies, addMovie } = useMovies();
     const { addToast } = useToast();
     const [genre, setGenre] = useState('');

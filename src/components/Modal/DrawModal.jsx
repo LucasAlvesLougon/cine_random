@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './DrawModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
-import { api } from '../../services/api';
 import { getPeriodOfDay } from '../../utils/time';
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo }) {
     const [isSpinning, setIsSpinning] = useState(true);
-    const [spinTitle, setSpinTitle] = useState('');
     const [providers, setProviders] = useState([]);
     const [posterLoaded, setPosterLoaded] = useState(false);
     const period = getPeriodOfDay();

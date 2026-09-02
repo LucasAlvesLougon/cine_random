@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { MovieCard } from './MovieCard';
 import { motion, AnimatePresence } from 'framer-motion';

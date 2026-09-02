@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './InfoModal.module.css';
 import { fetchExtraMovieDetails } from '../../services/tmdb';
-import { api } from '../../services/api';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { CommentSection } from '../Comments/CommentSection';
 
 export function InfoModal({ isOpen, onClose, movie }) {
     const { addToast } = useToast();
-    const { movies, addMovie, fetchMovies } = useMovies();
+    const { movies, addMovie } = useMovies();
     const [providers, setProviders] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
     const [isAdding, setIsAdding] = useState(false);

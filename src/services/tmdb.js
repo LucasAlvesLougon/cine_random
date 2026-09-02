@@ -176,7 +176,7 @@ export async function fetchExtraMovieDetails(tmdbId) {
             watchProviders, 
             trailerKey: trailerObj ? trailerObj.key : null 
         };
-    } catch (e) {
+    } catch {
         return { watchProviders: [], trailerKey: null };
     }
 }

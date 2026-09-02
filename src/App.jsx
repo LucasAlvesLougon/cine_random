@@ -51,7 +51,7 @@ function App() {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       await processGoogleToken(credentialResponse.credential);
-    } catch (error) {
+    } catch {
       addToast("Falha ao se conectar com nosso Servidor via Google.", "error");
     }
   };
