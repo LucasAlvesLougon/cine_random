@@ -13,6 +13,36 @@
     margin-bottom: 30px;
 }
 
+.brandWrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btnMenu {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.btnMenu:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: scale(1.04);
+}
+
+.btnMenu:active {
+    transform: scale(0.95);
+}
+
 .title {
     margin: 0;
     font-size: 1.5rem;

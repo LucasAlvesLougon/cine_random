@@ -55,16 +55,27 @@ function App() {
     }
   };
 
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   if (user && !activeList) {
     return (
-      <Layout>
+      <Layout 
+        activeList={null}
+        onBackToLists={() => setActiveList(null)}
+      >
         <Home onSelectList={setActiveList} />
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout
+      activeList={activeList}
+      onOpenMembers={() => setIsMembersOpen(true)}
+      onOpenHistory={() => setIsHistoryOpen(true)}
+      onBackToLists={() => setActiveList(null)}
+    >
       {user && activeList ? (
         <MoviesProvider listCode={activeList.code}>
           <ListHeader 
@@ -73,6 +84,10 @@ function App() {
             onBack={() => setActiveList(null)}
             onDeleteList={(list) => setListToDelete(list)}
             onOpenInfo={setSelectedMovie}
+            isMembersOpen={isMembersOpen}
+            setIsMembersOpen={setIsMembersOpen}
+            isHistoryOpen={isHistoryOpen}
+            setIsHistoryOpen={setIsHistoryOpen}
           />
           <div className='actionPanels'>
               <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />

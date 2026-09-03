@@ -13,10 +13,56 @@
     margin-bottom: 24px;
 }
 
-.header h3 {
-    margin: 0 0 8px;
+.headerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.headerTop h3 {
+    margin: 0;
     font-size: 1.3rem;
     font-weight: 700;
+}
+
+.btnFilterDraw {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #d1d1d6;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btnFilterDraw:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.btnFilterDrawActive {
+    background: rgba(0, 113, 227, 0.2);
+    border-color: rgba(0, 113, 227, 0.5);
+    color: #2997ff;
+}
+
+.filterBadge {
+    background: #0071e3;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .header p {

@@ -5,13 +5,14 @@ import { api } from '../../services/api';
 import styles from './MatchModal.module.css';
 import { triggerHaptic } from '../../utils/haptics';
 
-function TinderCard({ movie, onVote, controls }) {
+function TinderCard({ movie, onVote, controls, isNext = false }) {
     const x = useMotionValue(0);
-    const rotate = useTransform(x, [-200, 200], [-18, 18]);
+    const rotate = useTransform(x, [-200, 200], [-16, 16]);
     const likeOpacity = useTransform(x, [20, 80], [0, 1]);
     const nopeOpacity = useTransform(x, [-20, -80], [0, 1]);
 
     const handleDragEnd = (_event, info) => {
+        if (isNext) return;
         const threshold = 70;
         const velocityThreshold = 300;
 
@@ -22,9 +23,41 @@ function TinderCard({ movie, onVote, controls }) {
         }
     };
 
+    if (isNext) {
+        return (
+            <motion.div
+                initial={{ scale: 0.94, y: 14, opacity: 0.6 }}
+                animate={{ scale: 0.94, y: 14, opacity: 0.6 }}
+                transition={{ duration: 0.2 }}
+                className={`${styles.card} ${styles.cardBack}`}
+            >
+                <div className={styles.posterContainer}>
+                    {movie.posterUrl ? (
+                        <img 
+                            src={movie.posterUrl} 
+                            alt={movie.title} 
+                            className={styles.posterImage} 
+                            draggable={false}
+                        />
+                    ) : (
+                        <div className={styles.noPosterImage}>🎬</div>
+                    )}
+                    <div className={styles.posterOverlay} />
+                </div>
+                <div className={styles.cardContent}>
+                    <div className={styles.chipsRow}>
+                        {movie.releaseYear && <span className={styles.chip}>{movie.releaseYear}</span>}
+                        {movie.tmdbRating && <span className={`${styles.chip} ${styles.chipRating}`}>★ {movie.tmdbRating}</span>}
+                    </div>
+                    <h4 className={styles.movieTitle}>{movie.title}</h4>
+                </div>
+            </motion.div>
+        );
+    }
+
     return (
         <motion.div
-            style={{ x, rotate }}
+            style={{ x, rotate, zIndex: 2 }}
             animate={controls}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -135,6 +168,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
     if (!isOpen) return null;
 
     const currentMovie = deck[currentIndex];
+    const nextMovie = deck[currentIndex + 1];
 
     const handleVote = async (liked, fromSwipe = false) => {
         if (isAnimating || !currentMovie) return;
@@ -151,10 +185,10 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
         if (!fromSwipe) {
             try {
                 await controls.start({
-                    x: liked ? 400 : -400,
+                    x: liked ? 420 : -420,
                     rotate: liked ? 18 : -18,
                     opacity: 0,
-                    transition: { duration: 0.18, ease: 'easeOut' }
+                    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
                 });
             } catch {
                 // Fallback gracioso
@@ -202,11 +236,22 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                             </div>
 
                             <div className={styles.cardWrapper}>
+                                {/* Próximo Card na Pilha (Efeito de Profundidade) */}
+                                {nextMovie && (
+                                    <TinderCard 
+                                        key={`next-${nextMovie.id}`} 
+                                        movie={nextMovie} 
+                                        isNext={true}
+                                    />
+                                )}
+
+                                {/* Card Ativo no Topo */}
                                 <TinderCard 
                                     key={currentMovie.id} 
                                     movie={currentMovie} 
                                     onVote={handleVote} 
                                     controls={controls}
+                                    isNext={false}
                                 />
                             </div>
 

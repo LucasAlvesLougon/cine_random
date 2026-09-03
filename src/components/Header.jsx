@@ -3,11 +3,18 @@ import styles from './Header.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { formatUserName } from '../utils/format';
 import { InstallPwaModal } from './Modal/InstallPwaModal';
+import { SidebarDrawer } from './Navigation/SidebarDrawer';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 
-export function Header() {
+export function Header({ 
+    activeList = null, 
+    onOpenMembers = () => {}, 
+    onOpenHistory = () => {}, 
+    onBackToLists = null 
+}) {
     const { user, logout } = useAuth();
     const [isInstallOpen, setIsInstallOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
 
     const displayName = formatUserName(user?.email);
@@ -16,9 +23,26 @@ export function Header() {
     return (
     <>
         <header className={styles.header}>
-            <h1 className={styles.title}>
-                <span className={styles.brandRed}>Cine</span>Random
-            </h1>
+            <div className={styles.brandWrapper}>
+                {user && (
+                    <button 
+                        onClick={() => setIsDrawerOpen(true)}
+                        className={styles.btnMenu}
+                        title="Abrir Menu Lateral"
+                        aria-label="Menu Lateral"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                )}
+
+                <h1 className={styles.title}>
+                    <span className={styles.brandRed}>Cine</span>Random
+                </h1>
+            </div>
 
             <div>
             {user && (
@@ -52,6 +76,20 @@ export function Header() {
             )}
             </div>
         </header>
+
+        {/* Menu Lateral Esquerdo */}
+        <SidebarDrawer 
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            activeList={activeList}
+            onOpenMembers={onOpenMembers}
+            onOpenHistory={onOpenHistory}
+            onBackToLists={onBackToLists}
+            onOpenInstall={() => setIsInstallOpen(true)}
+            isInstallable={isInstallable}
+            isInstalled={isInstalled}
+            isIos={isIos}
+        />
 
         <InstallPwaModal 
             isOpen={isInstallOpen}

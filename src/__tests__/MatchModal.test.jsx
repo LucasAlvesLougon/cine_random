@@ -20,7 +20,7 @@ describe('MatchModal', () => {
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
 
-        expect(screen.getByText(/Filme (A|B)/)).toBeInTheDocument();
+        expect(screen.getAllByText(/Filme (A|B)/).length).toBeGreaterThan(0);
         const likeBtn = screen.getByTitle('Quero Assistir (Swipe Direita)');
         const dislikeBtn = screen.getByTitle('Passar Filme (Swipe Esquerda)');
         expect(likeBtn).toBeInTheDocument();

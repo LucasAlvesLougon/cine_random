@@ -9,15 +9,87 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 16px;
     padding: 0 40px;
     margin-bottom: 24px;
 }
 
-.filterButtons {
+.searchWrapper {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
     display: flex;
-    gap: 12px;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.searchInput {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    padding: 10px 18px 10px 40px;
+    border-radius: 999px;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.2s ease;
+    outline: none;
+    backdrop-filter: blur(10px);
+}
+
+.searchInput:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+.searchInput::placeholder {
+    color: var(--text-secondary);
+}
+
+.btnFilterModal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #d1d1d6;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.btnFilterModal:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.btnFilterModalActive {
+    background: rgba(0, 113, 227, 0.2);
+    border-color: rgba(0, 113, 227, 0.5);
+    color: #2997ff;
+}
+
+.filterBadge {
+    background: #0071e3;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .resultsInfo {
@@ -35,145 +107,13 @@
     font-weight: 700;
 }
 
-.searchInput {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    width: 300px;
-    transition: all 0.2s ease;
-    outline: none;
-    backdrop-filter: blur(10px);
-}
-.searchInput:focus {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
-}
-.searchInput::placeholder {
-    color: var(--text-secondary);
-}
-
 @media (max-width: 700px) {
-    .filterBar { flex-direction: column; align-items: stretch; padding: 0 20px; }
-    .searchInput { width: 100%; padding: 12px 20px; }
-    .filterButtons { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-    .filterBtn { text-align: center; padding: 12px 16px; }
-    .genreBar { padding: 0 20px; }
+    .filterBar { padding: 0 20px; }
+    .searchWrapper { max-width: 100%; }
+    .resultsInfo { padding: 0 20px; }
     .grid { 
         padding: 0 20px; 
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: 16px;
     }
-}
-
-.genreBar {
-    display: flex;
-    gap: 8px;
-    padding: 0 40px;
-    margin-bottom: 24px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    max-width: 100%;
-}
-.genreBar::-webkit-scrollbar { display: none; }
-
-.genreChip {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.genreChip:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-}
-
-.genreChipActive {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--text);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.providerBar {
-    display: flex;
-    gap: 8px;
-    padding: 0 40px;
-    margin-bottom: 24px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    max-width: 100%;
-}
-.providerBar::-webkit-scrollbar { display: none; }
-
-.providerChip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.providerChip:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-}
-
-.providerChipActive {
-    background: rgba(0, 113, 227, 0.25);
-    color: #fff;
-    border-color: rgba(0, 113, 227, 0.6);
-    box-shadow: 0 2px 10px rgba(0, 113, 227, 0.3);
-}
-
-.chipLogo {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    object-fit: cover;
-}
-
-.filterBtn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filterBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-}
-
-.filterBtn.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
 }

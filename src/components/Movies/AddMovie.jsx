@@ -3,6 +3,7 @@ import { useMovies } from '../../contexts/MoviesContext';
 import { fetchMovieDetails, searchMoviesAutocomplete, fetchMovieDetailsById } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
 import { MatchModal } from '../Modal/MatchModal';
+import { ListDrawFilterModal } from '../Modal/ListDrawFilterModal';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './AddMovie.module.css';
 
@@ -16,10 +17,10 @@ export function AddMovie({ onOpenInfo, listCode }) {
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
-
     const [selectedProviders, setSelectedProviders] = useState([]);
     const { movies, addMovie } = useMovies();
 
@@ -62,14 +63,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
             movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
         ).values()
     ).sort((a, b) => a.name.localeCompare(b.name));
-
-    const toggleProvider = (providerName) => {
-        setSelectedProviders(prev => 
-            prev.includes(providerName)
-                ? prev.filter(p => p !== providerName)
-                : [...prev, providerName]
-        );
-    };
 
     const handleAddFromSuggestion = async (suggestion) => {
         try {
@@ -129,7 +122,7 @@ export function AddMovie({ onOpenInfo, listCode }) {
                 if (selectedProviders.length > 0) {
                     addToast(`Nenhum filme ${includeWatched ? '' : 'não assistido '}encontrado nos streamings selecionados (${selectedProviders.join(', ')}).`, 'error');
                 } else {
-                    addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos.", 'error');
+                    addToast(includeWatched ? "Sua lista está vazia! Adicione filmes primeiro." : "Nenhum filme não assistido na sua lista! Adicione novos filmes ou inclua os assistidos nos filtros.", 'error');
                 }
                 return;
             }
@@ -150,10 +143,33 @@ export function AddMovie({ onOpenInfo, listCode }) {
         }
     };
 
+    const activeFilterCount = (includeWatched ? 1 : 0) + selectedProviders.length;
+
     return (
     <div className={styles.container}>
         <div className={styles.header}>
-            <h3>Sua Lista do Grupo</h3>
+            <div className={styles.headerTop}>
+                <h3>Sua Lista do Grupo</h3>
+                <button 
+                    type="button" 
+                    onClick={() => setIsFilterModalOpen(true)}
+                    className={`${styles.btnFilterDraw} ${activeFilterCount > 0 ? styles.btnFilterDrawActive : ''}`}
+                    title="Configurar filtros do sorteio (Assistidos / Streamings)"
+                >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="4" y1="21" x2="4" y2="14"></line>
+                        <line x1="4" y1="10" x2="4" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="3"></line>
+                        <line x1="20" y1="21" x2="20" y2="16"></line>
+                        <line x1="20" y1="12" x2="20" y2="3"></line>
+                        <line x1="1" y1="14" x2="7" y2="14"></line>
+                        <line x1="9" y1="8" x2="15" y2="8"></line>
+                        <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg>
+                    Filtros {activeFilterCount > 0 && <span className={styles.filterBadge}>{activeFilterCount}</span>}
+                </button>
+            </div>
             <p>Adicione filmes para assistir com seus amigos ou faça um sorteio com o que vocês já têm.</p>
         </div>
         
@@ -190,8 +206,8 @@ export function AddMovie({ onOpenInfo, listCode }) {
                                     <div className={styles.suggestionInfo}>
                                         <div className={styles.suggestionTitle}>{suggestion.title}</div>
                                         <div className={styles.suggestionMeta}>
-                                            <span>📅 {suggestion.releaseYear}</span>
-                                            {suggestion.tmdbRating > 0 && <span>⭐ {suggestion.tmdbRating}</span>}
+                                            <span>{suggestion.releaseYear}</span>
+                                            {suggestion.tmdbRating > 0 && <span>★ {suggestion.tmdbRating}</span>}
                                         </div>
                                     </div>
                                     <button
@@ -211,47 +227,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
                 </button>
             </form>
 
-            <div className={styles.toggleWrapper}>
-                <button 
-                    type="button"
-                    className={`${styles.toggleBtn} ${includeWatched ? styles.toggleActive : ''}`}
-                    onClick={() => setIncludeWatched(!includeWatched)}
-                >
-                    <span className={styles.toggleText}>
-                        {includeWatched ? 'Incluindo filmes assistidos' : 'Ignorando filmes assistidos'}
-                    </span>
-                    <div className={styles.toggleIndicator}>
-                        <div className={styles.toggleKnob}></div>
-                    </div>
-                </button>
-            </div>
-
-            {availableProviders.length > 0 && (
-                <div className={styles.providerSelectWrapper}>
-                    <span className={styles.providerLabel}>Filtrar Sorteio por Streaming:</span>
-                    <div className={styles.providerChipsContainer}>
-                        <button 
-                            type="button"
-                            className={`${styles.providerFilterChip} ${selectedProviders.length === 0 ? styles.providerFilterChipActive : ''}`}
-                            onClick={() => setSelectedProviders([])}
-                        >
-                            Todos
-                        </button>
-                        {availableProviders.map(p => (
-                            <button
-                                key={p.name}
-                                type="button"
-                                className={`${styles.providerFilterChip} ${selectedProviders.includes(p.name) ? styles.providerFilterChipActive : ''}`}
-                                onClick={() => toggleProvider(p.name)}
-                            >
-                                {p.logoUrl && <img src={p.logoUrl} alt={p.name} className={styles.chipLogo} />}
-                                {p.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
             <div className={styles.drawButtonsGrid}>
                 <button onClick={handleDrawFromList} className={styles.drawBtn}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
@@ -260,10 +235,20 @@ export function AddMovie({ onOpenInfo, listCode }) {
                     Me Surpreenda
                 </button>
                 <button onClick={() => setIsMatchModalOpen(true)} className={styles.matchBtn}>
-                    🔥 Match da Galera
+                    Match da Galera
                 </button>
             </div>
         </div>
+
+        <ListDrawFilterModal 
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            includeWatched={includeWatched}
+            setIncludeWatched={setIncludeWatched}
+            selectedProviders={selectedProviders}
+            setSelectedProviders={setSelectedProviders}
+            availableProviders={availableProviders}
+        />
 
         <DrawModal 
             isOpen={isModalOpen}

@@ -1,0 +1,259 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10050;
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 320px;
+    background: #141418;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 16px 0 40px rgba(0, 0, 0, 0.8);
+    z-index: 10060;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    overflow-y: auto;
+}
+
+.drawerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.brandRed {
+    background: linear-gradient(135deg, #fa8b8b, #f65c5c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.closeBtn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #a1a1a6;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.drawerContent {
+    padding: 20px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8e8e93;
+    padding-left: 4px;
+}
+
+.listCard {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.listCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 10px;
+}
+
+.listCardHeader h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.listCodeBadge {
+    background: rgba(255, 159, 10, 0.15);
+    border: 1px solid rgba(255, 159, 10, 0.35);
+    color: #ff9f0a;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.05em;
+}
+
+.menuNav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #d1d1d6;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+
+.menuItem:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.menuItemSwitch {
+    margin-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 12px;
+    color: #8e8e93;
+}
+
+.menuItemSwitch:hover {
+    color: #ff453a;
+}
+
+.emptyNote {
+    font-size: 13px;
+    color: #8e8e93;
+    line-height: 1.4;
+    padding: 8px 4px;
+}
+
+.btnInstallDrawer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(52, 199, 89, 0.12);
+    border: 1px solid rgba(52, 199, 89, 0.3);
+    color: #30d158;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+}
+
+.btnInstallDrawer:hover {
+    background: rgba(52, 199, 89, 0.22);
+}
+
+.drawerFooter {
+    padding: 16px 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary, #ff453a), #ff7b7b);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.userDetails {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.userDetails strong {
+    font-size: 13.5px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userDetails span {
+    font-size: 11px;
+    color: #8e8e93;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btnLogout {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a1a1a6;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.btnLogout:hover {
+    background: rgba(255, 69, 58, 0.15);
+    border-color: rgba(255, 69, 58, 0.3);
+    color: #ff453a;
+}
