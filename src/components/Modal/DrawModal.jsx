@@ -21,24 +21,23 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
         hasRecordedRef.current = false;
     }, [winnerMovie?.tmdbId]);
 
-    // Efeito para buscar os provedores caso o filme sorteado seja antigo e não tenha
+    // Efeito para buscar os provedores caso o filme sorteado não tenha
     useEffect(() => {
         if (!isOpen || !winnerMovie) {
             setProviders([]);
             return;
         }
         
-        if (winnerMovie.watchProviders) {
+        if (winnerMovie.watchProviders && winnerMovie.watchProviders.length > 0) {
             setProviders(winnerMovie.watchProviders);
         } else if (winnerMovie.tmdbId) {
             fetchExtraMovieDetails(winnerMovie.tmdbId).then(extras => {
-                setProviders(extras.watchProviders);
-                if (winnerMovie.id && !onAddToList) {
-                    // API update would go here if needed
+                if (extras.watchProviders) {
+                    setProviders(extras.watchProviders);
                 }
-            });
+            }).catch(() => {});
         }
-    }, [isOpen, winnerMovie, onAddToList]);
+    }, [isOpen, winnerMovie]);
 
     useEffect(() => {
         if (isOpen) {
@@ -56,7 +55,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                         draw_type: 'roulette'
                     }).catch(err => console.error('Erro ao salvar no histórico:', err));
                 }
-            }, 2500); // Exatos 2.5s de suspense
+            }, 2500); // 2.5s de suspense
             return () => clearTimeout(timer);
         }
     }, [isOpen, winnerMovie, listCode]);
@@ -73,30 +72,22 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
         ? unwatchedMovies.map(m => m.title) 
         : DEFAULT_SLOT_ITEMS;
 
-    // Se a lista de filmes for muito pequena (ex: só 2 filmes), repetimos até ter no mínimo 15 
-    // para garantir que o caça-níqueis tenha "massa" suficiente para girar rápido sem quebrar
     while (baseItems.length < 15) {
         baseItems = [...baseItems, ...baseItems];
     }
     
-    // Duplicamos a lista final para garantir o loop perfeito de 50%
     const SLOT_ITEMS = [...baseItems, ...baseItems];
-    
-    // Distância exata da metade da lista
     const spinDistance = (SLOT_ITEMS.length / 2) * 100;
-    
-    // O segredo do loop perfeito: a duração TEM que escalar de acordo com a distância
-    // Se não, listas gigantes giram na velocidade da luz e quebram a interface.
-    // Cada item leva exatos 0.025s para passar na tela.
     const spinDuration = (SLOT_ITEMS.length / 2) * 0.025;
 
     return createPortal(
     <div className={styles.overlay} onClick={onClose}>
         <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={onClose}>✕</button>
         
         {isSpinning || !winnerMovie ? (
             <div className={styles.spinningState}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-secondary)', margin: '0 0 24px' }}>O destino está escolhendo...</h2>
+                <h2 className={styles.spinningTitle}>O destino está escolhendo...</h2>
                 
                 <div className={styles.slotMachine}>
                     <div 
@@ -113,14 +104,13 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                         ))}
                     </div>
                 </div>
-                
             </div>
         ) : (
             <div className={styles.winnerContent}>
-                <h2 className={styles.winnerHeader}>Sugestão da {period}:</h2>
+                <div className={styles.winnerBadge}>Sugestão da {period}</div>
                 
                 <div 
-                    className={styles.movieInfoCard}
+                    className={styles.movieCardFull}
                     onClick={() => {
                         if (onOpenInfo) {
                             onClose();
@@ -128,26 +118,46 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                         }
                     }}
                 >
-                    <img 
-                        src={winnerMovie.posterUrl} 
-                        alt={winnerMovie.title} 
-                        className={`${styles.winnerPoster} ${posterLoaded ? styles.loaded : ''}`}
-                        onLoad={() => setPosterLoaded(true)}
-                    />
-                    <div className={styles.movieDetails}>
-                        <h3 className={styles.movieTitle}>{winnerMovie.title}</h3>
-                        <div className={styles.movieMeta}>
-                            {winnerMovie.releaseYear} • ★ {winnerMovie.tmdbRating}
+                    {winnerMovie.posterUrl ? (
+                        <img 
+                            src={winnerMovie.posterUrl} 
+                            alt={winnerMovie.title} 
+                            className={`${styles.fullPoster} ${posterLoaded ? styles.loaded : ''}`}
+                            onLoad={() => setPosterLoaded(true)}
+                        />
+                    ) : (
+                        <div className={styles.noPosterFull}>🎬</div>
+                    )}
+
+                    <div className={styles.fullPosterOverlay} />
+
+                    <div className={styles.cardBottomContent}>
+                        <div className={styles.chipsRow}>
+                            {winnerMovie.releaseYear && (
+                                <span className={styles.chip}>{winnerMovie.releaseYear}</span>
+                            )}
+                            {winnerMovie.tmdbRating && (
+                                <span className={`${styles.chip} ${styles.chipRating}`}>★ {winnerMovie.tmdbRating}</span>
+                            )}
+                            {winnerMovie.genres && winnerMovie.genres.length > 0 && (
+                                <span className={styles.chip}>{winnerMovie.genres[0]}</span>
+                            )}
                         </div>
-                        <p className={styles.movieSynopsis}>
-                            {winnerMovie.synopsis 
-                                ? (winnerMovie.synopsis.length > 110 ? winnerMovie.synopsis.substring(0, 110) + '...' : winnerMovie.synopsis) 
-                                : "Sinopse não disponível para este título."}
-                        </p>
-                        
+
+                        <h3 className={styles.movieTitle}>{winnerMovie.title}</h3>
+
+                        {winnerMovie.synopsis && (
+                            <p className={styles.movieSynopsis}>
+                                {winnerMovie.synopsis.length > 120 
+                                    ? winnerMovie.synopsis.substring(0, 120) + '...' 
+                                    : winnerMovie.synopsis}
+                            </p>
+                        )}
+
+                        {/* Onde Assistir */}
                         {providers.length > 0 ? (
                             <div className={styles.providersBlock}>
-                                <span>Onde assistir:</span>
+                                <span className={styles.providersLabel}>Onde assistir:</span>
                                 <div className={styles.providersList}>
                                     {providers.slice(0, 4).map(p => (
                                         <img key={p.name} src={p.logoUrl} alt={p.name} title={p.name} className={styles.providerLogo} />
@@ -156,8 +166,14 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                             </div>
                         ) : (
                             <div className={styles.providersBlock}>
-                                <span>Alternativa Grátis:</span>
-                                <a href="https://www.stremio.com/" target="_blank" rel="noopener noreferrer" className={styles.stremioLink}>
+                                <span className={styles.providersLabel}>Alternativa Grátis:</span>
+                                <a 
+                                    href="https://www.stremio.com/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className={styles.stremioLink}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     Abrir no Stremio
                                 </a>
                             </div>
@@ -167,6 +183,11 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
 
                 <div className={styles.modalActions}>
                     <button onClick={() => setIsShareModalOpen(true)} className={styles.btnShareAction} title="Compartilhar Sessão">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                            <polyline points="16 6 12 2 8 6"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                        </svg>
                         Criar Convite
                     </button>
                     {onAddToList && (

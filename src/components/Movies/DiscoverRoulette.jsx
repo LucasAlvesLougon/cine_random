@@ -51,6 +51,7 @@ export function DiscoverRoulette({ onOpenInfo }) {
     }, [genre, decade]);
 
     const handleDraw = async () => {
+        setWinner(null);
         setLoading(true);
         setIsModalOpen(true);
         
@@ -58,8 +59,9 @@ export function DiscoverRoulette({ onOpenInfo }) {
             const movie = await fetchRandomMovieByOptions({ genreId: genre, decade });
             setWinner(movie);
         } catch (e) {
-            addToast(e.message || "Erro ao sortear filme.", "error");
+            addToast(e.message || "Erro ao sortear filme. Tente novamente.", "error");
             setIsModalOpen(false);
+            setWinner(null);
         } finally {
             setLoading(false);
         }

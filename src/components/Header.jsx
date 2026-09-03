@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import styles from './Header.module.css';
 import { useAuth } from '../contexts/AuthContext';
-import { formatUserName } from '../utils/format';
 import { InstallPwaModal } from './Modal/InstallPwaModal';
 import { SidebarDrawer } from './Navigation/SidebarDrawer';
 import { usePwaInstall } from '../hooks/usePwaInstall';
@@ -12,13 +11,10 @@ export function Header({
     onOpenHistory = () => {}, 
     onBackToLists = null 
 }) {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const [isInstallOpen, setIsInstallOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
-
-    const displayName = formatUserName(user?.email);
-    const initial = displayName.charAt(0).toUpperCase();
 
     return (
     <>
@@ -44,10 +40,8 @@ export function Header({
                 </h1>
             </div>
 
-            <div>
-            {user && (
-                <div className={styles.userInfo}>
-                {!isInstalled && (
+            <div className={styles.headerRight}>
+                {user && !isInstalled && (isInstallable || isIos) && (
                     <button 
                         onClick={() => {
                             if (isInstallable) {
@@ -67,13 +61,6 @@ export function Header({
                         Instalar App
                     </button>
                 )}
-                <span className={styles.greetingText}>Olá, <strong>{displayName}</strong>!</span>
-                <div className={styles.avatar}>{initial}</div>
-                <button onClick={logout} className={styles.btnAction}>
-                    Sair
-                </button>
-                </div>
-            )}
             </div>
         </header>
 

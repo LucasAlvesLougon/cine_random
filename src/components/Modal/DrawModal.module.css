@@ -1,8 +1,15 @@
 .overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, .85); backdrop-filter: blur(15px);
-    display: flex; align-items: center; justify-content: center; padding: 20px;
-    z-index: 1000;
-    animation: fadeInOverlay 0.3s ease-out forwards;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10000;
+    animation: fadeInOverlay 0.2s ease-out forwards;
 }
 
 @keyframes fadeInOverlay {
@@ -11,62 +18,105 @@
 }
 
 .modal {
-    width: 100%; max-width: 700px; background: rgba(28, 28, 30, 0.75);
-    backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
-    padding: 40px; text-align: center; color: white;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    animation: slideUpModal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    width: 100%;
+    max-width: 440px;
+    background: #141418;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 24px 20px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+    position: relative;
+    overflow: hidden;
+    animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes slideUpModal {
-    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
     to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    z-index: 30;
+    backdrop-filter: blur(8px);
+    transition: all 0.15s;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
 }
 
 /* --- ESTADO DE SORTEIO: CAÇA-NÍQUEIS --- */
 .spinningState { 
-    padding: 20px 0; 
+    padding: 30px 10px; 
 }
+
+.spinningTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 24px;
+}
+
 .slotMachine {
-    height: 100px; /* Altura exata de 1 item */
+    height: 90px;
     overflow: hidden;
     position: relative;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     box-shadow: inset 0 20px 30px rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
 }
 
-/* Sombras em cima e embaixo para criar a ilusão de um "cilindro" girando para o fundo */
 .slotMachine::before, .slotMachine::after {
-    content: ''; position: absolute; left: 0; right: 0; height: 35px; z-index: 2; pointer-events: none;
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 30px;
+    z-index: 2;
+    pointer-events: none;
 }
-.slotMachine::before { top: 0; background: linear-gradient(to bottom, rgba(28,28,30,1), transparent); }
-.slotMachine::after { bottom: 0; background: linear-gradient(to top, rgba(28,28,30,1), transparent); }
+.slotMachine::before { top: 0; background: linear-gradient(to bottom, rgba(20,20,24,1), transparent); }
+.slotMachine::after { bottom: 0; background: linear-gradient(to top, rgba(20,20,24,1), transparent); }
 
 .slotTrack {
     display: flex;
     flex-direction: column;
-    /* Velocidade rápida mas nítida */
     animation: spinSlot var(--spin-duration, 0.4s) linear infinite; 
     will-change: transform;
 }
 
 .slotItem {
-    height: 100px;
-    min-height: 100px;
+    height: 90px;
+    min-height: 90px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    font-weight: 900;
-    color: rgba(255,255,255,0.7);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.85);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     white-space: nowrap;
 }
 
@@ -75,115 +125,255 @@
     100% { transform: translateY(var(--spin-distance, -1500px)); } 
 }
 
+/* --- ESTADO VENCEDOR: CARD FULL-BLEED --- */
 .winnerContent { 
-    display: flex; flex-direction: column; text-align: left; 
-    animation: revealWinner 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    display: flex;
+    flex-direction: column;
+    text-align: left; 
+    animation: revealWinner 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWinner {
-    from { opacity: 0; transform: translateY(15px); filter: blur(10px); }
-    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.winnerHeader { margin: 0 0 24px; font-size: 1.2rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
+.winnerBadge {
+    font-size: 11px;
+    color: #ff453a;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
 
-.movieInfoCard {
-    display: flex; gap: 24px;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 24px;
-    border-radius: 16px;
-    transition: transform 0.2s, background 0.2s;
+.movieCardFull {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.movieInfoCard:hover {
-    background: rgba(255, 255, 255, 0.06);
+
+.movieCardFull:hover {
     transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.25);
 }
-.winnerPoster {
-    width: 180px; border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    flex-shrink: 0;
+
+.fullPoster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    z-index: 0;
     opacity: 0;
-    transition: opacity 0.8s ease-in-out;
+    transition: opacity 0.4s ease-in-out;
 }
+
 .loaded {
     opacity: 1;
 }
-.movieDetails { display: flex; flex-direction: column; gap: 12px; }
-.movieTitle { margin: 0; font-size: 1.8rem; font-weight: 800; }
-.movieMeta { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
-.movieSynopsis { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.6; margin: 0; }
 
-.providersBlock { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-.providersBlock span { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-faint); letter-spacing: 0.05em; }
-.providersList { display: flex; gap: 8px; flex-wrap: wrap; }
-.providerLogo { width: 32px; height: 32px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit: cover; }
+.noPosterFull {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a20;
+    font-size: 40px;
+    color: rgba(255, 255, 255, 0.25);
+    z-index: 0;
+}
+
+.fullPosterOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(10, 10, 14, 0.98) 0%,
+        rgba(10, 10, 14, 0.85) 45%,
+        rgba(10, 10, 14, 0.25) 75%,
+        rgba(10, 10, 14, 0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.cardBottomContent {
+    position: relative;
+    z-index: 2;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chipsRow {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.chipRating {
+    color: #ffd60a;
+    border-color: rgba(255, 214, 10, 0.4);
+    background: rgba(255, 214, 10, 0.15);
+}
+
+.movieTitle {
+    margin: 2px 0 0;
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.movieSynopsis {
+    font-size: 12px;
+    color: #d1d1d6;
+    line-height: 1.4;
+    margin: 0;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.providersBlock {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.providersLabel {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #8e8e93;
+}
+
+.providersList {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.providerLogo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    object-fit: cover;
+}
 
 .stremioLink {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(138, 90, 235, 0.15);
-    border: 1px solid rgba(138, 90, 235, 0.4);
+    background: rgba(138, 90, 235, 0.2);
+    border: 1px solid rgba(138, 90, 235, 0.45);
     color: #d1bcff;
     text-decoration: none;
     font-weight: 600;
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 10px;
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: 6px;
     transition: all 0.2s;
-    width: fit-content;
-}
-.stremioLink:hover {
-    background: rgba(138, 90, 235, 0.3);
-    transform: translateY(-2px);
-    color: white;
-    border-color: rgba(138, 90, 235, 0.6);
 }
 
-.modalActions { display: flex; gap: 12px; margin-top: 24px; }
+.stremioLink:hover {
+    background: rgba(138, 90, 235, 0.35);
+    color: white;
+}
+
+.modalActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
 
 .btnShareAction {
-    background: linear-gradient(135deg, #25d366, #128c7e);
-    color: #000;
+    background: rgba(48, 209, 88, 0.15);
+    border: 1px solid rgba(48, 209, 88, 0.35);
+    color: #30d158;
     font-weight: 700;
-    border-radius: 14px;
-    border: none;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 14px;
-    padding: 14px 18px;
-    transition: transform 0.2s, filter 0.2s;
+    font-size: 13.5px;
+    padding: 12px 16px;
+    transition: all 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
 }
+
 .btnShareAction:hover {
-    transform: scale(1.03);
-    filter: brightness(1.1);
+    background: rgba(48, 209, 88, 0.28);
+    transform: scale(1.02);
 }
 
 .btnAddToList {
-    flex: 2; background: var(--primary); color: var(--primary-text);
-    padding: 14px; font-weight: 600; border-radius: 14px; border: none; cursor: pointer;
-    font-size: 15px; transition: transform 0.2s;
+    flex: 2;
+    background: linear-gradient(135deg, #ff453a, #e50914);
+    color: #fff;
+    padding: 12px;
+    font-weight: 700;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
 }
-.btnAddToList:hover { transform: scale(1.02); }
+
+.btnAddToList:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
 
 .closeButton {
-    flex: 1; background: rgba(255,255,255,0.1); color: white; border: none;
-    padding: 14px; font-weight: 600; border-radius: 14px; cursor: pointer;
-    font-size: 15px; transition: background 0.2s;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: white;
+    padding: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13.5px;
+    transition: background 0.15s;
 }
-.closeButton:hover { background: rgba(255,255,255,0.2); }
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
 
 @media (max-width: 500px) {
-    .modal { padding: 24px; margin: 16px; width: auto; max-height: 90vh; overflow-y: auto; }
-    .movieInfoCard { flex-direction: column; text-align: center; padding: 16px; }
-    .winnerPoster { width: 140px; height: auto; margin: 0 auto; }
+    .modal { padding: 20px 16px; margin: 12px; width: auto; }
+    .movieCardFull { height: 350px; }
     .modalActions { flex-direction: column; }
-    .slotItem { font-size: 1.5rem; }
-    .movieTitle { font-size: 1.5rem; }
-    .movieSynopsis { display: none; } /* Esconder sinopse para caber na tela do mobile */
-    .providersList { justify-content: center; }
 }

@@ -225,10 +225,12 @@
 
 .btnApply {
     flex: 1;
-    background: var(--primary, #e50914);
-    color: #fff;
+    background: linear-gradient(135deg, #ff453a, #e50914);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
 }
 
 .btnApply:hover {
     filter: brightness(1.1);
+    transform: translateY(-1px);
 }

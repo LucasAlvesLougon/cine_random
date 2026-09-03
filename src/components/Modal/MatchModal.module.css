@@ -35,9 +35,9 @@
     position: absolute;
     top: 14px;
     right: 14px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a1a1a6;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -46,13 +46,14 @@
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    z-index: 20;
+    z-index: 30;
+    backdrop-filter: blur(8px);
     transition: all 0.15s;
 }
 
 .closeBtn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
 }
 
 .swipeContainer {
@@ -91,10 +92,10 @@
 .cardWrapper {
     position: relative;
     width: 100%;
-    height: 420px;
+    height: 440px;
 }
 
-/* Card otimizado para 120 FPS com aceleração por GPU */
+/* Card Full-Bleed Cinematográfico com Aceleração por GPU */
 .card {
     position: absolute;
     inset: 0;
@@ -103,11 +104,12 @@
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
-    background: #1a1a20;
+    background: #111114;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     will-change: transform, opacity;
     transform: translateZ(0);
 }
@@ -115,8 +117,100 @@
 .cardBack {
     pointer-events: none;
     z-index: 1;
-    filter: brightness(0.75);
+    filter: brightness(0.65);
     border-color: rgba(255, 255, 255, 0.08);
+}
+
+.fullPoster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.noPosterFull {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a20;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 40px;
+    z-index: 0;
+}
+
+/* Gradiente Escuro de Alto Contraste */
+.fullPosterOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(10, 10, 14, 0.98) 0%,
+        rgba(10, 10, 14, 0.85) 45%,
+        rgba(10, 10, 14, 0.25) 75%,
+        rgba(10, 10, 14, 0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.cardContent {
+    position: relative;
+    z-index: 2;
+    padding: 20px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chipsRow {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.chipRating {
+    color: #ffd60a;
+    border-color: rgba(255, 214, 10, 0.4);
+    background: rgba(255, 214, 10, 0.15);
+}
+
+.movieTitle {
+    margin: 4px 0 2px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.synopsisText {
+    font-size: 12px;
+    color: #d1d1d6;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Stamps minimalistas neon */
@@ -130,14 +224,14 @@
     letter-spacing: 0.08em;
     z-index: 15;
     pointer-events: none;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
 }
 
 .stampLike {
     left: 18px;
     color: #30d158;
     border: 2px solid #30d158;
-    background: rgba(48, 209, 88, 0.15);
+    background: rgba(48, 209, 88, 0.25);
     transform: rotate(-12deg);
 }
 
@@ -145,89 +239,8 @@
     right: 18px;
     color: #ff453a;
     border: 2px solid #ff453a;
-    background: rgba(255, 69, 58, 0.15);
+    background: rgba(255, 69, 58, 0.25);
     transform: rotate(12deg);
-}
-
-.posterContainer {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    background: #111114;
-}
-
-.posterImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    pointer-events: none;
-}
-
-.noPosterImage {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.3);
-    background: #16161a;
-}
-
-.posterOverlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(26, 26, 32, 1) 0%, rgba(26, 26, 32, 0.3) 35%, transparent 100%);
-    pointer-events: none;
-}
-
-.cardContent {
-    padding: 12px 16px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    z-index: 2;
-}
-
-.chipsRow {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.chip {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #d1d1d6;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 6px;
-}
-
-.chipRating {
-    color: #ffd60a;
-    border-color: rgba(255, 214, 10, 0.25);
-    background: rgba(255, 214, 10, 0.08);
-}
-
-.movieTitle {
-    margin: 2px 0 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.25;
-}
-
-.synopsisText {
-    font-size: 12px;
-    color: #8e8e93;
-    line-height: 1.4;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .swipeHint {
@@ -413,12 +426,14 @@
 }
 
 .btnPrimary {
-    background: var(--primary-color, #e50914);
+    background: linear-gradient(135deg, #ff453a, #e50914);
     color: #fff;
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
 }
 
 .btnPrimary:hover {
     filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
 .btnSecondary {

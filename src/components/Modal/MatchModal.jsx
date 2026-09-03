@@ -31,19 +31,17 @@ function TinderCard({ movie, onVote, controls, isNext = false }) {
                 transition={{ duration: 0.2 }}
                 className={`${styles.card} ${styles.cardBack}`}
             >
-                <div className={styles.posterContainer}>
-                    {movie.posterUrl ? (
-                        <img 
-                            src={movie.posterUrl} 
-                            alt={movie.title} 
-                            className={styles.posterImage} 
-                            draggable={false}
-                        />
-                    ) : (
-                        <div className={styles.noPosterImage}>🎬</div>
-                    )}
-                    <div className={styles.posterOverlay} />
-                </div>
+                {movie.posterUrl ? (
+                    <img 
+                        src={movie.posterUrl} 
+                        alt={movie.title} 
+                        className={styles.fullPoster} 
+                        draggable={false}
+                    />
+                ) : (
+                    <div className={styles.noPosterFull}>🎬</div>
+                )}
+                <div className={styles.fullPosterOverlay} />
                 <div className={styles.cardContent}>
                     <div className={styles.chipsRow}>
                         {movie.releaseYear && <span className={styles.chip}>{movie.releaseYear}</span>}
@@ -77,30 +75,29 @@ function TinderCard({ movie, onVote, controls, isNext = false }) {
                 PASSAR
             </motion.div>
 
-            <div className={styles.posterContainer}>
-                {movie.posterUrl ? (
-                    <img 
-                        src={movie.posterUrl} 
-                        alt={movie.title} 
-                        className={styles.posterImage} 
-                        draggable={false}
-                    />
-                ) : (
-                    <div className={styles.noPosterImage}>
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                            <line x1="7" y1="2" x2="7" y2="22"></line>
-                            <line x1="17" y1="2" x2="17" y2="22"></line>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <line x1="2" y1="7" x2="7" y2="7"></line>
-                            <line x1="2" y1="17" x2="7" y2="17"></line>
-                            <line x1="17" y1="17" x2="22" y2="17"></line>
-                            <line x1="17" y1="7" x2="22" y2="7"></line>
-                        </svg>
-                    </div>
-                )}
-                <div className={styles.posterOverlay} />
-            </div>
+            {movie.posterUrl ? (
+                <img 
+                    src={movie.posterUrl} 
+                    alt={movie.title} 
+                    className={styles.fullPoster} 
+                    draggable={false}
+                />
+            ) : (
+                <div className={styles.noPosterFull}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                        <line x1="7" y1="2" x2="7" y2="22"></line>
+                        <line x1="17" y1="2" x2="17" y2="22"></line>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <line x1="2" y1="7" x2="7" y2="7"></line>
+                        <line x1="2" y1="17" x2="7" y2="17"></line>
+                        <line x1="17" y1="17" x2="22" y2="17"></line>
+                        <line x1="17" y1="7" x2="22" y2="7"></line>
+                    </svg>
+                </div>
+            )}
+            
+            <div className={styles.fullPosterOverlay} />
 
             <div className={styles.cardContent}>
                 <div className={styles.chipsRow}>
@@ -236,7 +233,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                             </div>
 
                             <div className={styles.cardWrapper}>
-                                {/* Próximo Card na Pilha (Efeito de Profundidade) */}
+                                {/* Próximo Card na Pilha */}
                                 {nextMovie && (
                                     <TinderCard 
                                         key={`next-${nextMovie.id}`} 
