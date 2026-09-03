@@ -34,7 +34,10 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
     const formatDate = (isoString) => {
         if (!isoString) return '';
         try {
-            const date = new Date(isoString);
+            const normalized = isoString.endsWith('Z') || isoString.includes('+') || (isoString.includes('-') && isoString.lastIndexOf('-') > 10)
+                ? isoString
+                : `${isoString}Z`;
+            const date = new Date(normalized);
             return date.toLocaleDateString('pt-BR', {
                 day: '2-digit',
                 month: '2-digit',
