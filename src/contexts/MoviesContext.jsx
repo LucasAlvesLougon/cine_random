@@ -39,21 +39,25 @@ export function MoviesProvider({ children, listCode }) {
         // Solicita permissão de notificações discretamente
         requestNotificationPermission();
         
-        // Conexão WebSocket para receber atualizações em tempo real
-        const wsUrl = api.defaults.baseURL.replace('http', 'ws') + '/lists/ws/' + listCode;
-        const ws = new WebSocket(wsUrl);
-        
-        ws.onmessage = (event) => {
-            if (event.data === 'refresh') {
-                sendBrowserNotification('🍿 Cine Random', {
-                    body: 'A lista foi atualizada com novidades pela turma!'
-                });
-                fetchMovies();
-            }
-        };
+        // Conexão WebSocket autenticada para receber atualizações em tempo real
+        let ws = null;
+        if (token) {
+            const wsBase = api.defaults.baseURL.replace('http', 'ws');
+            const wsUrl = `${wsBase}/lists/ws/${listCode}?token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
+            
+            ws.onmessage = (event) => {
+                if (event.data === 'refresh') {
+                    sendBrowserNotification('🍿 Cine Random', {
+                        body: 'A lista foi atualizada com novidades pela turma!'
+                    });
+                    fetchMovies();
+                }
+            };
+        }
 
         return () => {
-            if (ws.readyState === 1) { // 1 is open
+            if (ws && ws.readyState === 1) { // 1 is open
                 ws.close();
             }
         };
