@@ -53,7 +53,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                 <button className={styles.closeBtn} onClick={onClose}>✕</button>
 
                 <div className={styles.header}>
-                    <span className={styles.badge}>📜 Memória da Turma</span>
+                    <span className={styles.badge}>Sorteios Recentes</span>
                     <h3 className={styles.title}>Histórico de Sorteios</h3>
                     <p className={styles.subtitle}>Filmes sorteados e selecionados nas sessões anteriores</p>
                 </div>
@@ -66,9 +66,16 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                         </div>
                     ) : history.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}>🍿</div>
+                            <div className={styles.emptyIcon}>
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                                    <line x1="7" y1="2" x2="7" y2="22"></line>
+                                    <line x1="17" y1="2" x2="17" y2="22"></line>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                </svg>
+                            </div>
                             <h4>Nenhum sorteio registrado ainda</h4>
-                            <p>Use a Roleta "Me Surpreenda" ou o "Match da Galera" para sortear o primeiro filme!</p>
+                            <p>Use a Roleta ou o Match da Galera para sortear o primeiro filme do grupo.</p>
                         </div>
                     ) : (
                         <div className={styles.timeline}>
@@ -86,14 +93,18 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                     {item.movie_poster ? (
                                         <img src={item.movie_poster} alt={item.movie_title} className={styles.thumbnail} />
                                     ) : (
-                                        <div className={styles.noThumbnail}>🎬</div>
+                                        <div className={styles.noThumbnail}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                                            </svg>
+                                        </div>
                                     )}
 
                                     <div className={styles.details}>
                                         <div className={styles.topRow}>
                                             <strong className={styles.movieTitle}>{item.movie_title}</strong>
                                             <span className={`${styles.typeBadge} ${item.draw_type === 'match' ? styles.badgeMatch : styles.badgeRoulette}`}>
-                                                {item.draw_type === 'match' ? '🔥 Match' : '🎲 Roleta'}
+                                                {item.draw_type === 'match' ? 'Match' : 'Roleta'}
                                             </span>
                                         </div>
                                         <span className={styles.date}>{formatDate(item.drawn_at)}</span>

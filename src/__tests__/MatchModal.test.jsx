@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MatchModal } from '../components/Modal/MatchModal';
 
 describe('MatchModal', () => {
@@ -15,7 +15,7 @@ describe('MatchModal', () => {
         expect(container.querySelector('.overlay')).toBeNull();
     });
 
-    it('deve renderizar um filme não assistido e permitir votar', () => {
+    it('deve renderizar um filme não assistido e permitir votar', async () => {
         render(
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
@@ -30,10 +30,12 @@ describe('MatchModal', () => {
         fireEvent.click(likeBtn);
 
         // Avança para o segundo filme no contador
-        expect(screen.getByText('2 de 2')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('2 de 2')).toBeInTheDocument();
+        });
     });
 
-    it('deve exibir a tela de resultado ao concluir os votos', () => {
+    it('deve exibir a tela de resultado ao concluir os votos', async () => {
         render(
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
@@ -43,11 +45,18 @@ describe('MatchModal', () => {
 
         // Vota no primeiro filme
         fireEvent.click(likeBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText('2 de 2')).toBeInTheDocument();
+        });
+
         // Vota no segundo filme
         fireEvent.click(dislikeBtn);
 
         // Tela de resultado
-        expect(screen.getByText('Sessão de Votação Concluída!')).toBeInTheDocument();
-        expect(screen.getByText(/Você deu match em/)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Sessão de Votação Concluída')).toBeInTheDocument();
+            expect(screen.getByText(/Você deu match em/)).toBeInTheDocument();
+        });
     });
 });

@@ -64,7 +64,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
                 <button className={styles.closeBtn} onClick={onClose}>✕</button>
 
                 <div className={styles.header}>
-                    <span className={styles.badge}>👥 Cine Clube</span>
+                    <span className={styles.badge}>Cine Clube</span>
                     <h3 className={styles.title}>Participantes da Lista</h3>
                     <p className={styles.subtitle}>Membros que podem votar, adicionar e sortear filmes</p>
                 </div>
@@ -89,7 +89,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
                                     <div className={styles.memberDetails}>
                                         <span className={styles.email}>{member.email}</span>
                                         {member.is_owner && (
-                                            <span className={styles.ownerBadge}>👑 Criador da Lista</span>
+                                            <span className={styles.ownerBadge}>Criador da Lista</span>
                                         )}
                                     </div>
                                     {isOwner && !member.is_owner && (
@@ -112,7 +112,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
 
                 <div className={styles.footer}>
                     <button onClick={handleCopyCode} className={styles.btnInvite}>
-                        🎟️ Copiar Código de Convite ({listCode})
+                        Copiar Código de Convite ({listCode})
                     </button>
                 </div>
 

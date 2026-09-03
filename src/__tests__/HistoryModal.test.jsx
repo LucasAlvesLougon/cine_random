@@ -47,7 +47,7 @@ describe('HistoryModal', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Interestelar')).toBeInTheDocument();
-            expect(screen.getByText('🎲 Roleta')).toBeInTheDocument();
+            expect(screen.getByText('Roleta')).toBeInTheDocument();
         });
     });
 });

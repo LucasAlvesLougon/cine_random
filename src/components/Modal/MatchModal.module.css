@@ -1,15 +1,15 @@
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
     padding: 20px;
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.15s ease-out;
 }
 
 @keyframes fadeIn {
@@ -18,13 +18,13 @@
 }
 
 .modal {
-    background: #101014;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 28px;
+    background: #141418;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     position: relative;
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.95);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
     overflow: hidden;
     color: #fff;
     display: flex;
@@ -33,11 +33,11 @@
 
 .closeBtn {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 14px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: #a1a1a6;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -45,116 +45,107 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
     z-index: 20;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
 
 .closeBtn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
 }
 
 .swipeContainer {
-    padding: 20px 20px 24px;
+    padding: 18px 18px 22px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 4px;
 }
 
 .badge {
-    background: linear-gradient(135deg, #ff453a, #ff9f0a);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f5f5f7;
     font-size: 11px;
-    font-weight: 800;
-    padding: 4px 12px;
+    font-weight: 700;
+    padding: 4px 10px;
     border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    box-shadow: 0 4px 12px rgba(255, 69, 58, 0.35);
+    letter-spacing: 0.03em;
 }
 
 .counter {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.5);
     margin: 0;
 }
 
 .cardWrapper {
     position: relative;
     width: 100%;
-    height: 440px;
-    perspective: 1000px;
+    height: 420px;
 }
 
-/* --- Liquid Glass Card Estilo Apple/iOS --- */
-.glassCard {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 24px;
+/* Card otimizado para 120 FPS com aceleração por GPU */
+.card {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0%, rgba(25, 25, 30, 0.65) 45%, rgba(12, 12, 15, 0.95) 100%);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 
-        0 24px 48px rgba(0, 0, 0, 0.8),
-        inset 0 1px 1px rgba(255, 255, 255, 0.35),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+    background: #1a1a20;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
+    will-change: transform, opacity;
+    transform: translateZ(0);
 }
 
-/* Stamps de Like / Nope que surgem dinamicamente ao arrastar */
+/* Stamps minimalistas neon */
 .stamp {
     position: absolute;
-    top: 24px;
-    padding: 8px 18px;
-    border-radius: 12px;
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    top: 20px;
+    padding: 6px 16px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     z-index: 15;
     pointer-events: none;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .stampLike {
-    left: 20px;
+    left: 18px;
     color: #30d158;
-    border: 3px solid #30d158;
-    background: rgba(48, 209, 88, 0.2);
-    transform: rotate(-14deg);
-    text-shadow: 0 0 12px rgba(48, 209, 88, 0.8);
+    border: 2px solid #30d158;
+    background: rgba(48, 209, 88, 0.15);
+    transform: rotate(-12deg);
 }
 
 .stampNope {
-    right: 20px;
+    right: 18px;
     color: #ff453a;
-    border: 3px solid #ff453a;
-    background: rgba(255, 69, 58, 0.2);
-    transform: rotate(14deg);
-    text-shadow: 0 0 12px rgba(255, 69, 58, 0.8);
+    border: 2px solid #ff453a;
+    background: rgba(255, 69, 58, 0.15);
+    transform: rotate(12deg);
 }
 
 .posterContainer {
     position: relative;
     width: 100%;
-    height: 270px;
-    background: #141416;
+    height: 250px;
+    background: #111114;
 }
 
 .posterImage {
@@ -170,62 +161,60 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 56px;
-    background: #1c1c1e;
+    color: rgba(255, 255, 255, 0.3);
+    background: #16161a;
 }
 
 .posterOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(12, 12, 15, 1) 0%, rgba(12, 12, 15, 0.4) 40%, transparent 100%);
+    background: linear-gradient(to top, rgba(26, 26, 32, 1) 0%, rgba(26, 26, 32, 0.3) 35%, transparent 100%);
     pointer-events: none;
 }
 
-.glassCardContent {
-    padding: 14px 18px 18px;
+.cardContent {
+    padding: 12px 16px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
     z-index: 2;
 }
 
 .chipsRow {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
-.glassChip {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #e5e5ea;
+.chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #d1d1d6;
     font-size: 11px;
     font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 999px;
-    backdrop-filter: blur(8px);
+    padding: 3px 8px;
+    border-radius: 6px;
 }
 
 .chipRating {
-    background: rgba(255, 214, 10, 0.15);
-    border-color: rgba(255, 214, 10, 0.3);
     color: #ffd60a;
+    border-color: rgba(255, 214, 10, 0.25);
+    background: rgba(255, 214, 10, 0.08);
 }
 
 .movieTitle {
     margin: 2px 0 0;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     color: #ffffff;
     line-height: 1.25;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .synopsisText {
-    font-size: 12.5px;
-    color: #a1a1a6;
-    line-height: 1.45;
+    font-size: 12px;
+    color: #8e8e93;
+    line-height: 1.4;
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -238,13 +227,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 11.5px;
-    color: rgba(255, 255, 255, 0.45);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
     font-weight: 500;
 }
 
 .hintDot {
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.2);
 }
 
 /* Botões Circulares de Ação Rápidos */
@@ -252,81 +241,86 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 28px;
-    margin-top: 2px;
+    gap: 24px;
 }
 
 .actionCircleBtn {
-    width: 58px;
-    height: 58px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     border: none;
-    font-size: 22px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    transition: all 0.15s ease-out;
 }
 
 .btnDislike {
-    background: rgba(255, 69, 58, 0.15);
-    border: 1.5px solid rgba(255, 69, 58, 0.4);
+    background: rgba(255, 69, 58, 0.12);
+    border: 1px solid rgba(255, 69, 58, 0.3);
     color: #ff453a;
-    box-shadow: 0 8px 20px rgba(255, 69, 58, 0.25);
 }
 
-.btnDislike:hover {
-    background: rgba(255, 69, 58, 0.28);
-    transform: scale(1.12);
-    box-shadow: 0 10px 24px rgba(255, 69, 58, 0.4);
+.btnDislike:hover:not(:disabled) {
+    background: rgba(255, 69, 58, 0.25);
+    transform: scale(1.08);
 }
 
-.btnDislike:active {
-    transform: scale(0.92);
+.btnDislike:active:not(:disabled) {
+    transform: scale(0.94);
 }
 
 .btnLike {
-    background: rgba(48, 209, 88, 0.18);
-    border: 1.5px solid rgba(48, 209, 88, 0.45);
+    background: rgba(48, 209, 88, 0.15);
+    border: 1px solid rgba(48, 209, 88, 0.35);
     color: #30d158;
-    box-shadow: 0 8px 20px rgba(48, 209, 88, 0.3);
 }
 
-.btnLike:hover {
-    background: rgba(48, 209, 88, 0.32);
-    transform: scale(1.12);
-    box-shadow: 0 10px 24px rgba(48, 209, 88, 0.45);
+.btnLike:hover:not(:disabled) {
+    background: rgba(48, 209, 88, 0.28);
+    transform: scale(1.08);
 }
 
-.btnLike:active {
-    transform: scale(0.92);
+.btnLike:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.actionCircleBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Resultados */
 .resultContainer {
-    padding: 32px 24px;
+    padding: 32px 20px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.trophy {
-    font-size: 48px;
-    margin-bottom: 12px;
+.resultIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(48, 209, 88, 0.12);
+    border: 1px solid rgba(48, 209, 88, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
 }
 
 .resultContainer h3 {
-    font-size: 22px;
-    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
 }
 
 .resultContainer p {
-    color: #a1a1a6;
-    font-size: 14px;
+    color: #8e8e93;
+    font-size: 13.5px;
     margin: 0 0 20px 0;
 }
 
@@ -334,10 +328,10 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 240px;
+    gap: 8px;
+    max-height: 220px;
     overflow-y: auto;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
     padding-right: 4px;
 }
 
@@ -345,24 +339,24 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 8px 12px;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
+    transition: background 0.15s, transform 0.15s;
     text-align: left;
 }
 
 .matchItem:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(3px);
 }
 
 .matchThumbnail {
-    width: 36px;
-    height: 50px;
-    border-radius: 6px;
+    width: 34px;
+    height: 48px;
+    border-radius: 5px;
     object-fit: cover;
 }
 
@@ -374,40 +368,40 @@
 }
 
 .matchDetails strong {
-    font-size: 14px;
+    font-size: 13.5px;
     color: #fff;
 }
 
 .matchDetails span {
-    font-size: 12px;
-    color: #86868b;
+    font-size: 11.5px;
+    color: #8e8e93;
 }
 
 .btnDetails {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border: none;
     color: #fff;
     padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
     cursor: pointer;
 }
 
 .resultActions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
 }
 
 .btnPrimary, .btnSecondary {
     flex: 1;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
 
 .btnPrimary {
@@ -415,12 +409,21 @@
     color: #fff;
 }
 
+.btnPrimary:hover {
+    filter: brightness(1.1);
+}
+
 .btnSecondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: #fff;
 }
 
+.btnSecondary:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
 .emptyState {
-    padding: 40px 24px;
+    padding: 36px 20px;
     text-align: center;
 }

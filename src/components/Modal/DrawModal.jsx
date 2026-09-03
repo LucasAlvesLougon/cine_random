@@ -137,7 +137,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                     <div className={styles.movieDetails}>
                         <h3 className={styles.movieTitle}>{winnerMovie.title}</h3>
                         <div className={styles.movieMeta}>
-                            {winnerMovie.releaseYear} • ⭐ {winnerMovie.tmdbRating}
+                            {winnerMovie.releaseYear} • ★ {winnerMovie.tmdbRating}
                         </div>
                         <p className={styles.movieSynopsis}>
                             {winnerMovie.synopsis 
@@ -158,7 +158,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
                             <div className={styles.providersBlock}>
                                 <span>Alternativa Grátis:</span>
                                 <a href="https://www.stremio.com/" target="_blank" rel="noopener noreferrer" className={styles.stremioLink}>
-                                    Abrir no Stremio 🟣
+                                    Abrir no Stremio
                                 </a>
                             </div>
                         )}
@@ -167,11 +167,11 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
 
                 <div className={styles.modalActions}>
                     <button onClick={() => setIsShareModalOpen(true)} className={styles.btnShareAction} title="Compartilhar Sessão">
-                        📸 Convite
+                        Criar Convite
                     </button>
                     {onAddToList && (
                         <button onClick={() => onAddToList(winnerMovie)} className={styles.btnAddToList}>
-                            Salvar na Lista 📌
+                            Salvar na Lista
                         </button>
                     )}
                     <button onClick={onClose} className={styles.closeButton}>

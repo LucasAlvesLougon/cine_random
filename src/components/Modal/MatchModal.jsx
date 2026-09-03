@@ -1,54 +1,47 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useAnimationControls } from 'framer-motion';
 import { api } from '../../services/api';
 import styles from './MatchModal.module.css';
 import { triggerHaptic } from '../../utils/haptics';
 
-function TinderCard({ movie, onVote }) {
+function TinderCard({ movie, onVote, controls }) {
     const x = useMotionValue(0);
-    const rotate = useTransform(x, [-220, 220], [-20, 20]);
-    const likeOpacity = useTransform(x, [20, 90], [0, 1]);
-    const nopeOpacity = useTransform(x, [-20, -90], [0, 1]);
+    const rotate = useTransform(x, [-200, 200], [-18, 18]);
+    const likeOpacity = useTransform(x, [20, 80], [0, 1]);
+    const nopeOpacity = useTransform(x, [-20, -80], [0, 1]);
 
     const handleDragEnd = (_event, info) => {
-        const threshold = 90;
-        const velocityThreshold = 400;
+        const threshold = 70;
+        const velocityThreshold = 300;
 
         if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-            onVote(true);
+            onVote(true, true);
         } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
-            onVote(false);
+            onVote(false, true);
         }
     };
 
     return (
         <motion.div
-            key={movie.id}
             style={{ x, rotate }}
+            animate={controls}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.9}
+            dragElastic={0.8}
+            dragSnapToOrigin={true}
             onDragEnd={handleDragEnd}
-            initial={{ scale: 0.92, opacity: 0, y: 15 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={(custom) => ({
-                x: custom === 'like' ? 350 : -350,
-                opacity: 0,
-                rotate: custom === 'like' ? 25 : -25,
-                transition: { duration: 0.22 }
-            })}
-            whileDrag={{ scale: 1.03, cursor: 'grabbing' }}
-            className={styles.glassCard}
+            whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
+            className={styles.card}
         >
-            {/* Stamp / Badge Dinâmico de LIKE */}
+            {/* Stamp Dinâmico de CURTIR (Direita) */}
             <motion.div style={{ opacity: likeOpacity }} className={`${styles.stamp} ${styles.stampLike}`}>
-                🔥 CURTIR
+                CURTIR
             </motion.div>
 
-            {/* Stamp / Badge Dinâmico de NOPE */}
+            {/* Stamp Dinâmico de PASSAR (Esquerda) */}
             <motion.div style={{ opacity: nopeOpacity }} className={`${styles.stamp} ${styles.stampNope}`}>
-                ❌ PASSAR
+                PASSAR
             </motion.div>
 
             <div className={styles.posterContainer}>
@@ -60,21 +53,32 @@ function TinderCard({ movie, onVote }) {
                         draggable={false}
                     />
                 ) : (
-                    <div className={styles.noPosterImage}>🎬</div>
+                    <div className={styles.noPosterImage}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                            <line x1="7" y1="2" x2="7" y2="22"></line>
+                            <line x1="17" y1="2" x2="17" y2="22"></line>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <line x1="2" y1="7" x2="7" y2="7"></line>
+                            <line x1="2" y1="17" x2="7" y2="17"></line>
+                            <line x1="17" y1="17" x2="22" y2="17"></line>
+                            <line x1="17" y1="7" x2="22" y2="7"></line>
+                        </svg>
+                    </div>
                 )}
                 <div className={styles.posterOverlay} />
             </div>
 
-            <div className={styles.glassCardContent}>
+            <div className={styles.cardContent}>
                 <div className={styles.chipsRow}>
                     {movie.releaseYear && (
-                        <span className={styles.glassChip}>📅 {movie.releaseYear}</span>
+                        <span className={styles.chip}>{movie.releaseYear}</span>
                     )}
                     {movie.tmdbRating && (
-                        <span className={`${styles.glassChip} ${styles.chipRating}`}>⭐ {movie.tmdbRating}</span>
+                        <span className={`${styles.chip} ${styles.chipRating}`}>★ {movie.tmdbRating}</span>
                     )}
                     {movie.genres && movie.genres.length > 0 && (
-                        <span className={styles.glassChip}>🎭 {movie.genres[0]}</span>
+                        <span className={styles.chip}>{movie.genres[0]}</span>
                     )}
                 </div>
 
@@ -93,7 +97,8 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [matches, setMatches] = useState([]);
     const [isFinished, setIsFinished] = useState(false);
-    const [exitDirection, setExitDirection] = useState('like');
+    const [isAnimating, setIsAnimating] = useState(false);
+    const controls = useAnimationControls();
     const savedMatchesRef = useRef(new Set());
 
     useEffect(() => {
@@ -104,6 +109,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
             setCurrentIndex(0);
             setMatches([]);
             setIsFinished(false);
+            setIsAnimating(false);
             savedMatchesRef.current.clear();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,22 +136,42 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
 
     const currentMovie = deck[currentIndex];
 
-    const handleVote = (liked) => {
-        setExitDirection(liked ? 'like' : 'dislike');
+    const handleVote = async (liked, fromSwipe = false) => {
+        if (isAnimating || !currentMovie) return;
+        setIsAnimating(true);
+
         if (liked) {
             triggerHaptic('light');
-            if (currentMovie) {
-                setMatches(prev => [...prev, currentMovie]);
-            }
+            setMatches(prev => [...prev, currentMovie]);
         } else {
             triggerHaptic('warning');
+        }
+
+        // Animação de saída limpa
+        if (!fromSwipe) {
+            try {
+                await controls.start({
+                    x: liked ? 400 : -400,
+                    rotate: liked ? 18 : -18,
+                    opacity: 0,
+                    transition: { duration: 0.18, ease: 'easeOut' }
+                });
+            } catch {
+                // Fallback gracioso
+            }
         }
 
         if (currentIndex + 1 >= deck.length) {
             setIsFinished(true);
         } else {
             setCurrentIndex(prev => prev + 1);
+            try {
+                controls.set({ x: 0, rotate: 0, opacity: 1 });
+            } catch {
+                // Fallback
+            }
         }
+        setIsAnimating(false);
     };
 
     const handleRestart = () => {
@@ -155,7 +181,9 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
         setCurrentIndex(0);
         setMatches([]);
         setIsFinished(false);
+        setIsAnimating(false);
         savedMatchesRef.current.clear();
+        controls.set({ x: 0, rotate: 0, opacity: 1 });
     };
 
     return createPortal(
@@ -168,25 +196,24 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                         <div className={styles.swipeContainer}>
                             <div className={styles.header}>
                                 <div className={styles.badgeWrapper}>
-                                    <span className={styles.badge}>🔥 Match da Galera</span>
+                                    <span className={styles.badge}>Match da Galera</span>
                                 </div>
                                 <h3 className={styles.counter}>{currentIndex + 1} de {deck.length}</h3>
                             </div>
 
                             <div className={styles.cardWrapper}>
-                                <AnimatePresence mode="popLayout" custom={exitDirection}>
-                                    <TinderCard 
-                                        key={currentMovie.id} 
-                                        movie={currentMovie} 
-                                        onVote={handleVote} 
-                                    />
-                                </AnimatePresence>
+                                <TinderCard 
+                                    key={currentMovie.id} 
+                                    movie={currentMovie} 
+                                    onVote={handleVote} 
+                                    controls={controls}
+                                />
                             </div>
 
                             <div className={styles.swipeHint}>
-                                <span>👈 Arraste para passar</span>
+                                <span>← Arraste para passar</span>
                                 <span className={styles.hintDot}>•</span>
-                                <span>Arraste para curtir 👉</span>
+                                <span>Arraste para curtir →</span>
                             </div>
 
                             <div className={styles.actions}>
@@ -194,30 +221,41 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                                     className={`${styles.actionCircleBtn} ${styles.btnDislike}`}
                                     onClick={() => handleVote(false)}
                                     title="Passar Filme (Swipe Esquerda)"
+                                    disabled={isAnimating}
                                 >
-                                    ✕
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
                                 </button>
                                 <button 
                                     className={`${styles.actionCircleBtn} ${styles.btnLike}`}
                                     onClick={() => handleVote(true)}
                                     title="Quero Assistir (Swipe Direita)"
+                                    disabled={isAnimating}
                                 >
-                                    💚
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
                     ) : (
                         <div className={styles.emptyState}>
-                            <h3>Sua lista está sem filmes não assistidos!</h3>
-                            <p>Adicione mais títulos para jogar o Match da Galera.</p>
+                            <h3>Sua lista está sem filmes não assistidos</h3>
+                            <p>Adicione mais títulos para iniciar a rodada do Match.</p>
                             <button onClick={onClose} className={styles.btnPrimary}>Fechar</button>
                         </div>
                     )
                 ) : (
                     <div className={styles.resultContainer}>
-                        <div className={styles.trophy}>🎉</div>
-                        <h3>Sessão de Votação Concluída!</h3>
-                        <p>Você deu match em <strong>{matches.length}</strong> filmes desta rodada.</p>
+                        <div className={styles.resultIcon}>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <h3>Sessão de Votação Concluída</h3>
+                        <p>Você deu match em <strong>{matches.length}</strong> {matches.length === 1 ? 'filme' : 'filmes'} nesta rodada.</p>
 
                         {matches.length > 0 ? (
                             <div className={styles.matchList}>
@@ -230,9 +268,9 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                                         {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className={styles.matchThumbnail} />}
                                         <div className={styles.matchDetails}>
                                             <strong>{movie.title}</strong>
-                                            <span>⭐ {movie.tmdbRating} • {movie.releaseYear}</span>
+                                            <span>★ {movie.tmdbRating} • {movie.releaseYear}</span>
                                         </div>
-                                        <button className={styles.btnDetails}>Ver ➔</button>
+                                        <button className={styles.btnDetails}>Ver →</button>
                                     </div>
                                 ))}
                             </div>
@@ -241,8 +279,8 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                         )}
 
                         <div className={styles.resultActions}>
-                            <button onClick={handleRestart} className={styles.btnSecondary}>Jogar Novamente 🔄</button>
-                            <button onClick={onClose} className={styles.btnPrimary}>Concluir ✅</button>
+                            <button onClick={handleRestart} className={styles.btnSecondary}>Jogar Novamente</button>
+                            <button onClick={onClose} className={styles.btnPrimary}>Concluir</button>
                         </div>
                     </div>
                 )}

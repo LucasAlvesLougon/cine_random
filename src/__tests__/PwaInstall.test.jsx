@@ -19,7 +19,7 @@ describe('PWA & Native Mobile Features', () => {
     );
 
     expect(screen.getByText('Instalar Cine Random')).toBeInTheDocument();
-    const installBtn = screen.getByText('📲 Instalar Agora no Celular');
+    const installBtn = screen.getByText('Instalar Agora no Dispositivo');
     expect(installBtn).toBeInTheDocument();
 
     fireEvent.click(installBtn);
@@ -32,7 +32,7 @@ describe('PWA & Native Mobile Features', () => {
     );
 
     expect(screen.getByText('Adicionar à Tela de Início')).toBeInTheDocument();
-    expect(screen.getByText('Entendi!')).toBeInTheDocument();
+    expect(screen.getByText('Entendi')).toBeInTheDocument();
   });
 
   it('triggerHaptic não deve quebrar quando navigator.vibrate não existir', () => {

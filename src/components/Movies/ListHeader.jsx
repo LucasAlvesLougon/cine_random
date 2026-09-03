@@ -114,7 +114,13 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                     style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0, 113, 227, 0.15)', borderColor: 'rgba(0, 113, 227, 0.35)', color: '#2997ff' }}
                     title="Ver participantes da lista"
                 >
-                    👥 Participantes
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Participantes
                 </button>
                 <button 
                     onClick={() => setIsHistoryOpen(true)}
@@ -122,7 +128,11 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                     style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(175, 82, 222, 0.15)', borderColor: 'rgba(175, 82, 222, 0.3)', color: '#d8b4fe' }}
                     title="Ver histórico de filmes sorteados"
                 >
-                    📜 Histórico
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Histórico
                 </button>
                 <button 
                     onClick={handleCopyCode} 
@@ -130,7 +140,11 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                     style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}
                     title="Clique para copiar código de convite"
                 >
-                    🎟️ Código: <strong style={{ color: '#ff9f0a' }}>{activeList.code}</strong>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Código: <strong style={{ color: '#ff9f0a' }}>{activeList.code}</strong>
                 </button>
                 {!isInstalled && (isInstallable || isIos) && (
                     <button 
@@ -139,11 +153,16 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                         style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.15)', borderColor: 'rgba(52, 199, 89, 0.35)', color: '#30d158' }}
                         title="Instalar Cine Random no celular"
                     >
-                        📲 Instalar App
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Instalar App
                     </button>
                 )}
                 <div className="statsPill">
-                    🎬 {movies.length} {movies.length === 1 ? 'filme' : 'filmes'}
+                    {movies.length} {movies.length === 1 ? 'filme' : 'filmes'}
                     {movies.length > 0 && ` (${unwatchedCount} para ver • ${watchedCount} vistos)`}
                 </div>
             </div>

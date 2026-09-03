@@ -43,7 +43,7 @@ describe('MembersModal', () => {
 
         await waitFor(() => {
             expect(screen.getByText('dono@cinema.com')).toBeInTheDocument();
-            expect(screen.getByText('👑 Criador da Lista')).toBeInTheDocument();
+            expect(screen.getByText('Criador da Lista')).toBeInTheDocument();
             expect(screen.getByText('amigo@cinema.com')).toBeInTheDocument();
         });
 
