@@ -42,6 +42,7 @@ export function AuthProvider({ children }) {
         const data = response.data;
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user_email', data.email || email);
+        localStorage.setItem('last_google_email', data.email || email);
         if (data.user_id) localStorage.setItem('user_id', String(data.user_id));
         setUser({ email: data.email || email, id: data.user_id });
     };
@@ -57,6 +58,7 @@ export function AuthProvider({ children }) {
             const data = response.data;
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_email', data.email);
+            localStorage.setItem('last_google_email', data.email);
             if (data.user_id) localStorage.setItem('user_id', String(data.user_id));
             setUser({ email: data.email, id: data.user_id });
         } catch (error) {

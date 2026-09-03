@@ -92,11 +92,16 @@ function App() {
     }
   };
 
+  const lastGoogleEmail = localStorage.getItem('last_google_email') || undefined;
+
   // Suporte a Google One Tap & Autenticação automática instantânea
   useGoogleOneTapLogin({
     onSuccess: handleGoogleSuccess,
     onError: () => {},
     auto_select: true,
+    login_hint: lastGoogleEmail,
+    use_fedcm_for_button: true,
+    use_fedcm_for_prompt: true,
     disabled: Boolean(user),
   });
 
@@ -219,6 +224,9 @@ function App() {
                 text='continue_with'
                 auto_select={true}
                 useOneTap={true}
+                login_hint={lastGoogleEmail}
+                use_fedcm_for_button={true}
+                use_fedcm_for_prompt={true}
               />
             </div>
           </div>
