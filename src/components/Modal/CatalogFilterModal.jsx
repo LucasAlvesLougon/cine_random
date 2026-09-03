@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './FilterModals.module.css';
 
@@ -13,10 +14,22 @@ export function CatalogFilterModal({
     availableGenres = [],
     availableProviders = []
 }) {
+    const [tempFilter, setTempFilter] = useState(filter);
+    const [tempGenre, setTempGenre] = useState(selectedGenre);
+    const [tempProviders, setTempProviders] = useState(selectedProviders);
+
+    useEffect(() => {
+        if (isOpen) {
+            setTempFilter(filter);
+            setTempGenre(selectedGenre);
+            setTempProviders(selectedProviders);
+        }
+    }, [isOpen, filter, selectedGenre, selectedProviders]);
+
     if (!isOpen) return null;
 
     const toggleProvider = (providerName) => {
-        setSelectedProviders(prev => 
+        setTempProviders(prev => 
             prev.includes(providerName) 
                 ? prev.filter(p => p !== providerName) 
                 : [...prev, providerName]
@@ -24,9 +37,16 @@ export function CatalogFilterModal({
     };
 
     const handleReset = () => {
-        setFilter('all');
-        setSelectedGenre('');
-        setSelectedProviders([]);
+        setTempFilter('all');
+        setTempGenre('');
+        setTempProviders([]);
+    };
+
+    const handleApply = () => {
+        setFilter(tempFilter);
+        setSelectedGenre(tempGenre);
+        setSelectedProviders(tempProviders);
+        onClose();
     };
 
     return createPortal(
@@ -57,22 +77,22 @@ export function CatalogFilterModal({
                         <div className={styles.chipGrid}>
                             <button
                                 type="button"
-                                className={`${styles.chip} ${filter === 'all' ? styles.chipActive : ''}`}
-                                onClick={() => setFilter('all')}
+                                className={`${styles.chip} ${tempFilter === 'all' ? styles.chipActive : ''}`}
+                                onClick={() => setTempFilter('all')}
                             >
                                 Todos os Filmes
                             </button>
                             <button
                                 type="button"
-                                className={`${styles.chip} ${filter === 'unwatched' ? styles.chipActive : ''}`}
-                                onClick={() => setFilter('unwatched')}
+                                className={`${styles.chip} ${tempFilter === 'unwatched' ? styles.chipActive : ''}`}
+                                onClick={() => setTempFilter('unwatched')}
                             >
                                 Para Assistir
                             </button>
                             <button
                                 type="button"
-                                className={`${styles.chip} ${filter === 'watched' ? styles.chipActive : ''}`}
-                                onClick={() => setFilter('watched')}
+                                className={`${styles.chip} ${tempFilter === 'watched' ? styles.chipActive : ''}`}
+                                onClick={() => setTempFilter('watched')}
                             >
                                 Já Assistidos
                             </button>
@@ -86,8 +106,8 @@ export function CatalogFilterModal({
                             <div className={styles.chipGrid}>
                                 <button
                                     type="button"
-                                    className={`${styles.chip} ${selectedGenre === '' ? styles.chipActive : ''}`}
-                                    onClick={() => setSelectedGenre('')}
+                                    className={`${styles.chip} ${tempGenre === '' ? styles.chipActive : ''}`}
+                                    onClick={() => setTempGenre('')}
                                 >
                                     Todos os Gêneros
                                 </button>
@@ -95,8 +115,8 @@ export function CatalogFilterModal({
                                     <button
                                         key={g}
                                         type="button"
-                                        className={`${styles.chip} ${selectedGenre === g ? styles.chipActive : ''}`}
-                                        onClick={() => setSelectedGenre(g)}
+                                        className={`${styles.chip} ${tempGenre === g ? styles.chipActive : ''}`}
+                                        onClick={() => setTempGenre(g)}
                                     >
                                         {g}
                                     </button>
@@ -112,8 +132,8 @@ export function CatalogFilterModal({
                             <div className={styles.chipGrid}>
                                 <button
                                     type="button"
-                                    className={`${styles.chip} ${selectedProviders.length === 0 ? styles.chipActive : ''}`}
-                                    onClick={() => setSelectedProviders([])}
+                                    className={`${styles.chip} ${tempProviders.length === 0 ? styles.chipActive : ''}`}
+                                    onClick={() => setTempProviders([])}
                                 >
                                     Todos os Streamings
                                 </button>
@@ -121,7 +141,7 @@ export function CatalogFilterModal({
                                     <button
                                         key={p.name}
                                         type="button"
-                                        className={`${styles.chip} ${selectedProviders.includes(p.name) ? styles.chipActive : ''}`}
+                                        className={`${styles.chip} ${tempProviders.includes(p.name) ? styles.chipActive : ''}`}
                                         onClick={() => toggleProvider(p.name)}
                                     >
                                         {p.logoUrl && <img src={p.logoUrl} alt={p.name} className={styles.chipLogo} />}
@@ -137,7 +157,7 @@ export function CatalogFilterModal({
                     <button type="button" onClick={handleReset} className={styles.btnReset}>
                         Limpar
                     </button>
-                    <button type="button" onClick={onClose} className={styles.btnApply}>
+                    <button type="button" onClick={handleApply} className={styles.btnApply}>
                         Aplicar Filtros
                     </button>
                 </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './FilterModals.module.css';
 
@@ -10,10 +11,20 @@ export function ListDrawFilterModal({
     setSelectedProviders,
     availableProviders = []
 }) {
+    const [tempIncludeWatched, setTempIncludeWatched] = useState(includeWatched);
+    const [tempProviders, setTempProviders] = useState(selectedProviders);
+
+    useEffect(() => {
+        if (isOpen) {
+            setTempIncludeWatched(includeWatched);
+            setTempProviders(selectedProviders);
+        }
+    }, [isOpen, includeWatched, selectedProviders]);
+
     if (!isOpen) return null;
 
     const toggleProvider = (providerName) => {
-        setSelectedProviders(prev => 
+        setTempProviders(prev => 
             prev.includes(providerName)
                 ? prev.filter(p => p !== providerName)
                 : [...prev, providerName]
@@ -21,8 +32,14 @@ export function ListDrawFilterModal({
     };
 
     const handleReset = () => {
-        setIncludeWatched(false);
-        setSelectedProviders([]);
+        setTempIncludeWatched(false);
+        setTempProviders([]);
+    };
+
+    const handleApply = () => {
+        setIncludeWatched(tempIncludeWatched);
+        setSelectedProviders(tempProviders);
+        onClose();
     };
 
     return createPortal(
@@ -52,15 +69,15 @@ export function ListDrawFilterModal({
                         <span className={styles.sectionLabel}>Status dos Filmes</span>
                         <div 
                             className={styles.toggleRow} 
-                            onClick={() => setIncludeWatched(!includeWatched)}
+                            onClick={() => setTempIncludeWatched(!tempIncludeWatched)}
                         >
                             <div className={styles.toggleInfo}>
                                 <span className={styles.toggleTitle}>Incluir filmes assistidos</span>
                                 <span className={styles.toggleDesc}>
-                                    {includeWatched ? 'Filmes já vistos podem ser sorteados' : 'Apenas filmes não assistidos serão sorteados'}
+                                    {tempIncludeWatched ? 'Filmes já vistos podem ser sorteados' : 'Apenas filmes não assistidos serão sorteados'}
                                 </span>
                             </div>
-                            <div className={`${styles.toggleSwitch} ${includeWatched ? styles.toggleSwitchActive : ''}`}>
+                            <div className={`${styles.toggleSwitch} ${tempIncludeWatched ? styles.toggleSwitchActive : ''}`}>
                                 <div className={styles.toggleKnob} />
                             </div>
                         </div>
@@ -73,8 +90,8 @@ export function ListDrawFilterModal({
                             <div className={styles.chipGrid}>
                                 <button
                                     type="button"
-                                    className={`${styles.chip} ${selectedProviders.length === 0 ? styles.chipActive : ''}`}
-                                    onClick={() => setSelectedProviders([])}
+                                    className={`${styles.chip} ${tempProviders.length === 0 ? styles.chipActive : ''}`}
+                                    onClick={() => setTempProviders([])}
                                 >
                                     Todos os Serviços
                                 </button>
@@ -82,7 +99,7 @@ export function ListDrawFilterModal({
                                     <button
                                         key={p.name}
                                         type="button"
-                                        className={`${styles.chip} ${selectedProviders.includes(p.name) ? styles.chipActive : ''}`}
+                                        className={`${styles.chip} ${tempProviders.includes(p.name) ? styles.chipActive : ''}`}
                                         onClick={() => toggleProvider(p.name)}
                                     >
                                         {p.logoUrl && <img src={p.logoUrl} alt={p.name} className={styles.chipLogo} />}
@@ -98,7 +115,7 @@ export function ListDrawFilterModal({
                     <button type="button" onClick={handleReset} className={styles.btnReset}>
                         Limpar
                     </button>
-                    <button type="button" onClick={onClose} className={styles.btnApply}>
+                    <button type="button" onClick={handleApply} className={styles.btnApply}>
                         Aplicar Filtros
                     </button>
                 </div>

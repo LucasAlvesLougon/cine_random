@@ -54,15 +54,16 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
         expect(onOpenHistory).toHaveBeenCalledTimes(1);
     });
 
-    it('ListDrawFilterModal deve alternar filmes assistidos e selecionar streamings', () => {
+    it('ListDrawFilterModal deve aplicar filtros apenas ao clicar em Aplicar Filtros', () => {
         const setIncludeWatched = vi.fn();
         const setSelectedProviders = vi.fn();
         const mockProviders = [{ name: 'Netflix' }, { name: 'HBO Max' }];
+        const onClose = vi.fn();
 
         render(
             <ListDrawFilterModal 
                 isOpen={true}
-                onClose={vi.fn()}
+                onClose={onClose}
                 includeWatched={false}
                 setIncludeWatched={setIncludeWatched}
                 selectedProviders={[]}
@@ -75,23 +76,28 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
         expect(screen.getByText('Incluir filmes assistidos')).toBeInTheDocument();
         expect(screen.getByText('Netflix')).toBeInTheDocument();
 
+        // Clica na opção
         fireEvent.click(screen.getByText('Incluir filmes assistidos'));
-        expect(setIncludeWatched).toHaveBeenCalledWith(true);
+        // Não deve ter chamado setIncludeWatched ainda
+        expect(setIncludeWatched).not.toHaveBeenCalled();
 
-        fireEvent.click(screen.getByText('Netflix'));
-        expect(setSelectedProviders).toHaveBeenCalled();
+        // Clica em aplicar
+        fireEvent.click(screen.getByText('Aplicar Filtros'));
+        expect(setIncludeWatched).toHaveBeenCalledWith(true);
+        expect(onClose).toHaveBeenCalled();
     });
 
-    it('DiscoverFilterModal deve permitir selecionar gênero e década', () => {
+    it('DiscoverFilterModal deve aplicar gênero e década apenas ao clicar em Aplicar', () => {
         const setGenre = vi.fn();
         const setDecade = vi.fn();
         const genres = [{ id: '28', label: 'Ação' }];
         const decades = [{ id: '1980', label: 'Anos 80' }];
+        const onClose = vi.fn();
 
         render(
             <DiscoverFilterModal 
                 isOpen={true}
-                onClose={vi.fn()}
+                onClose={onClose}
                 genre=""
                 setGenre={setGenre}
                 decade=""
@@ -103,21 +109,25 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
 
         expect(screen.getByText('Filtros do Modo Descoberta')).toBeInTheDocument();
         fireEvent.click(screen.getByText('Ação'));
-        expect(setGenre).toHaveBeenCalledWith('28');
-
         fireEvent.click(screen.getByText('Anos 80'));
+        expect(setGenre).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByText('Aplicar Filtros'));
+        expect(setGenre).toHaveBeenCalledWith('28');
         expect(setDecade).toHaveBeenCalledWith('1980');
+        expect(onClose).toHaveBeenCalled();
     });
 
-    it('CatalogFilterModal deve permitir filtrar por status, gênero e streaming', () => {
+    it('CatalogFilterModal deve aplicar status, gênero e streaming apenas ao clicar em Aplicar', () => {
         const setFilter = vi.fn();
         const setSelectedGenre = vi.fn();
         const setSelectedProviders = vi.fn();
+        const onClose = vi.fn();
 
         render(
             <CatalogFilterModal 
                 isOpen={true}
-                onClose={vi.fn()}
+                onClose={onClose}
                 filter="all"
                 setFilter={setFilter}
                 selectedGenre=""
@@ -131,9 +141,12 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
 
         expect(screen.getByText('Filtros do Catálogo de Filmes')).toBeInTheDocument();
         fireEvent.click(screen.getByText('Para Assistir'));
-        expect(setFilter).toHaveBeenCalledWith('unwatched');
-
         fireEvent.click(screen.getByText('Comédia'));
+        expect(setFilter).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByText('Aplicar Filtros'));
+        expect(setFilter).toHaveBeenCalledWith('unwatched');
         expect(setSelectedGenre).toHaveBeenCalledWith('Comédia');
+        expect(onClose).toHaveBeenCalled();
     });
 });

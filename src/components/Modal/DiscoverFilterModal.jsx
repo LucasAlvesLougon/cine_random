@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './FilterModals.module.css';
 
@@ -11,11 +12,27 @@ export function DiscoverFilterModal({
     genres = [],
     decades = []
 }) {
+    const [tempGenre, setTempGenre] = useState(genre);
+    const [tempDecade, setTempDecade] = useState(decade);
+
+    useEffect(() => {
+        if (isOpen) {
+            setTempGenre(genre);
+            setTempDecade(decade);
+        }
+    }, [isOpen, genre, decade]);
+
     if (!isOpen) return null;
 
     const handleReset = () => {
-        setGenre('');
-        setDecade('');
+        setTempGenre('');
+        setTempDecade('');
+    };
+
+    const handleApply = () => {
+        setGenre(tempGenre);
+        setDecade(tempDecade);
+        onClose();
     };
 
     return createPortal(
@@ -48,8 +65,8 @@ export function DiscoverFilterModal({
                                 <button
                                     key={opt.id}
                                     type="button"
-                                    className={`${styles.chip} ${genre === opt.id ? styles.chipActive : ''}`}
-                                    onClick={() => setGenre(opt.id)}
+                                    className={`${styles.chip} ${tempGenre === opt.id ? styles.chipActive : ''}`}
+                                    onClick={() => setTempGenre(opt.id)}
                                 >
                                     {opt.label}
                                 </button>
@@ -65,8 +82,8 @@ export function DiscoverFilterModal({
                                 <button
                                     key={opt.id}
                                     type="button"
-                                    className={`${styles.chip} ${decade === opt.id ? styles.chipActive : ''}`}
-                                    onClick={() => setDecade(opt.id)}
+                                    className={`${styles.chip} ${tempDecade === opt.id ? styles.chipActive : ''}`}
+                                    onClick={() => setTempDecade(opt.id)}
                                 >
                                     {opt.label}
                                 </button>
@@ -79,7 +96,7 @@ export function DiscoverFilterModal({
                     <button type="button" onClick={handleReset} className={styles.btnReset}>
                         Limpar
                     </button>
-                    <button type="button" onClick={onClose} className={styles.btnApply}>
+                    <button type="button" onClick={handleApply} className={styles.btnApply}>
                         Aplicar Filtros
                     </button>
                 </div>
