@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { MovieList } from './components/Movies/MovieList';
 import { AddMovie } from './components/Movies/AddMovie';
@@ -15,10 +15,43 @@ import { GoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import './App.css';
 
+const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
+
 function App() {
   const { user, loginEmail, signupEmail, processGoogleToken } = useAuth();
   const { addToast } = useToast();
-  const [activeList, setActiveList] = useState(null);
+  
+  // Persistência da lista ativa no localStorage para sobreviver a F5/refresh
+  const [activeList, setActiveListState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ACTIVE_LIST_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setActiveList = (list) => {
+    setActiveListState(list);
+    try {
+      if (list) {
+        localStorage.setItem(ACTIVE_LIST_STORAGE_KEY, JSON.stringify(list));
+      } else {
+        localStorage.removeItem(ACTIVE_LIST_STORAGE_KEY);
+      }
+    } catch (e) {
+      console.error("Erro ao salvar lista ativa:", e);
+    }
+  };
+
+  // Se o usuário deslogar, limpa a persistência da lista
+  useEffect(() => {
+    if (!user) {
+      localStorage.removeItem(ACTIVE_LIST_STORAGE_KEY);
+      setActiveListState(null);
+    }
+  }, [user]);
+
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -176,4 +209,3 @@ function App() {
 }
 
 export default App;
-
