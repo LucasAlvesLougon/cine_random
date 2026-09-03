@@ -18,7 +18,16 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confi
                 <p className={styles.message}>{message}</p>
                 <div className={styles.actions}>
                     <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
-                    <button className={styles.btnConfirm} onClick={() => { onConfirm(); onClose(); }}>{confirmText}</button>
+                    <button 
+                        className={styles.btnConfirm} 
+                        onClick={async (e) => { 
+                            e.stopPropagation();
+                            if (onConfirm) await onConfirm();
+                            if (onClose) onClose();
+                        }}
+                    >
+                        {confirmText}
+                    </button>
                 </div>
             </div>
         </div>,

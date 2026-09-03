@@ -95,7 +95,10 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
                                     {isOwner && !member.is_owner && (
                                         <button 
                                             className={styles.btnRemoveMember}
-                                            onClick={() => setMemberToRemove(member)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setMemberToRemove(member);
+                                            }}
                                             title="Remover participante da lista"
                                         >
                                             ✕

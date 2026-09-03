@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MembersModal } from '../components/Modal/MembersModal';
 import { ToastProvider } from '../contexts/ToastContext';
 import { api } from '../services/api';
 
 vi.mock('../services/api', () => ({
     api: {
-        get: vi.fn()
+        get: vi.fn(),
+        delete: vi.fn()
     }
 }));
 
@@ -50,13 +51,14 @@ describe('MembersModal', () => {
         expect(screen.queryByTitle('Remover participante da lista')).toBeNull();
     });
 
-    it('deve exibir botão de remover participante se o usuário for o criador da lista', async () => {
+    it('deve exibir botão de remover participante se o usuário for o criador da lista e abrir modal de confirmação', async () => {
         const mockMembers = [
             { id: 1, email: 'dono@cinema.com', is_owner: true },
             { id: 2, email: 'amigo@cinema.com', is_owner: false }
         ];
 
-        api.get.mockResolvedValueOnce({ data: mockMembers });
+        api.get.mockResolvedValue({ data: mockMembers });
+        api.delete.mockResolvedValueOnce({ data: { message: 'Removido' } });
 
         render(
             <ToastProvider>
@@ -66,6 +68,22 @@ describe('MembersModal', () => {
 
         await waitFor(() => {
             expect(screen.getByTitle('Remover participante da lista')).toBeInTheDocument();
+        });
+
+        // Clica no botão de remover com fireEvent
+        const removeBtn = screen.getByTitle('Remover participante da lista');
+        fireEvent.click(removeBtn);
+
+        // O ConfirmModal deve abrir
+        expect(screen.getByText('Remover Participante')).toBeInTheDocument();
+        expect(screen.getByText(/Tem certeza que deseja remover amigo@cinema.com/)).toBeInTheDocument();
+
+        // Clica em confirmar com fireEvent
+        const confirmBtn = screen.getByRole('button', { name: 'Remover' });
+        fireEvent.click(confirmBtn);
+
+        await waitFor(() => {
+            expect(api.delete).toHaveBeenCalledWith('/lists/MBR01/members/2');
         });
     });
 });
