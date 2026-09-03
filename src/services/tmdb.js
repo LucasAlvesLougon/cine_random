@@ -1,6 +1,73 @@
 const TMDB_API_KEY = "7a1dcf62353d2f27e784daeae52443d0";
 const BASE_URL = "https://api.themoviedb.org/3";
 
+const autocompleteCache = new Map();
+
+export async function searchMoviesAutocomplete(query) {
+    if (!query || query.trim().length < 2) return [];
+    const normalizedQuery = query.trim().toLowerCase();
+    if (autocompleteCache.has(normalizedQuery)) {
+        return autocompleteCache.get(normalizedQuery);
+    }
+
+    try {
+        const res = await fetch(`${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(normalizedQuery)}&language=pt-BR&page=1`);
+        const data = await res.json();
+        const results = (data.results || []).slice(0, 5).map(m => ({
+            id: m.id,
+            title: m.title,
+            releaseYear: m.release_date ? m.release_date.split('-')[0] : 'N/A',
+            posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : null,
+            tmdbRating: Math.round(m.vote_average * 10) / 10,
+            overview: m.overview
+        }));
+
+        if (autocompleteCache.size > 50) {
+            const firstKey = autocompleteCache.keys().next().value;
+            autocompleteCache.delete(firstKey);
+        }
+        autocompleteCache.set(normalizedQuery, results);
+        return results;
+    } catch (e) {
+        console.error('Erro no autocomplete TMDB:', e);
+        return [];
+    }
+}
+
+export async function fetchMovieDetailsById(tmdbId) {
+    try {
+        const detailsRes = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos&include_video_language=pt-BR,en,null`);
+        const details = await detailsRes.json();
+
+        const providersBR = details['watch/providers']?.results?.BR?.flatrate || [];
+        const watchProviders = providersBR.map(p => ({
+            name: p.provider_name,
+            logoUrl: `https://image.tmdb.org/t/p/w200${p.logo_path}`
+        }));
+
+        const trailerObj = details.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') 
+                        || details.videos?.results?.find(v => v.site === 'YouTube');
+
+        return {
+            title: details.title,
+            posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : null,
+            backdropUrl: details.backdrop_path ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` : null,
+            synopsis: details.overview,
+            genres: details.genres?.map(g => g.name) || [],
+            releaseYear: details.release_date ? details.release_date.split('-')[0] : 'N/A',
+            runtime: details.runtime,
+            tmdbRating: Math.round(details.vote_average * 10) / 10,
+            tmdbId: details.id,
+            watched: false,
+            watchProviders,
+            trailerKey: trailerObj ? trailerObj.key : null
+        };
+    } catch (error) {
+        console.error("Erro na busca por ID do TMDB:", error);
+        throw error;
+    }
+}
+
 export async function fetchMovieDetails(movieTitle) {
     try {
     const searchRes = await fetch(`${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movieTitle)}&language=pt-BR`);
@@ -11,32 +78,7 @@ export async function fetchMovieDetails(movieTitle) {
     }
 
     const movie = searchData.results[0];
-    const detailsRes = await fetch(`${BASE_URL}/movie/${movie.id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos&include_video_language=pt-BR,en,null`);
-    const details = await detailsRes.json();
-
-    const providersBR = details['watch/providers']?.results?.BR?.flatrate || [];
-    const watchProviders = providersBR.map(p => ({
-        name: p.provider_name,
-        logoUrl: `https://image.tmdb.org/t/p/w200${p.logo_path}`
-    }));
-
-    const trailerObj = details.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') 
-                    || details.videos?.results?.find(v => v.site === 'YouTube');
-
-    return {
-        title: details.title,
-        posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : null,
-        backdropUrl: details.backdrop_path ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` : null,
-        synopsis: details.overview,
-        genres: details.genres?.map(g => g.name) || [],
-        releaseYear: details.release_date ? details.release_date.split('-')[0] : 'N/A',
-        runtime: details.runtime,
-        tmdbRating: Math.round(details.vote_average * 10) / 10,
-        tmdbId: details.id,
-        watched: false,
-        watchProviders,
-        trailerKey: trailerObj ? trailerObj.key : null
-    };
+    return await fetchMovieDetailsById(movie.id);
     } catch (error) {
     console.error("Erro na busca do TMDB:", error);
     throw error;

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
-import { fetchMovieDetails } from '../../services/tmdb';
+import { fetchMovieDetails, searchMoviesAutocomplete, fetchMovieDetailsById } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
 import { MatchModal } from '../Modal/MatchModal';
 import { useToast } from '../../contexts/ToastContext';
@@ -9,7 +9,10 @@ import styles from './AddMovie.module.css';
 export function AddMovie({ onOpenInfo, listCode }) {
     const { addToast } = useToast();
     const [movieTitle, setMovieTitle] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
     const [loading, setLoading] = useState(false);
+    const dropdownRef = useRef(null);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
@@ -19,6 +22,40 @@ export function AddMovie({ onOpenInfo, listCode }) {
 
     const [selectedProviders, setSelectedProviders] = useState([]);
     const { movies, addMovie } = useMovies();
+
+    // Debounced autocomplete search
+    useEffect(() => {
+        if (!movieTitle.trim() || movieTitle.trim().length < 2) {
+            setSuggestions([]);
+            setIsSearching(false);
+            return;
+        }
+
+        setIsSearching(true);
+        const timer = setTimeout(async () => {
+            try {
+                const results = await searchMoviesAutocomplete(movieTitle);
+                setSuggestions(results);
+            } catch (err) {
+                console.error('Erro ao buscar sugestões:', err);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 280);
+
+        return () => clearTimeout(timer);
+    }, [movieTitle]);
+
+    // Fechar dropdown ao clicar fora
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setSuggestions([]);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const availableProviders = Array.from(
         new Map(
@@ -34,12 +71,34 @@ export function AddMovie({ onOpenInfo, listCode }) {
         );
     };
 
+    const handleAddFromSuggestion = async (suggestion) => {
+        try {
+            setLoading(true);
+            setSuggestions([]);
+            if (movies.some(m => m.tmdbId === suggestion.id)) {
+                addToast(`"${suggestion.title}" já existe na sua lista!`, 'error');
+                setMovieTitle('');
+                return;
+            }
+
+            const movieData = await fetchMovieDetailsById(suggestion.id);
+            await addMovie(movieData);
+            setMovieTitle('');
+            addToast(`${movieData.title} foi adicionado à lista!`, 'success');
+        } catch {
+            addToast("Não foi possível adicionar o filme. Tente novamente.", 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAddMovie = async (e) => {
         e.preventDefault();
         if (!movieTitle.trim()) return;
 
         try {
             setLoading(true);
+            setSuggestions([]);
             const movieData = await fetchMovieDetails(movieTitle);
             
             if (movies.some(m => m.tmdbId === movieData.tmdbId)) {
@@ -100,14 +159,53 @@ export function AddMovie({ onOpenInfo, listCode }) {
         
         <div className={styles.actionsBlock}>
             <form className={styles.form} onSubmit={handleAddMovie}>
-                <input
-                    type="text"
-                    placeholder="Nome do filme..."
-                    value={movieTitle}
-                    onChange={(e) => setMovieTitle(e.target.value)}
-                    className={styles.input}
-                    disabled={loading}
-                />
+                <div className={styles.inputWrapper} ref={dropdownRef}>
+                    <input
+                        type="text"
+                        placeholder="Buscar e adicionar filme..."
+                        value={movieTitle}
+                        onChange={(e) => setMovieTitle(e.target.value)}
+                        className={styles.input}
+                        disabled={loading}
+                        autoComplete="off"
+                    />
+                    {isSearching && <div className={styles.inputSpinner} />}
+                    {suggestions.length > 0 && (
+                        <div className={styles.suggestionsDropdown}>
+                            {suggestions.map((suggestion) => (
+                                <div
+                                    key={suggestion.id}
+                                    className={styles.suggestionItem}
+                                    onClick={() => handleAddFromSuggestion(suggestion)}
+                                >
+                                    {suggestion.posterUrl ? (
+                                        <img
+                                            src={suggestion.posterUrl}
+                                            alt={suggestion.title}
+                                            className={styles.suggestionPoster}
+                                        />
+                                    ) : (
+                                        <div className={styles.suggestionPosterPlaceholder}>🎬</div>
+                                    )}
+                                    <div className={styles.suggestionInfo}>
+                                        <div className={styles.suggestionTitle}>{suggestion.title}</div>
+                                        <div className={styles.suggestionMeta}>
+                                            <span>📅 {suggestion.releaseYear}</span>
+                                            {suggestion.tmdbRating > 0 && <span>⭐ {suggestion.tmdbRating}</span>}
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.btnQuickAdd}
+                                        title="Adicionar à lista"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 <button type="submit" className={styles.button} disabled={loading}>
                     {loading ? 'Buscando...' : 'Adicionar'}
                 </button>

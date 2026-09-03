@@ -5,12 +5,22 @@ import { sendBrowserNotification, requestNotificationPermission } from '../utils
 const MoviesContext = createContext();
 
 export function MoviesProvider({ children, listCode }) {
-    const [movies, setMovies] = useState([]);
+    const [movies, setMovies] = useState(() => {
+        try {
+            const cached = localStorage.getItem('cached_movies_' + listCode);
+            return cached ? JSON.parse(cached) : [];
+        } catch {
+            return [];
+        }
+    });
 
     const fetchMovies = async () => {
         try {
             const res = await api.get('/lists/' + listCode + '/movies');
             setMovies(res.data);
+            try {
+                localStorage.setItem('cached_movies_' + listCode, JSON.stringify(res.data));
+            } catch (e) { console.error(e); }
         } catch (err) {
             if (err.response?.status === 404) {
                 try {
@@ -50,18 +60,43 @@ export function MoviesProvider({ children, listCode }) {
     }, [listCode]);
 
     const addMovie = async (movieData) => {
-        await api.post('/lists/' + listCode + '/movies', movieData);
-        fetchMovies();
+        try {
+            const res = await api.post('/lists/' + listCode + '/movies', movieData);
+            if (res.data && res.data.id) {
+                setMovies(prev => [res.data, ...prev.filter(m => m.id !== res.data.id)]);
+            } else {
+                fetchMovies();
+            }
+        } catch (err) {
+            fetchMovies();
+            throw err;
+        }
     };
 
     const toggleWatched = async (movieId) => {
-        await api.put('/lists/movies/' + movieId + '/toggle-watched');
-        fetchMovies();
+        const previousMovies = movies;
+        // Optimistic UI: atualização instantânea na tela
+        setMovies(prev => prev.map(m => m.id === movieId ? { ...m, watched: !m.watched } : m));
+        try {
+            await api.put('/lists/movies/' + movieId + '/toggle-watched');
+        } catch (err) {
+            // Reverte em caso de falha de rede
+            setMovies(previousMovies);
+            console.error('Falha ao atualizar status de assistido:', err);
+        }
     };
 
     const deleteMovie = async (movieId) => {
-        await api.delete('/lists/movies/' + movieId);
-        fetchMovies();
+        const previousMovies = movies;
+        // Optimistic UI: remoção instantânea na tela
+        setMovies(prev => prev.filter(m => m.id !== movieId));
+        try {
+            await api.delete('/lists/movies/' + movieId);
+        } catch (err) {
+            // Reverte em caso de falha de rede
+            setMovies(previousMovies);
+            console.error('Falha ao excluir filme:', err);
+        }
     };
 
     return (

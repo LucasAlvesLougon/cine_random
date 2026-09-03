@@ -20,3 +20,20 @@ api.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            const url = error.config?.url || '';
+            const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/signup') || url.includes('/auth/google');
+            if (!isAuthRoute) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user_email');
+                localStorage.removeItem('user_id');
+                window.dispatchEvent(new Event('auth:unauthorized'));
+            }
+        }
+        return Promise.reject(error);
+    }
+);
