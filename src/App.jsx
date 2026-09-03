@@ -49,7 +49,7 @@ function App() {
 
   // Se o usuário deslogar, limpa a persistência da lista
   useEffect(() => {
-    if (!user) {
+    if (!user && !localStorage.getItem('access_token')) {
       localStorage.removeItem(ACTIVE_LIST_STORAGE_KEY);
       localStorage.removeItem(MY_LISTS_CACHE_KEY);
       setActiveListState(null);

@@ -4,21 +4,30 @@ import { api } from '../services/api';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(() => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const email = localStorage.getItem('user_email');
+            const idStr = localStorage.getItem('user_id');
+            const id = idStr ? parseInt(idStr, 10) : undefined;
+            if (token && email) {
+                return { email, id };
+            }
+        } catch (e) {
+            console.error('Erro ao restaurar sessão:', e);
+        }
+        return null;
+    });
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        const email = localStorage.getItem('user_email');
-        const idStr = localStorage.getItem('user_id');
-        const id = idStr ? parseInt(idStr, 10) : undefined;
-        if (token && email) {
-            setUser({ email, id });
-        }
-        setLoading(false);
-
         const handleUnauthorized = () => {
             setUser(null);
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('cine_random_active_list');
+            localStorage.removeItem('cine_random_my_lists_cache');
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -60,6 +69,8 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user_email');
         localStorage.removeItem('user_id');
+        localStorage.removeItem('cine_random_active_list');
+        localStorage.removeItem('cine_random_my_lists_cache');
         setUser(null);
     };
 
