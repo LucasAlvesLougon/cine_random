@@ -5,6 +5,7 @@ import { fetchExtraMovieDetails } from '../../services/tmdb';
 import { getPeriodOfDay } from '../../utils/time';
 import { ShareCardModal } from './ShareCardModal';
 import { api } from '../../services/api';
+import { triggerHaptic } from '../../utils/haptics';
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAddToList, onOpenInfo, listCode }) {
     const [isSpinning, setIsSpinning] = useState(true);
@@ -42,8 +43,10 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onAdd
     useEffect(() => {
         if (isOpen) {
             setIsSpinning(true);
+            triggerHaptic('medium');
             const timer = setTimeout(() => {
                 setIsSpinning(false);
+                triggerHaptic('success');
                 if (winnerMovie && listCode && !hasRecordedRef.current) {
                     hasRecordedRef.current = true;
                     api.post(`/lists/${listCode}/history`, {

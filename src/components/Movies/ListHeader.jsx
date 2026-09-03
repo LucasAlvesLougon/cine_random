@@ -5,6 +5,9 @@ import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { HistoryModal } from '../Modal/HistoryModal';
 import { MembersModal } from '../Modal/MembersModal';
+import { InstallPwaModal } from '../Modal/InstallPwaModal';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { shareContent } from '../../utils/share';
 
 export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, onOpenInfo }) {
     const { movies } = useMovies();
@@ -14,6 +17,8 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
     const [newListName, setNewListName] = useState(activeList.name);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
+    const [isInstallOpen, setIsInstallOpen] = useState(false);
+    const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
 
     const isOwner = user && activeList && (
         activeList.owner_id === user.id || 
@@ -39,11 +44,13 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
     };
 
     const handleCopyCode = async () => {
-        try {
-            await navigator.clipboard.writeText(activeList.code);
-            addToast(`Código ${activeList.code} copiado!`, 'success');
-        } catch {
-            addToast('Não foi possível copiar o código.', 'error');
+        const res = await shareContent({
+            title: `Cine Random - ${activeList.name}`,
+            text: `🍿 Entre na minha lista "${activeList.name}" no Cine Random com o código: ${activeList.code}`,
+            url: window.location.origin
+        });
+        if (res.method === 'clipboard') {
+            addToast(`Código ${activeList.code} copiado para convidar amigos!`, 'success');
         }
     };
 
@@ -125,6 +132,16 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                 >
                     🎟️ Código: <strong style={{ color: '#ff9f0a' }}>{activeList.code}</strong>
                 </button>
+                {!isInstalled && (isInstallable || isIos) && (
+                    <button 
+                        onClick={() => setIsInstallOpen(true)}
+                        className="statsPill"
+                        style={{ cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.15)', borderColor: 'rgba(52, 199, 89, 0.35)', color: '#30d158' }}
+                        title="Instalar Cine Random no celular"
+                    >
+                        📲 Instalar App
+                    </button>
+                )}
                 <div className="statsPill">
                     🎬 {movies.length} {movies.length === 1 ? 'filme' : 'filmes'}
                     {movies.length > 0 && ` (${unwatchedCount} para ver • ${watchedCount} vistos)`}
@@ -143,6 +160,16 @@ export function ListHeader({ activeList, setActiveList, onBack, onDeleteList, on
                 onClose={() => setIsMembersOpen(false)}
                 listCode={activeList.code}
                 isOwner={isOwner}
+            />
+
+            <InstallPwaModal 
+                isOpen={isInstallOpen}
+                onClose={() => setIsInstallOpen(false)}
+                isIos={isIos}
+                onInstall={async () => {
+                    await promptInstall();
+                    setIsInstallOpen(false);
+                }}
             />
         </div>
     );

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmModal } from './ConfirmModal';
+import { shareContent } from '../../utils/share';
 import styles from './MembersModal.module.css';
 
 export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
@@ -35,11 +36,13 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
     if (!isOpen) return null;
 
     const handleCopyCode = async () => {
-        try {
-            await navigator.clipboard.writeText(listCode);
+        const res = await shareContent({
+            title: `Cine Random - Lista ${listCode}`,
+            text: `🍿 Entre no meu Cine Clube no Cine Random com o código: ${listCode}`,
+            url: window.location.origin
+        });
+        if (res.method === 'clipboard') {
             addToast(`Código ${listCode} copiado para convidar amigos!`, 'success');
-        } catch {
-            addToast('Não foi possível copiar o código.', 'error');
         }
     };
 

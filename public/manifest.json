@@ -1,0 +1,19 @@
+{
+  "name": "Cine Random - Sorteador de Filmes",
+  "short_name": "Cine Random",
+  "description": "Sorteie filmes para assistir com amigos, dê match no Match da Galera e organize seu Cine Clube.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0d0f",
+  "theme_color": "#141416",
+  "categories": ["entertainment", "movies", "social"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 192x192 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { InstallPwaModal } from '../Modal/InstallPwaModal';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
 import styles from './Home.module.css';
 
 export function Home({ onSelectList }) {
@@ -12,6 +14,8 @@ export function Home({ onSelectList }) {
     const [joinCode, setJoinCode] = useState('');
     const [newListName, setNewListName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [isInstallOpen, setIsInstallOpen] = useState(false);
+    const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
 
     const fetchMyLists = async () => {
         try {
@@ -58,11 +62,19 @@ export function Home({ onSelectList }) {
 
     return (
         <div className={styles.container}>
-            <header className={styles.header}>
+            <header className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1 className={styles.title}>Listas Compartilhadas</h1>
                     <p className={styles.subtitle}>Logado como {user?.email}</p>
                 </div>
+                {!isInstalled && (isInstallable || isIos) && (
+                    <button 
+                        onClick={() => setIsInstallOpen(true)}
+                        style={{ background: 'rgba(52, 199, 89, 0.15)', border: '1px solid rgba(52, 199, 89, 0.35)', color: '#30d158', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                        📲 Instalar App
+                    </button>
+                )}
             </header>
 
             <div className={styles.content}>
@@ -116,6 +128,16 @@ export function Home({ onSelectList }) {
                     </div>
                 </div>
             </div>
+
+            <InstallPwaModal 
+                isOpen={isInstallOpen}
+                onClose={() => setIsInstallOpen(false)}
+                isIos={isIos}
+                onInstall={async () => {
+                    await promptInstall();
+                    setIsInstallOpen(false);
+                }}
+            />
         </div>
     );
 }

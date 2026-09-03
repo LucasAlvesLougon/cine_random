@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../services/api';
 import styles from './MatchModal.module.css';
+import { triggerHaptic } from '../../utils/haptics';
 
 export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode }) {
     const [deck, setDeck] = useState([]);
@@ -26,6 +27,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
 
     useEffect(() => {
         if (isFinished && matches.length > 0 && listCode) {
+            triggerHaptic('success');
             matches.forEach(m => {
                 if (!savedMatchesRef.current.has(m.id)) {
                     savedMatchesRef.current.add(m.id);
@@ -45,8 +47,13 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
     const currentMovie = deck[currentIndex];
 
     const handleVote = (liked) => {
-        if (liked && currentMovie) {
-            setMatches(prev => [...prev, currentMovie]);
+        if (liked) {
+            triggerHaptic('light');
+            if (currentMovie) {
+                setMatches(prev => [...prev, currentMovie]);
+            }
+        } else {
+            triggerHaptic('warning');
         }
 
         if (currentIndex + 1 >= deck.length) {

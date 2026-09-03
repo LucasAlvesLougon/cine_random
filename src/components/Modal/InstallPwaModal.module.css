@@ -1,0 +1,217 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10010;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+    background: #141416;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px) scale(0.96); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 2;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.iconHeader {
+    padding: 28px 24px 16px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255, 69, 58, 0.12) 0%, transparent 100%);
+}
+
+.appIconWrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.appEmoji {
+    font-size: 32px;
+}
+
+.title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary, #86868b);
+    line-height: 1.4;
+}
+
+.content {
+    padding: 16px 24px;
+}
+
+.iosInstructions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 12px 14px;
+    border-radius: 12px;
+}
+
+.stepNumber {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0071e3;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stepText {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #f5f5f7;
+}
+
+.iosIcon {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.androidFeatures {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 12px;
+}
+
+.featureItem span {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.featureItem p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary, #86868b);
+}
+
+.featureItem strong {
+    color: #fff;
+}
+
+.footer {
+    padding: 16px 24px 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.btnInstall {
+    width: 100%;
+    background: linear-gradient(135deg, #0071e3, #0077ed);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btnInstall:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 113, 227, 0.5);
+}
+
+.btnClose {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btnClose:hover {
+    background: rgba(255, 255, 255, 0.15);
+}

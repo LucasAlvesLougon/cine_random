@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { triggerHaptic } from '../../utils/haptics';
 import styles from './MovieCard.module.css';
 
 // Adicionamos a prop onOpenInfo
@@ -56,8 +57,11 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
             </div>
 
             <div className={styles.actions}>
-                <button
-                    onClick={() => onToggleWatched(movie.id, movie.watched)}
+                <button 
+                    onClick={() => {
+                        triggerHaptic('light');
+                        onToggleWatched(movie.id, movie.watched);
+                    }}
                     className={`${styles.btn} ${movie.watched ? styles.isWatched : ''}`}
                 >
                     {movie.watched ? (
@@ -77,8 +81,11 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
                         </>
                     )}
                 </button>
-                <button
-                    onClick={() => onDelete(movie.id)}
+                <button 
+                    onClick={() => {
+                        triggerHaptic('warning');
+                        onDelete(movie.id);
+                    }}
                     className={`${styles.btn} ${styles.btnDelete}`}
                     title="Remover"
                 >
