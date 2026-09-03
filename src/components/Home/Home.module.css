@@ -284,8 +284,49 @@
         gap: 16px;
     }
     
-    .listCard, .createCard, .createFormCard, .joinCard {
+    .listCard, .createCard, .createFormCard, .joinCard, .skeletonCard {
         min-height: 160px;
         padding: 24px 20px;
     }
+}
+
+.skeletonCard {
+    background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite ease-in-out;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 30px 24px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.skeletonTitle {
+    height: 24px;
+    width: 65%;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.skeletonSub {
+    height: 16px;
+    width: 85%;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+}
+
+.skeletonButton {
+    height: 36px;
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    margin-top: auto;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }

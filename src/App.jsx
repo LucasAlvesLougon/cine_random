@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { MovieList } from './components/Movies/MovieList';
 import { AddMovie } from './components/Movies/AddMovie';
@@ -16,10 +17,12 @@ import { api } from './services/api';
 import './App.css';
 
 const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
+const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
 
 function App() {
   const { user, loginEmail, signupEmail, processGoogleToken } = useAuth();
   const { addToast } = useToast();
+  const queryClient = useQueryClient();
   
   // Persistência da lista ativa no localStorage para sobreviver a F5/refresh
   const [activeList, setActiveListState] = useState(() => {
@@ -48,6 +51,7 @@ function App() {
   useEffect(() => {
     if (!user) {
       localStorage.removeItem(ACTIVE_LIST_STORAGE_KEY);
+      localStorage.removeItem(MY_LISTS_CACHE_KEY);
       setActiveListState(null);
     }
   }, [user]);
@@ -140,6 +144,12 @@ function App() {
             onConfirm={async () => {
                 try {
                   await api.delete(`/lists/${listToDelete.code}`);
+                  queryClient.setQueryData(['my-lists'], (old = []) => old.filter(l => l.code !== listToDelete.code));
+                  try {
+                    const current = queryClient.getQueryData(['my-lists']) || [];
+                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                  } catch (e) { console.error(e); }
+                  queryClient.invalidateQueries({ queryKey: ['my-lists'] });
                   setActiveList(null);
                   addToast("Lista excluída com sucesso.", "success");
                 } catch (error) {

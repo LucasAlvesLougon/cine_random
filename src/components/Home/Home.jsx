@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -7,29 +8,48 @@ import { InstallPwaModal } from '../Modal/InstallPwaModal';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
 import styles from './Home.module.css';
 
+const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
+
 export function Home({ onSelectList }) {
     const { user } = useAuth();
     const { addToast } = useToast();
-    const [lists, setLists] = useState([]);
+    const queryClient = useQueryClient();
     const [joinCode, setJoinCode] = useState('');
     const [newListName, setNewListName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isInstallOpen, setIsInstallOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
 
-    const fetchMyLists = async () => {
-        try {
-            const res = await api.get('/lists/my');
-            setLists(res.data);
-        } catch (error) {
-            console.error(error);
-            addToast('Erro ao buscar suas listas', 'error');
-        }
-    };
-    
-    useEffect(() => {
-        fetchMyLists();
-    }, []);
+    const { data: lists = [], isLoading } = useQuery({
+        queryKey: ['my-lists'],
+        queryFn: async () => {
+            const token = localStorage.getItem('access_token');
+            if (!token) return [];
+            try {
+                const res = await api.get('/lists/my');
+                try {
+                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(res.data));
+                } catch (e) {
+                    console.error('Erro ao salvar cache de listas:', e);
+                }
+                return res.data;
+            } catch (error) {
+                console.error(error);
+                const cached = localStorage.getItem(MY_LISTS_CACHE_KEY);
+                if (cached) return JSON.parse(cached);
+                throw error;
+            }
+        },
+        initialData: () => {
+            try {
+                const cached = localStorage.getItem(MY_LISTS_CACHE_KEY);
+                return cached ? JSON.parse(cached) : undefined;
+            } catch {
+                return undefined;
+            }
+        },
+        staleTime: 1000 * 60 * 3, // 3 minutos
+    });
 
     const handleCreateList = async (e) => {
         e.preventDefault();
@@ -37,10 +57,20 @@ export function Home({ onSelectList }) {
         try {
             // Generate a random 6-character code
             const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-            await api.post('/lists/', { name: newListName, code });
+            const res = await api.post('/lists/', { name: newListName, code });
+            
+            // Atualização rápida de cache local
+            queryClient.setQueryData(['my-lists'], (old = []) => [...old, res.data]);
+            try {
+                const current = queryClient.getQueryData(['my-lists']) || [];
+                localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+            } catch (err) {
+                console.error(err);
+            }
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+
             setNewListName('');
             setIsCreating(false);
-            fetchMyLists();
             addToast('Lista criada com sucesso!', 'success');
         } catch {
             addToast('Erro ao criar lista', 'error');
@@ -51,9 +81,21 @@ export function Home({ onSelectList }) {
         e.preventDefault();
         if (!joinCode.trim()) return;
         try {
-            await api.post('/lists/join/' + joinCode.trim());
+            const res = await api.post('/lists/join/' + joinCode.trim());
+            
+            queryClient.setQueryData(['my-lists'], (old = []) => {
+                if (old.some(l => l.id === res.data.id)) return old;
+                return [...old, res.data];
+            });
+            try {
+                const current = queryClient.getQueryData(['my-lists']) || [];
+                localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+            } catch (err) {
+                console.error(err);
+            }
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+
             setJoinCode('');
-            fetchMyLists();
             addToast('Você entrou na lista!', 'success');
         } catch (error) {
             addToast(error.response?.data?.detail || 'Erro ao entrar na lista', 'error');
@@ -86,6 +128,25 @@ export function Home({ onSelectList }) {
                 <h2 className={styles.sectionTitle}>Minhas Listas</h2>
                 
                 <div className={styles.listsGrid}>
+                    {isLoading && lists.length === 0 && (
+                        <>
+                            <div className={styles.skeletonCard} aria-hidden="true">
+                                <div>
+                                    <div className={styles.skeletonTitle}></div>
+                                    <div className={styles.skeletonSub}></div>
+                                </div>
+                                <div className={styles.skeletonButton}></div>
+                            </div>
+                            <div className={styles.skeletonCard} aria-hidden="true">
+                                <div>
+                                    <div className={styles.skeletonTitle}></div>
+                                    <div className={styles.skeletonSub}></div>
+                                </div>
+                                <div className={styles.skeletonButton}></div>
+                            </div>
+                        </>
+                    )}
+
                     {lists.map(list => (
                         <div key={list.id} className={styles.listCard} onClick={() => onSelectList(list)}>
                             <h3>{list.name}</h3>

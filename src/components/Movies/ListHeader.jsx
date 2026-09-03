@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { HistoryModal } from '../Modal/HistoryModal';
 import { MembersModal } from '../Modal/MembersModal';
+
+const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
 
 export function ListHeader({ 
     activeList, 
@@ -20,6 +23,7 @@ export function ListHeader({
     const { movies } = useMovies();
     const { user } = useAuth();
     const { addToast } = useToast();
+    const queryClient = useQueryClient();
     const [isEditingName, setIsEditingName] = useState(false);
     const [newListName, setNewListName] = useState(activeList.name);
 
@@ -38,6 +42,16 @@ export function ListHeader({
             try {
                 await api.put(`/lists/${activeList.code}`, { name: newListName, code: activeList.code });
                 setActiveList({ ...activeList, name: newListName });
+                queryClient.setQueryData(['my-lists'], (old = []) => 
+                    old.map(l => l.code === activeList.code ? { ...l, name: newListName } : l)
+                );
+                try {
+                    const current = queryClient.getQueryData(['my-lists']) || [];
+                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                } catch (err) {
+                    console.error(err);
+                }
+                queryClient.invalidateQueries({ queryKey: ['my-lists'] });
                 addToast('Lista renomeada com sucesso!', 'success');
             } catch (error) {
                 addToast(error.response?.data?.detail || 'Erro ao renomear lista.', 'error');
