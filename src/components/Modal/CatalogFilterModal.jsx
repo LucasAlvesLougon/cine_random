@@ -7,6 +7,8 @@ export function CatalogFilterModal({
     onClose,
     filter,
     setFilter,
+    sortBy = 'added_desc',
+    setSortBy,
     selectedGenre,
     setSelectedGenre,
     selectedProviders,
@@ -15,16 +17,18 @@ export function CatalogFilterModal({
     availableProviders = []
 }) {
     const [tempFilter, setTempFilter] = useState(filter);
+    const [tempSortBy, setTempSortBy] = useState(sortBy);
     const [tempGenre, setTempGenre] = useState(selectedGenre);
     const [tempProviders, setTempProviders] = useState(selectedProviders);
 
     useEffect(() => {
         if (isOpen) {
             setTempFilter(filter);
+            setTempSortBy(sortBy);
             setTempGenre(selectedGenre);
             setTempProviders(selectedProviders);
         }
-    }, [isOpen, filter, selectedGenre, selectedProviders]);
+    }, [isOpen, filter, sortBy, selectedGenre, selectedProviders]);
 
     if (!isOpen) return null;
 
@@ -38,12 +42,14 @@ export function CatalogFilterModal({
 
     const handleReset = () => {
         setTempFilter('all');
+        setTempSortBy('added_desc');
         setTempGenre('');
         setTempProviders([]);
     };
 
     const handleApply = () => {
         setFilter(tempFilter);
+        if (setSortBy) setSortBy(tempSortBy);
         setSelectedGenre(tempGenre);
         setSelectedProviders(tempProviders);
         onClose();
@@ -95,6 +101,55 @@ export function CatalogFilterModal({
                                 onClick={() => setTempFilter('watched')}
                             >
                                 Já Assistidos
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Ordenação do Catálogo */}
+                    <div className={styles.section}>
+                        <span className={styles.sectionLabel}>Ordenar por</span>
+                        <div className={styles.chipGrid}>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'added_desc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('added_desc')}
+                            >
+                                📅 Recentes Adicionados
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'added_asc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('added_asc')}
+                            >
+                                ⏳ Antigos Adicionados
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'release_desc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('release_desc')}
+                            >
+                                🎬 Lançamento Mais Novo
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'release_asc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('release_asc')}
+                            >
+                                🎞️ Clássicos / Mais Antigos
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'rating_desc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('rating_desc')}
+                            >
+                                ⭐ Melhor Avaliados
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.chip} ${tempSortBy === 'rating_asc' ? styles.chipActive : ''}`}
+                                onClick={() => setTempSortBy('rating_asc')}
+                            >
+                                📉 Menor Avaliação
                             </button>
                         </div>
                     </div>

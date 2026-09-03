@@ -9,6 +9,7 @@ export function MovieList({ onOpenInfo }) {
     const { movies, toggleWatched, deleteMovie } = useMovies();
 
     const [filter, setFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('added_desc');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('');
     const [selectedProviders, setSelectedProviders] = useState([]);
@@ -31,9 +32,34 @@ export function MovieList({ onOpenInfo }) {
         const matchesProvider = selectedProviders.length === 0 || 
                               (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
         return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
-    }).sort((a, b) => b.id - a.id);
+    }).sort((a, b) => {
+        switch (sortBy) {
+            case 'added_asc':
+                return (a.id || 0) - (b.id || 0);
+            case 'release_desc': {
+                const yearA = parseInt(a.releaseYear, 10) || 0;
+                const yearB = parseInt(b.releaseYear, 10) || 0;
+                return yearB - yearA;
+            }
+            case 'release_asc': {
+                const yearA = parseInt(a.releaseYear, 10) || 9999;
+                const yearB = parseInt(b.releaseYear, 10) || 9999;
+                return yearA - yearB;
+            }
+            case 'rating_desc':
+                return (b.tmdbRating || 0) - (a.tmdbRating || 0);
+            case 'rating_asc':
+                return (a.tmdbRating || 0) - (b.tmdbRating || 0);
+            case 'added_desc':
+            default:
+                return (b.id || 0) - (a.id || 0);
+        }
+    });
 
-    const activeFilterCount = (filter !== 'all' ? 1 : 0) + (selectedGenre ? 1 : 0) + selectedProviders.length;
+    const activeFilterCount = (filter !== 'all' ? 1 : 0) + 
+                              (sortBy !== 'added_desc' ? 1 : 0) + 
+                              (selectedGenre ? 1 : 0) + 
+                              selectedProviders.length;
 
     return (
     <>
@@ -81,6 +107,8 @@ export function MovieList({ onOpenInfo }) {
             onClose={() => setIsFilterModalOpen(false)}
             filter={filter}
             setFilter={setFilter}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
             selectedGenre={selectedGenre}
             setSelectedGenre={setSelectedGenre}
             selectedProviders={selectedProviders}

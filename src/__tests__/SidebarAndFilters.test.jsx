@@ -149,4 +149,34 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
         expect(setSelectedGenre).toHaveBeenCalledWith('Comédia');
         expect(onClose).toHaveBeenCalled();
     });
+
+    it('CatalogFilterModal deve permitir selecionar e aplicar ordenação', () => {
+        const setSortBy = vi.fn();
+        const onClose = vi.fn();
+
+        render(
+            <CatalogFilterModal 
+                isOpen={true}
+                onClose={onClose}
+                filter="all"
+                setFilter={vi.fn()}
+                sortBy="added_desc"
+                setSortBy={setSortBy}
+                selectedGenre=""
+                setSelectedGenre={vi.fn()}
+                selectedProviders={[]}
+                setSelectedProviders={vi.fn()}
+            />
+        );
+
+        expect(screen.getByText('Ordenar por')).toBeInTheDocument();
+        expect(screen.getByText('⭐ Melhor Avaliados')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('⭐ Melhor Avaliados'));
+        expect(setSortBy).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByText('Aplicar Filtros'));
+        expect(setSortBy).toHaveBeenCalledWith('rating_desc');
+        expect(onClose).toHaveBeenCalled();
+    });
 });
