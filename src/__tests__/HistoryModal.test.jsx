@@ -6,7 +6,8 @@ import { api } from '../services/api';
 
 vi.mock('../services/api', () => ({
     api: {
-        get: vi.fn()
+        get: vi.fn(),
+        delete: vi.fn()
     }
 }));
 
@@ -48,6 +49,7 @@ describe('HistoryModal', () => {
         await waitFor(() => {
             expect(screen.getByText('Interestelar')).toBeInTheDocument();
             expect(screen.getByText('Roleta')).toBeInTheDocument();
+            expect(screen.getByText('Limpar (+7 dias)')).toBeInTheDocument();
         });
     });
 });

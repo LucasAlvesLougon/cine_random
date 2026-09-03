@@ -8,6 +8,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
     const { addToast } = useToast();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isCleaning, setIsCleaning] = useState(false);
 
     const fetchHistory = useCallback(async () => {
         if (!listCode) return;
@@ -22,6 +23,21 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
             setLoading(false);
         }
     }, [listCode, addToast]);
+
+    const handleCleanupOld = async () => {
+        if (!listCode || isCleaning) return;
+        setIsCleaning(true);
+        try {
+            const res = await api.delete(`/lists/${listCode}/history/cleanup?days=7`);
+            addToast(res.data.message || 'Histórico com mais de 7 dias limpo com sucesso!', 'success');
+            await fetchHistory();
+        } catch (error) {
+            console.error(error);
+            addToast('Não foi possível limpar o histórico.', 'error');
+        } finally {
+            setIsCleaning(false);
+        }
+    };
 
     useEffect(() => {
         if (isOpen && listCode) {
@@ -56,7 +72,24 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                 <button className={styles.closeBtn} onClick={onClose}>✕</button>
 
                 <div className={styles.header}>
-                    <span className={styles.badge}>Sorteios Recentes</span>
+                    <div className={styles.headerTopRow}>
+                        <span className={styles.badge}>Sorteios Recentes</span>
+                        {history.length > 0 && (
+                            <button 
+                                type="button"
+                                onClick={handleCleanupOld}
+                                disabled={isCleaning}
+                                className={styles.btnClearOld}
+                                title="Limpar sorteios realizados há mais de 7 dias"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                {isCleaning ? 'Limpando...' : 'Limpar (+7 dias)'}
+                            </button>
+                        )}
+                    </div>
                     <h3 className={styles.title}>Histórico de Sorteios</h3>
                     <p className={styles.subtitle}>Filmes sorteados e selecionados nas sessões anteriores</p>
                 </div>

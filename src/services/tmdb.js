@@ -25,7 +25,7 @@ export async function searchMoviesAutocomplete(query) {
 
 export async function fetchMovieDetailsById(tmdbId) {
     try {
-        const detailsRes = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos&include_video_language=pt-BR,en,null`);
+        const detailsRes = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos,credits&include_video_language=pt-BR,en,null`);
         const movie = await detailsRes.json();
 
         const providersBR = movie['watch/providers']?.results?.BR?.flatrate || [];
@@ -36,6 +36,14 @@ export async function fetchMovieDetailsById(tmdbId) {
 
         const trailerObj = movie.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') 
                         || movie.videos?.results?.find(v => v.site === 'YouTube');
+
+        const director = movie.credits?.crew?.find(c => c.job === 'Director')?.name || null;
+        const cast = (movie.credits?.cast || []).slice(0, 8).map(actor => ({
+            id: actor.id,
+            name: actor.name,
+            character: actor.character || '',
+            profileUrl: actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : null
+        }));
 
         return {
             title: movie.title || "Filme sem título",
@@ -49,7 +57,9 @@ export async function fetchMovieDetailsById(tmdbId) {
             tmdbId: movie.id,
             watched: false,
             watchProviders,
-            trailerKey: trailerObj ? trailerObj.key : null
+            trailerKey: trailerObj ? trailerObj.key : null,
+            director,
+            cast
         };
     } catch (error) {
         console.error("Erro na busca por ID do TMDB:", error);
@@ -199,7 +209,7 @@ export async function fetchRandomMovieByOptions({ genreId, decade }) {
 
 export async function fetchExtraMovieDetails(tmdbId) {
     try {
-        const res = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos&include_video_language=pt-BR,en,null`);
+        const res = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos,credits&include_video_language=pt-BR,en,null`);
         const data = await res.json();
         
         const providersBR = data['watch/providers']?.results?.BR?.flatrate || [];
@@ -211,11 +221,21 @@ export async function fetchExtraMovieDetails(tmdbId) {
         const trailerObj = data.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') 
                         || data.videos?.results?.find(v => v.site === 'YouTube');
 
+        const director = data.credits?.crew?.find(c => c.job === 'Director')?.name || null;
+        const cast = (data.credits?.cast || []).slice(0, 8).map(actor => ({
+            id: actor.id,
+            name: actor.name,
+            character: actor.character || '',
+            profileUrl: actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : null
+        }));
+
         return {
             watchProviders,
-            trailerKey: trailerObj ? trailerObj.key : null
+            trailerKey: trailerObj ? trailerObj.key : null,
+            director,
+            cast
         };
     } catch {
-        return { watchProviders: [], trailerKey: null };
+        return { watchProviders: [], trailerKey: null, director: null, cast: [] };
     }
 }

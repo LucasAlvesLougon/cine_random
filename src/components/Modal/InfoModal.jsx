@@ -12,6 +12,8 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
     const { movies, addMovie } = useMovies();
     const [providers, setProviders] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
+    const [director, setDirector] = useState(movie?.director || null);
+    const [cast, setCast] = useState(movie?.cast || []);
     const [isAdding, setIsAdding] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
@@ -24,26 +26,30 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
         setBannerLoaded(false);
         setPosterLoaded(false);
         setShowTrailer(false);
+        setDirector(movie?.director || null);
+        setCast(movie?.cast || []);
     }, [movie?.tmdbId, isOpen]);
 
     useEffect(() => {
         if (!isOpen || !movie) return;
         
-        if (movie.watchProviders && movie.trailerKey) {
+        if (movie.watchProviders && movie.trailerKey && movie.director !== undefined && movie.cast !== undefined) {
             setProviders(movie.watchProviders);
             setTrailerKey(movie.trailerKey);
+            setDirector(movie.director);
+            setCast(movie.cast || []);
         } else if (movie.tmdbId) {
             fetchExtraMovieDetails(movie.tmdbId).then(extras => {
                 setProviders(extras.watchProviders);
                 setTrailerKey(extras.trailerKey);
-                
-                if (movie.id) {
-                    // API update would go here if needed
-                }
+                setDirector(extras.director);
+                setCast(extras.cast || []);
             });
         } else {
             setProviders([]);
             setTrailerKey(null);
+            setDirector(null);
+            setCast([]);
         }
     }, [isOpen, movie]);
 
@@ -109,6 +115,11 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
                                 <span>{movie.releaseYear}</span>
                                 <span>{movie.runtime} min</span>
                                 <span>{movie.genres?.join(', ')}</span>
+                                {director && (
+                                    <span className={styles.directorTag}>
+                                        Dir: <strong>{director}</strong>
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -178,6 +189,35 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
                             </div>
                         </div>
                     </div>
+
+                    {/* --- ELENCO PRINCIPAL (CASTING) --- */}
+                    {cast && cast.length > 0 && (
+                        <div className={styles.castBlock}>
+                            <span className={styles.castHeader}>Elenco Principal</span>
+                            <div className={styles.castRow}>
+                                {cast.map(actor => (
+                                    <div key={actor.id || actor.name} className={styles.castCard}>
+                                        {actor.profileUrl ? (
+                                            <img src={actor.profileUrl} alt={actor.name} className={styles.castAvatar} />
+                                        ) : (
+                                            <div className={styles.castAvatarPlaceholder}>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                </svg>
+                                            </div>
+                                        )}
+                                        <div className={styles.castMeta}>
+                                            <strong className={styles.actorName}>{actor.name}</strong>
+                                            {actor.character && (
+                                                <span className={styles.characterName}>{actor.character}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* --- COMENTÁRIOS / LETTERBOXD --- */}
