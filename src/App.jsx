@@ -12,7 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useToast } from './contexts/ToastContext';
 import { MoviesProvider } from './contexts/MoviesContext';
 import { getPeriodOfDay } from './utils/time';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, useGoogleOneTapLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import './App.css';
 
@@ -91,6 +91,14 @@ function App() {
       addToast("Falha ao se conectar com nosso Servidor via Google.", "error");
     }
   };
+
+  // Suporte a Google One Tap & Autenticação automática instantânea
+  useGoogleOneTapLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => {},
+    auto_select: true,
+    disabled: Boolean(user),
+  });
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -209,6 +217,8 @@ function App() {
                 shape='pill'
                 size='large'
                 text='continue_with'
+                auto_select={true}
+                useOneTap={true}
               />
             </div>
           </div>
