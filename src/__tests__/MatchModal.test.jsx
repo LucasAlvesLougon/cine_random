@@ -21,11 +21,13 @@ describe('MatchModal', () => {
         );
 
         expect(screen.getByText(/Filme (A|B)/)).toBeInTheDocument();
-        expect(screen.getByText('💚 Assistir')).toBeInTheDocument();
-        expect(screen.getByText('✕ Passar')).toBeInTheDocument();
+        const likeBtn = screen.getByTitle('Quero Assistir (Swipe Direita)');
+        const dislikeBtn = screen.getByTitle('Passar Filme (Swipe Esquerda)');
+        expect(likeBtn).toBeInTheDocument();
+        expect(dislikeBtn).toBeInTheDocument();
 
         // Clica em curtir o primeiro filme
-        fireEvent.click(screen.getByText('💚 Assistir'));
+        fireEvent.click(likeBtn);
 
         // Avança para o segundo filme no contador
         expect(screen.getByText('2 de 2')).toBeInTheDocument();
@@ -36,10 +38,13 @@ describe('MatchModal', () => {
             <MatchModal isOpen={true} onClose={vi.fn()} movies={mockMovies} onOpenInfo={vi.fn()} />
         );
 
+        const likeBtn = screen.getByTitle('Quero Assistir (Swipe Direita)');
+        const dislikeBtn = screen.getByTitle('Passar Filme (Swipe Esquerda)');
+
         // Vota no primeiro filme
-        fireEvent.click(screen.getByText('💚 Assistir'));
+        fireEvent.click(likeBtn);
         // Vota no segundo filme
-        fireEvent.click(screen.getByText('✕ Passar'));
+        fireEvent.click(dislikeBtn);
 
         // Tela de resultado
         expect(screen.getByText('Sessão de Votação Concluída!')).toBeInTheDocument();
