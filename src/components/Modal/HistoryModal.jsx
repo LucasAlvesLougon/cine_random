@@ -106,8 +106,8 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                     <div className={styles.details}>
                                         <div className={styles.topRow}>
                                             <strong className={styles.movieTitle}>{item.movie_title}</strong>
-                                            <span className={`${styles.typeBadge} ${item.draw_type === 'match' ? styles.badgeMatch : styles.badgeRoulette}`}>
-                                                {item.draw_type === 'match' ? 'Match' : 'Roleta'}
+                                            <span className={`${styles.typeBadge} ${item.draw_type === 'match' ? styles.badgeMatch : item.draw_type === 'discovery' ? styles.badgeDiscovery : styles.badgeRoulette}`}>
+                                                {item.draw_type === 'match' ? 'Match' : item.draw_type === 'discovery' ? 'Descoberta' : 'Roleta'}
                                             </span>
                                         </div>
                                         <span className={styles.date}>{formatDate(item.drawn_at)}</span>

@@ -124,7 +124,7 @@ function App() {
           />
           <div className='actionPanels'>
               <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
-              <DiscoverRoulette onOpenInfo={setSelectedMovie} />
+              <DiscoverRoulette onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
           </div>
           <MovieList onOpenInfo={setSelectedMovie} />
           

@@ -23,7 +23,7 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onOpe
                             movie_id: winnerMovie.id || null,
                             movie_title: winnerMovie.title,
                             movie_poster: winnerMovie.posterUrl || null,
-                            draw_type: 'roulette'
+                            draw_type: winnerMovie.id ? 'roulette' : 'discovery'
                         }).catch(err => console.error('Erro ao salvar no histórico:', err));
                     }
                     if (onOpenInfo) {

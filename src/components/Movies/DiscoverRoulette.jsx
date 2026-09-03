@@ -34,7 +34,7 @@ const SUSPENSE_MESSAGES = [
     { title: "Preparando a pipoca..." }
 ];
 
-export function DiscoverRoulette({ onOpenInfo }) {
+export function DiscoverRoulette({ onOpenInfo, listCode }) {
     const { movies, addMovie } = useMovies();
     const { addToast } = useToast();
     const [genre, setGenre] = useState('');
@@ -145,6 +145,7 @@ export function DiscoverRoulette({ onOpenInfo }) {
                 unwatchedMovies={SUSPENSE_MESSAGES}
                 onAddToList={handleAddToList}
                 onOpenInfo={onOpenInfo}
+                listCode={listCode}
             />
         </div>
     );
