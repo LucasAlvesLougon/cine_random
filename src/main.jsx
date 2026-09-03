@@ -4,19 +4,32 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import { ToastProvider } from './contexts/ToastContext.jsx'
-import { GoogleOAuthProvider } from '@react-oauth/google'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const GOOGLE_CLIENT_ID = '844495701284-qvgpkr9446kr02dki8vs29191t1p33o7.apps.googleusercontent.com'
 
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2, // 2 minutos
+      gcTime: 1000 * 60 * 10,   // 10 minutos
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <ToastProvider>
-            <App />
-        </ToastProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthProvider>
+          <ToastProvider>
+              <App />
+          </ToastProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 );
 
