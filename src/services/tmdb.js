@@ -38,14 +38,14 @@ export async function fetchMovieDetailsById(tmdbId) {
                         || movie.videos?.results?.find(v => v.site === 'YouTube');
 
         return {
-            title: movie.title,
+            title: movie.title || "Filme sem título",
             posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
             backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null,
-            synopsis: movie.overview,
+            synopsis: movie.overview || "Sinopse não disponível.",
             genres: movie.genres?.map(g => g.name) || [],
             releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
-            runtime: movie.runtime,
-            tmdbRating: Math.round(movie.vote_average * 10) / 10,
+            runtime: movie.runtime || 0,
+            tmdbRating: movie.vote_average ? Math.round(movie.vote_average * 10) / 10 : 0,
             tmdbId: movie.id,
             watched: false,
             watchProviders,
@@ -81,6 +81,41 @@ function getCacheKey(genreId, decade) {
     return `${genreId || 'all'}_${decade || 'all'}`;
 }
 
+async function fetchMoviesFromTmdb(genreId, decade) {
+    let url = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=30`;
+    
+    if (genreId) url += `&with_genres=${genreId}`;
+    
+    if (decade) {
+        if (decade === 'recent') {
+            url += `&primary_release_date.gte=2020-01-01`;
+        } else {
+            const startYear = decade;
+            const endYear = parseInt(decade) + 9;
+            url += `&primary_release_date.gte=${startYear}-01-01&primary_release_date.lte=${endYear}-12-31`;
+        }
+    }
+
+    const initialRes = await fetch(url);
+    const initialData = await initialRes.json();
+    
+    if (!initialData.results || initialData.results.length === 0) {
+        // Se filtro específico não retornou, tenta com menos restrição
+        const fallbackUrl = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc`;
+        const fbRes = await fetch(fallbackUrl);
+        const fbData = await fbRes.json();
+        return fbData.results || [];
+    }
+
+    const totalPages = Math.min(initialData.total_pages || 1, 20);
+    const randomPage = Math.floor(Math.random() * totalPages) + 1;
+    
+    const pageRes = await fetch(`${url}&page=${randomPage}`);
+    const pageData = await pageRes.json();
+    
+    return pageData.results && pageData.results.length > 0 ? pageData.results : initialData.results;
+}
+
 async function replenishCache(genreId, decade, cacheKey) {
     if (activeCachePromises[cacheKey]) {
         return activeCachePromises[cacheKey];
@@ -88,71 +123,20 @@ async function replenishCache(genreId, decade, cacheKey) {
 
     const promise = (async () => {
         try {
-            let url = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=200`;
-            
-            if (genreId) url += `&with_genres=${genreId}`;
-            
-            if (decade) {
-                if (decade === 'recent') {
-                    url += `&primary_release_date.gte=2020-01-01`;
-                } else {
-                    const startYear = decade;
-                    const endYear = parseInt(decade) + 9;
-                    url += `&primary_release_date.gte=${startYear}-01-01&primary_release_date.lte=${endYear}-12-31`;
-                }
-            }
+            const rawMovies = await fetchMoviesFromTmdb(genreId, decade);
+            if (!rawMovies || rawMovies.length === 0) return;
 
-            const initialRes = await fetch(url);
-            const initialData = await initialRes.json();
-            
-            if (!initialData.results || initialData.results.length === 0) {
-                return;
-            }
+            const shuffled = rawMovies.sort(() => 0.5 - Math.random());
+            const selectedToFetch = shuffled.slice(0, 4);
 
-            const totalPages = Math.min(initialData.total_pages || 1, 30);
-            const randomPage = Math.floor(Math.random() * totalPages) + 1;
-            
-            const pageRes = await fetch(`${url}&page=${randomPage}`);
-            const pageData = await pageRes.json();
-            
-            if (!pageData.results || pageData.results.length === 0) {
-                return;
-            }
+            const detailedResults = await Promise.allSettled(
+                selectedToFetch.map(baseMovie => fetchMovieDetailsById(baseMovie.id))
+            );
 
-            const shuffled = pageData.results.sort(() => 0.5 - Math.random());
-            const selectedToFetch = shuffled.slice(0, 5);
+            const newMovies = detailedResults
+                .filter(res => res.status === 'fulfilled' && res.value && res.value.title)
+                .map(res => res.value);
 
-            const detailedPromises = selectedToFetch.map(async (baseMovie) => {
-                const detailsRes = await fetch(`${BASE_URL}/movie/${baseMovie.id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos&include_video_language=pt-BR,en,null`);
-                const movie = await detailsRes.json();
-                
-                const providersBR = movie['watch/providers']?.results?.BR?.flatrate || [];
-                const watchProviders = providersBR.map(p => ({
-                    name: p.provider_name,
-                    logoUrl: `https://image.tmdb.org/t/p/w200${p.logo_path}`
-                }));
-
-                const trailerObj = movie.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') 
-                                || movie.videos?.results?.find(v => v.site === 'YouTube');
-
-                return {
-                    title: movie.title,
-                    posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-                    backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null,
-                    synopsis: movie.overview,
-                    genres: movie.genres?.map(g => g.name) || [],
-                    releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
-                    runtime: movie.runtime,
-                    tmdbRating: Math.round(movie.vote_average * 10) / 10,
-                    tmdbId: movie.id,
-                    watched: false,
-                    watchProviders,
-                    trailerKey: trailerObj ? trailerObj.key : null
-                };
-            });
-
-            const newMovies = await Promise.all(detailedPromises);
-            
             if (!detailedMovieCache[cacheKey]) {
                 detailedMovieCache[cacheKey] = [];
             }
@@ -179,6 +163,7 @@ export function preloadMovieCache(genreId = '', decade = '') {
 export async function fetchRandomMovieByOptions({ genreId, decade }) {
     const cacheKey = getCacheKey(genreId, decade);
 
+    // 1. Tenta tirar do cache se já pronto
     if (detailedMovieCache[cacheKey] && detailedMovieCache[cacheKey].length > 0) {
         const movie = detailedMovieCache[cacheKey].pop();
         if (detailedMovieCache[cacheKey].length < 2) {
@@ -187,19 +172,25 @@ export async function fetchRandomMovieByOptions({ genreId, decade }) {
         return movie;
     }
 
-    // Se cache vazio ou em preenchimento, aguarda o replenish
+    // 2. Aguarda preenchimento
     await replenishCache(genreId, decade, cacheKey);
     
     if (detailedMovieCache[cacheKey] && detailedMovieCache[cacheKey].length > 0) {
         return detailedMovieCache[cacheKey].pop();
     }
 
-    // Fallback de emergência com busca direta se o cache falhou
-    const directUrl = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=100`;
-    const directRes = await fetch(directUrl);
-    const directData = await directRes.json();
-    if (directData.results && directData.results.length > 0) {
-        const randomMovie = directData.results[Math.floor(Math.random() * directData.results.length)];
+    // 3. Fallback garantido direto
+    const rawMovies = await fetchMoviesFromTmdb(genreId, decade);
+    if (rawMovies && rawMovies.length > 0) {
+        const randomMovie = rawMovies[Math.floor(Math.random() * rawMovies.length)];
+        return await fetchMovieDetailsById(randomMovie.id);
+    }
+
+    // 4. Último fallback de segurança absoluto (filme popular do TMDB)
+    const popRes = await fetch(`${BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`);
+    const popData = await popRes.json();
+    if (popData.results && popData.results.length > 0) {
+        const randomMovie = popData.results[Math.floor(Math.random() * popData.results.length)];
         return await fetchMovieDetailsById(randomMovie.id);
     }
 

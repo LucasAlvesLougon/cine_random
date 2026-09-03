@@ -31,23 +31,25 @@ function TinderCard({ movie, onVote, controls, isNext = false }) {
                 transition={{ duration: 0.2 }}
                 className={`${styles.card} ${styles.cardBack}`}
             >
-                {movie.posterUrl ? (
-                    <img 
-                        src={movie.posterUrl} 
-                        alt={movie.title} 
-                        className={styles.fullPoster} 
-                        draggable={false}
-                    />
-                ) : (
-                    <div className={styles.noPosterFull}>🎬</div>
-                )}
-                <div className={styles.fullPosterOverlay} />
-                <div className={styles.cardContent}>
-                    <div className={styles.chipsRow}>
-                        {movie.releaseYear && <span className={styles.chip}>{movie.releaseYear}</span>}
-                        {movie.tmdbRating && <span className={`${styles.chip} ${styles.chipRating}`}>★ {movie.tmdbRating}</span>}
+                <div className={styles.posterWrapper}>
+                    {movie.posterUrl ? (
+                        <img 
+                            src={movie.posterUrl} 
+                            alt={movie.title} 
+                            className={styles.posterImg} 
+                            draggable={false}
+                        />
+                    ) : (
+                        <div className={styles.noPosterPlaceholder}>🎬</div>
+                    )}
+                </div>
+                <div className={styles.cardInfo}>
+                    <div className={styles.topInfoRow}>
+                        <h4 className={styles.movieTitle}>{movie.title}</h4>
+                        {movie.tmdbRating > 0 && (
+                            <span className={styles.ratingBadge}>★ {movie.tmdbRating}</span>
+                        )}
                     </div>
-                    <h4 className={styles.movieTitle}>{movie.title}</h4>
                 </div>
             </motion.div>
         );
@@ -75,36 +77,35 @@ function TinderCard({ movie, onVote, controls, isNext = false }) {
                 PASSAR
             </motion.div>
 
-            {movie.posterUrl ? (
-                <img 
-                    src={movie.posterUrl} 
-                    alt={movie.title} 
-                    className={styles.fullPoster} 
-                    draggable={false}
-                />
-            ) : (
-                <div className={styles.noPosterFull}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                        <line x1="7" y1="2" x2="7" y2="22"></line>
-                        <line x1="17" y1="2" x2="17" y2="22"></line>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <line x1="2" y1="7" x2="7" y2="7"></line>
-                        <line x1="2" y1="17" x2="7" y2="17"></line>
-                        <line x1="17" y1="17" x2="22" y2="17"></line>
-                        <line x1="17" y1="7" x2="22" y2="7"></line>
-                    </svg>
-                </div>
-            )}
-            
-            <div className={styles.fullPosterOverlay} />
+            {/* Pôster Nítido com Proporção Cinematográfica */}
+            <div className={styles.posterWrapper}>
+                {movie.posterUrl ? (
+                    <img 
+                        src={movie.posterUrl} 
+                        alt={movie.title} 
+                        className={styles.posterImg} 
+                        draggable={false}
+                    />
+                ) : (
+                    <div className={styles.noPosterPlaceholder}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                            <line x1="7" y1="2" x2="7" y2="22"></line>
+                            <line x1="17" y1="2" x2="17" y2="22"></line>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                        </svg>
+                    </div>
+                )}
+                <div className={styles.posterGradient} />
+            </div>
 
-            <div className={styles.cardContent}>
+            {/* Informações da Base */}
+            <div className={styles.cardInfo}>
                 <div className={styles.chipsRow}>
                     {movie.releaseYear && (
                         <span className={styles.chip}>{movie.releaseYear}</span>
                     )}
-                    {movie.tmdbRating && (
+                    {movie.tmdbRating > 0 && (
                         <span className={`${styles.chip} ${styles.chipRating}`}>★ {movie.tmdbRating}</span>
                     )}
                     {movie.genres && movie.genres.length > 0 && (
@@ -178,7 +179,6 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
             triggerHaptic('warning');
         }
 
-        // Animação de saída limpa
         if (!fromSwipe) {
             try {
                 await controls.start({
@@ -188,7 +188,7 @@ export function MatchModal({ isOpen, onClose, movies = [], onOpenInfo, listCode 
                     transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
                 });
             } catch {
-                // Fallback gracioso
+                // Fallback
             }
         }
 
