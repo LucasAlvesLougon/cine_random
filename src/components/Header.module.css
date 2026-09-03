@@ -39,6 +39,28 @@
     color: var(--text);
 }
 
+.btnInstallHeader {
+    background: rgba(52, 199, 89, 0.15);
+    border: 1px solid rgba(52, 199, 89, 0.35);
+    color: #30d158;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnInstallHeader:hover {
+    background: rgba(52, 199, 89, 0.25);
+    border-color: rgba(52, 199, 89, 0.5);
+    transform: translateY(-1px);
+}
+
 .btnAction {
     background: transparent;
     border: none;
