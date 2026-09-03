@@ -1,4 +1,4 @@
-const TMDB_API_KEY = "698c0b5e43a9f023fb2764cb5d2d46e2";
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || "7a1dcf62353d2f27e784daeae52443d0";
 const BASE_URL = "https://api.themoviedb.org/3";
 
 export async function searchMoviesAutocomplete(query) {
