@@ -19,11 +19,12 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
     const [bannerLoaded, setBannerLoaded] = useState(false);
     const [posterLoaded, setPosterLoaded] = useState(false);
 
-    // Reseta o estado das imagens quando o filme muda
+    // Reseta o estado das imagens e do trailer quando o filme muda ou modal fecha
     useEffect(() => {
         setBannerLoaded(false);
         setPosterLoaded(false);
-    }, [movie?.tmdbId]);
+        setShowTrailer(false);
+    }, [movie?.tmdbId, isOpen]);
 
     useEffect(() => {
         if (!isOpen || !movie) return;
