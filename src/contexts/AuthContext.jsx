@@ -52,19 +52,27 @@ export function AuthProvider({ children }) {
         await loginEmail(email, password);
     };
 
-    const processGoogleToken = async (credential) => {
+    const loginWithGoogle = async (googleData) => {
         try {
-            const response = await api.post('/auth/google', { idToken: credential });
+            const payload = typeof googleData === 'string'
+                ? { idToken: googleData }
+                : googleData;
+            const response = await api.post('/auth/google', payload);
             const data = response.data;
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_email', data.email);
             localStorage.setItem('last_google_email', data.email);
             if (data.user_id) localStorage.setItem('user_id', String(data.user_id));
             setUser({ email: data.email, id: data.user_id });
+            return data;
         } catch (error) {
             console.error('Erro no login com Google:', error);
             throw error;
         }
+    };
+
+    const processGoogleToken = async (credential) => {
+        return loginWithGoogle({ idToken: credential });
     };
 
     const logout = () => {
@@ -77,7 +85,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, processGoogleToken, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, loginWithGoogle, processGoogleToken, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

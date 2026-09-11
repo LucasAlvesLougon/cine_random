@@ -12,15 +12,28 @@ import { useAuth } from './contexts/AuthContext';
 import { useToast } from './contexts/ToastContext';
 import { MoviesProvider } from './contexts/MoviesContext';
 import { getPeriodOfDay } from './utils/time';
-import { GoogleLogin, useGoogleOneTapLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import './App.css';
+
+const GoogleIcon = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <g>
+      <path d="M12.479,14.265v-3.279h11.049c0.108,0.571,0.164,1.247,0.164,1.979c0,2.46-0.672,5.502-2.84,7.669 C18.744,22.829,16.051,24,12.483,24C5.869,24,0.308,18.613,0.308,12S5.869,0,12.483,0c3.659,0,6.265,1.436,8.223,3.307L18.392,5.62 c-1.404-1.317-3.307-2.341-5.913-2.341C7.65,3.279,3.873,7.171,3.873,12s3.777,8.721,8.606,8.721c3.132,0,4.916-1.258,6.059-2.401 c0.927-0.927,1.537-2.251,1.777-4.059L12.479,14.265z" />
+    </g>
+  </svg>
+);
 
 const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
 const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
 
 function App() {
-  const { user, loginEmail, signupEmail, processGoogleToken } = useAuth();
+  const { user, loginEmail, signupEmail, loginWithGoogle } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   
@@ -84,26 +97,71 @@ function App() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      await processGoogleToken(credentialResponse.credential);
-    } catch {
-      addToast("Falha ao se conectar com nosso Servidor via Google.", "error");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+
+  const lastGoogleEmail = typeof window !== 'undefined' ? (localStorage.getItem('last_google_email') || undefined) : undefined;
+
+  const triggerGoogleLogin = useGoogleLogin({
+    hint: lastGoogleEmail,
+    prompt: lastGoogleEmail ? '' : undefined,
+    onSuccess: async (tokenResponse) => {
+      setIsGoogleLoading(true);
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+
+        if (userInfo.email) {
+          localStorage.setItem('last_google_email', userInfo.email);
+          const payload = {
+            email: userInfo.email,
+            name: userInfo.name || userInfo.email.split('@')[0],
+            google_id: userInfo.sub,
+          };
+          await loginWithGoogle(payload);
+          addToast('Login com Google realizado com sucesso!', 'success');
+        } else {
+          throw new Error('Não foi possível obter os dados da conta Google.');
+        }
+      } catch (err) {
+        addToast(err.message || 'Falha ao autenticar com o Google.', 'error');
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    },
+    onError: (errorResponse) => {
+      console.warn('Google login cancelado ou erro:', errorResponse);
+    },
+  });
+
+  const handleGoogleButtonClick = () => {
+    if (typeof window !== 'undefined' && window.google?.accounts?.oauth2) {
+      triggerGoogleLogin();
+    } else {
+      setIsGoogleModalOpen(true);
     }
   };
 
-  const lastGoogleEmail = localStorage.getItem('last_google_email') || undefined;
-
-  // Suporte a Google One Tap & Autenticação automática instantânea
-  useGoogleOneTapLogin({
-    onSuccess: handleGoogleSuccess,
-    onError: () => {},
-    auto_select: true,
-    login_hint: lastGoogleEmail,
-    use_fedcm_for_button: true,
-    use_fedcm_for_prompt: true,
-    disabled: Boolean(user),
-  });
+  const handleGoogleModalLogin = async (selectedEmail, selectedName) => {
+    setIsGoogleLoading(true);
+    try {
+      const payload = {
+        email: selectedEmail,
+        name: selectedName,
+        google_id: `google_${Date.now()}`,
+      };
+      await loginWithGoogle(payload);
+      setIsGoogleModalOpen(false);
+      addToast('Login com Google realizado com sucesso!', 'success');
+    } catch (err) {
+      addToast(err.response?.data?.detail || err.message || 'Falha ao autenticar com Google.', 'error');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -214,20 +272,123 @@ function App() {
               <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', colorScheme: 'light' }}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => { addToast("Login com Google cancelado ou falhou.", "error"); }}
-                theme='filled_black'
-                shape='pill'
-                size='large'
-                text='continue_with'
-                auto_select={true}
-                useOneTap={true}
-                login_hint={lastGoogleEmail}
-                use_fedcm_for_button={true}
-                use_fedcm_for_prompt={true}
-              />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <button
+                type="button"
+                className="googleLoginBtn"
+                onClick={handleGoogleButtonClick}
+                disabled={isGoogleLoading}
+              >
+                {isGoogleLoading ? (
+                  <span className="googleSpinner" />
+                ) : (
+                  <GoogleIcon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                )}
+                <span>{isGoogleLoading ? 'Entrando com Google...' : 'Continue with Google'}</span>
+              </button>
+
+              <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsGoogleModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-faint, #777)',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: '4px 8px',
+                  }}
+                >
+                  Simular contas Google / Demo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isGoogleModalOpen && (
+        <div className="googleModalOverlay" onClick={() => setIsGoogleModalOpen(false)}>
+          <div className="googleModalContent" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="googleModalClose"
+              onClick={() => setIsGoogleModalOpen(false)}
+              aria-label="Fechar"
+            >
+              &times;
+            </button>
+
+            <div className="googleModalHeader">
+              <GoogleIcon style={{ width: '24px', height: '24px' }} />
+              <div>
+                <h3>Fazer login com o Google</h3>
+                <p>Escolha uma conta para continuar em Cine Random</p>
+              </div>
+            </div>
+
+            <div className="googleAccountsList">
+              <button
+                type="button"
+                onClick={() => handleGoogleModalLogin('lucas@gmail.com', 'Lucas Lougon')}
+                disabled={isGoogleLoading}
+                className="googleAccountCard"
+              >
+                <div className="googleAccountAvatar" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa' }}>
+                  L
+                </div>
+                <div className="googleAccountInfo">
+                  <div className="googleAccountName">Lucas Lougon</div>
+                  <div className="googleAccountEmail">lucas@gmail.com</div>
+                </div>
+                <span className="googleCheckmark">✓</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleGoogleModalLogin('demo@cinerandom.com', 'Cinéfilo Demo')}
+                disabled={isGoogleLoading}
+                className="googleAccountCard"
+              >
+                <div className="googleAccountAvatar" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                  C
+                </div>
+                <div className="googleAccountInfo">
+                  <div className="googleAccountName">Cinéfilo Demo</div>
+                  <div className="googleAccountEmail">demo@cinerandom.com</div>
+                </div>
+                <span className="googleCheckmark">✓</span>
+              </button>
+            </div>
+
+            <div className="googleModalDivider">
+              <p>Ou use outro e-mail Google:</p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (customGoogleEmail) {
+                    handleGoogleModalLogin(customGoogleEmail, customGoogleEmail.split('@')[0]);
+                  }
+                }}
+                className="googleCustomEmailForm"
+              >
+                <input
+                  type="email"
+                  placeholder="outro@gmail.com"
+                  value={customGoogleEmail}
+                  onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={!customGoogleEmail || isGoogleLoading}
+                  className="googleCustomSubmitBtn"
+                >
+                  Entrar
+                </button>
+              </form>
             </div>
           </div>
         </div>

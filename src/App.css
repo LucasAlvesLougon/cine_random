@@ -203,3 +203,238 @@
         font-size: 1.7rem;
     }
 }
+
+/* Google Login Button & Modal (matching gestao_ponto) */
+.googleLoginBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.googleLoginBtn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.googleLoginBtn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.googleLoginBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.googleSpinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.googleModalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+    animation: fadeUp 0.2s ease-out;
+}
+
+.googleModalContent {
+    background: #18181b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    text-align: left;
+}
+
+.googleModalClose {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: color 0.15s ease;
+}
+
+.googleModalClose:hover {
+    color: #ffffff;
+}
+
+.googleModalHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.googleModalHeader h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fafafa;
+}
+
+.googleModalHeader p {
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: #a1a1aa;
+}
+
+.googleAccountsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.googleAccountCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fafafa;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.googleAccountCard:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(2px);
+}
+
+.googleAccountAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.googleAccountInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.googleAccountName {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fafafa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.googleAccountEmail {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.googleCheckmark {
+    color: #71717a;
+    font-size: 14px;
+}
+
+.googleAccountCard:hover .googleCheckmark {
+    color: #fafafa;
+}
+
+.googleModalDivider {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.googleModalDivider p {
+    margin: 0 0 8px;
+    font-size: 0.8rem;
+    color: #a1a1aa;
+}
+
+.googleCustomEmailForm {
+    display: flex;
+    gap: 8px;
+}
+
+.googleCustomEmailForm input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #09090b;
+    color: #fafafa;
+    font-size: 0.85rem;
+}
+
+.googleCustomEmailForm input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.googleCustomSubmitBtn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    background: #fafafa;
+    color: #09090b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.googleCustomSubmitBtn:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.googleCustomSubmitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
