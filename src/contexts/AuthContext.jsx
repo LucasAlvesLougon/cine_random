@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
         }
         return null;
     });
-    const [loading, setLoading] = useState(false);
+    const [loading] = useState(false);
 
     useEffect(() => {
         const handleUnauthorized = () => {
