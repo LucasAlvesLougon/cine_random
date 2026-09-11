@@ -102,7 +102,7 @@ function App() {
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
 
   const lastGoogleEmail = typeof window !== 'undefined'
-    ? (localStorage.getItem('last_google_email') || localStorage.getItem('user_email') || 'lucas@gmail.com')
+    ? (localStorage.getItem('last_google_email') || localStorage.getItem('user_email') || undefined)
     : undefined;
 
   const triggerGoogleLogin = useGoogleLogin({
