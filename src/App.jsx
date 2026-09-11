@@ -101,7 +101,9 @@ function App() {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
 
-  const lastGoogleEmail = typeof window !== 'undefined' ? (localStorage.getItem('last_google_email') || undefined) : undefined;
+  const lastGoogleEmail = typeof window !== 'undefined'
+    ? (localStorage.getItem('last_google_email') || localStorage.getItem('user_email') || 'lucas@gmail.com')
+    : undefined;
 
   const triggerGoogleLogin = useGoogleLogin({
     hint: lastGoogleEmail,
@@ -134,13 +136,25 @@ function App() {
     },
     onError: (errorResponse) => {
       console.warn('Google login cancelado ou erro:', errorResponse);
+      setIsGoogleLoading(false);
     },
   });
 
   const handleGoogleButtonClick = () => {
-    if (typeof window !== 'undefined' && window.google?.accounts?.oauth2) {
-      triggerGoogleLogin();
-    } else {
+    setIsGoogleLoading(true);
+    try {
+      if (typeof window !== 'undefined' && window.google?.accounts?.oauth2) {
+        triggerGoogleLogin();
+      } else {
+        try {
+          triggerGoogleLogin();
+        } catch {
+          setIsGoogleLoading(false);
+          setIsGoogleModalOpen(true);
+        }
+      }
+    } catch {
+      setIsGoogleLoading(false);
       setIsGoogleModalOpen(true);
     }
   };

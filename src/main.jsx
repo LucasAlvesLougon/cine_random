@@ -7,7 +7,7 @@ import { ToastProvider } from './contexts/ToastContext.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '844495701284-qvgpkr9446kr02dki8vs29191t1p33o7.apps.googleusercontent.com'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '283172265638-2cib86k0v38qmjae78snu5ps1p4sd513.apps.googleusercontent.com'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

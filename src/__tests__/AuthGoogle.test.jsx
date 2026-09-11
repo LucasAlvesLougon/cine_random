@@ -69,11 +69,20 @@ describe('Google Authentication & Modal in App', () => {
         expect(screen.getByText('Simular contas Google / Demo')).toBeDefined();
     });
 
-    it('opens Google simulation modal when clicking Continue with Google without Google SDK', () => {
+    it('starts Google direct login on clicking Continue with Google', () => {
         renderApp();
 
         const googleBtn = screen.getByRole('button', { name: /Continue with Google/i });
         fireEvent.click(googleBtn);
+
+        expect(screen.getByText('Entrando com Google...')).toBeDefined();
+    });
+
+    it('opens Google simulation modal when clicking demo link', () => {
+        renderApp();
+
+        const demoBtn = screen.getByText('Simular contas Google / Demo');
+        fireEvent.click(demoBtn);
 
         expect(screen.getByText('Fazer login com o Google')).toBeDefined();
         expect(screen.getByText('Lucas Lougon')).toBeDefined();
@@ -88,8 +97,8 @@ describe('Google Authentication & Modal in App', () => {
 
         renderApp();
 
-        const googleBtn = screen.getByRole('button', { name: /Continue with Google/i });
-        fireEvent.click(googleBtn);
+        const demoBtn = screen.getByText('Simular contas Google / Demo');
+        fireEvent.click(demoBtn);
 
         const lucasCard = screen.getByText('Lucas Lougon').closest('button');
         expect(lucasCard).not.toBeNull();
