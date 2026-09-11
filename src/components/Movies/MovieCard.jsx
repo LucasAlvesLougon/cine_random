@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { triggerHaptic } from '../../utils/haptics';
 import styles from './MovieCard.module.css';
 
-// Adicionamos a prop onOpenInfo
-export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
+// Componente memoizado para evitar re-renderizacoes desnecessarias na lista
+export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
     const [imgLoaded, setImgLoaded] = useState(false);
 
     const groupRating = movie.comments && movie.comments.length > 0
@@ -17,6 +17,8 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
                 <img 
                     src={movie.posterUrl} 
                     alt={movie.title} 
+                    loading="lazy"
+                    decoding="async"
                     className={`${styles.poster} ${imgLoaded ? styles.loaded : ''}`} 
                     onLoad={() => setImgLoaded(true)}
                 />
@@ -97,4 +99,4 @@ export function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
         </div>
     </div>
     );
-}
+});

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { MovieCard } from './MovieCard';
 import { CatalogFilterModal } from '../Modal/CatalogFilterModal';
@@ -15,24 +15,32 @@ export function MovieList({ onOpenInfo }) {
     const [selectedProviders, setSelectedProviders] = useState([]);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-    const availableGenres = Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
+    const deferredSearchTerm = useDeferredValue(searchTerm);
 
-    const availableProviders = Array.from(
-        new Map(
-            movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
-        ).values()
-    ).sort((a, b) => a.name.localeCompare(b.name));
+    const availableGenres = useMemo(() => {
+        return Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
+    }, [movies]);
 
-    const filteredMovies = movies.filter(movie => {
-        const matchesFilter = filter === 'all' || 
-                              (filter === 'watched' && movie.watched) || 
-                              (filter === 'unwatched' && !movie.watched);
-        const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
-        const matchesProvider = selectedProviders.length === 0 || 
-                              (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
-        return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
-    }).sort((a, b) => {
+    const availableProviders = useMemo(() => {
+        return Array.from(
+            new Map(
+                movies.flatMap(m => m.watchProviders || []).map(p => [p.name, p])
+            ).values()
+        ).sort((a, b) => a.name.localeCompare(b.name));
+    }, [movies]);
+
+    const filteredMovies = useMemo(() => {
+        const query = deferredSearchTerm.trim().toLowerCase();
+        return movies.filter(movie => {
+            const matchesFilter = filter === 'all' || 
+                                  (filter === 'watched' && movie.watched) || 
+                                  (filter === 'unwatched' && !movie.watched);
+            const matchesSearch = !query || movie.title.toLowerCase().includes(query);
+            const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
+            const matchesProvider = selectedProviders.length === 0 || 
+                                  (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
+            return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
+        }).sort((a, b) => {
         switch (sortBy) {
             case 'added_asc':
                 return (a.id || 0) - (b.id || 0);
@@ -54,7 +62,8 @@ export function MovieList({ onOpenInfo }) {
             default:
                 return (b.id || 0) - (a.id || 0);
         }
-    });
+        });
+    }, [movies, deferredSearchTerm, filter, sortBy, selectedGenre, selectedProviders]);
 
     const activeFilterCount = (filter !== 'all' ? 1 : 0) + 
                               (sortBy !== 'added_desc' ? 1 : 0) + 

@@ -6,6 +6,8 @@
     border: none;
     overflow: visible;
     position: relative;
+    content-visibility: auto;
+    contain-intrinsic-size: 200px 360px;
 }
 
 .posterWrapper {
@@ -16,11 +18,11 @@
     position: relative;
     cursor: pointer;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .posterWrapper:hover {
-    transform: scale(1.05);
+    transform: scale(1.04);
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
 }
 
@@ -29,7 +31,7 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 0.8s ease-in-out;
+    transition: opacity 0.25s ease-out;
 }
 .loaded {
     opacity: 1;
