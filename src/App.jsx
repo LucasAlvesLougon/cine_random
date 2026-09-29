@@ -12,7 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useToast } from './contexts/ToastContext';
 import { MoviesProvider } from './contexts/MoviesContext';
 import { getPeriodOfDay } from './utils/time';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import './App.css';
 
@@ -33,7 +33,7 @@ const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
 const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
 
 function App() {
-  const { user, loginEmail, signupEmail, loginWithGoogle } = useAuth();
+  const { user, loginEmail, signupEmail, loginWithGoogle, loginDemo } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   
@@ -100,74 +100,27 @@ function App() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const isDemoAuthEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
 
-  const lastGoogleEmail = typeof window !== 'undefined'
-    ? (localStorage.getItem('last_google_email') || localStorage.getItem('user_email') || undefined)
-    : undefined;
-
-  const triggerGoogleLogin = useGoogleLogin({
-    hint: lastGoogleEmail,
-    prompt: lastGoogleEmail ? '' : undefined,
-    onSuccess: async (tokenResponse) => {
-      setIsGoogleLoading(true);
-      try {
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const userInfo = await userInfoRes.json();
-
-        if (userInfo.email) {
-          localStorage.setItem('last_google_email', userInfo.email);
-          const payload = {
-            email: userInfo.email,
-            name: userInfo.name || userInfo.email.split('@')[0],
-            google_id: userInfo.sub,
-          };
-          await loginWithGoogle(payload);
-          addToast('Login com Google realizado com sucesso!', 'success');
-        } else {
-          throw new Error('Não foi possível obter os dados da conta Google.');
-        }
-      } catch (err) {
-        addToast(err.message || 'Falha ao autenticar com o Google.', 'error');
-      } finally {
-        setIsGoogleLoading(false);
-      }
-    },
-    onError: (errorResponse) => {
-      console.warn('Google login cancelado ou erro:', errorResponse);
-      setIsGoogleLoading(false);
-    },
-  });
-
-  const handleGoogleButtonClick = () => {
+  const handleGoogleCredential = async (credentialResponse) => {
     setIsGoogleLoading(true);
     try {
-      if (typeof window !== 'undefined' && window.google?.accounts?.oauth2) {
-        triggerGoogleLogin();
-      } else {
-        try {
-          triggerGoogleLogin();
-        } catch {
-          setIsGoogleLoading(false);
-          setIsGoogleModalOpen(true);
-        }
+      if (!credentialResponse?.credential) {
+        throw new Error('O Google não retornou uma credencial válida.');
       }
-    } catch {
+      await loginWithGoogle(credentialResponse.credential);
+      addToast('Login com Google realizado com sucesso!', 'success');
+    } catch (err) {
+      addToast(err.response?.data?.detail || err.message || 'Falha ao autenticar com Google.', 'error');
+    } finally {
       setIsGoogleLoading(false);
-      setIsGoogleModalOpen(true);
     }
   };
 
-  const handleGoogleModalLogin = async (selectedEmail, selectedName) => {
+  const handleGoogleModalLogin = async (selectedEmail) => {
     setIsGoogleLoading(true);
     try {
-      const payload = {
-        email: selectedEmail,
-        name: selectedName,
-        google_id: `google_${Date.now()}`,
-      };
-      await loginWithGoogle(payload);
+      await loginDemo(selectedEmail);
       setIsGoogleModalOpen(false);
       addToast('Login com Google realizado com sucesso!', 'success');
     } catch (err) {
@@ -287,21 +240,23 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <button
-                type="button"
-                className="googleLoginBtn"
-                onClick={handleGoogleButtonClick}
-                disabled={isGoogleLoading}
-              >
-                {isGoogleLoading ? (
+              {isGoogleLoading ? (
+                <button type="button" className="googleLoginBtn" disabled>
                   <span className="googleSpinner" />
-                ) : (
-                  <GoogleIcon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
-                )}
-                <span>{isGoogleLoading ? 'Entrando com Google...' : 'Continue with Google'}</span>
-              </button>
+                  <span>Entrando com Google...</span>
+                </button>
+              ) : (
+                <GoogleLogin
+                  onSuccess={handleGoogleCredential}
+                  onError={() => addToast('Login com Google cancelado ou indisponível.', 'error')}
+                  theme="filled_black"
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                />
+              )}
 
-              <div style={{ marginTop: '10px', textAlign: 'center' }}>
+              {isDemoAuthEnabled && <div style={{ marginTop: '10px', textAlign: 'center' }}>
                 <button
                   type="button"
                   onClick={() => setIsGoogleModalOpen(true)}
@@ -317,13 +272,13 @@ function App() {
                 >
                   Simular contas Google / Demo
                 </button>
-              </div>
+              </div>}
             </div>
           </div>
         </div>
       )}
 
-      {isGoogleModalOpen && (
+      {isDemoAuthEnabled && isGoogleModalOpen && (
         <div className="googleModalOverlay" onClick={() => setIsGoogleModalOpen(false)}>
           <div className="googleModalContent" onClick={(e) => e.stopPropagation()}>
             <button
