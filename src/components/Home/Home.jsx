@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { InstallPwaModal } from '../Modal/InstallPwaModal';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { GoogleAccountLink } from '../Auth/GoogleAccountLink';
 import styles from './Home.module.css';
 
 const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
@@ -125,6 +126,7 @@ export function Home({ onSelectList }) {
             </header>
 
             <div className={styles.content}>
+                <GoogleAccountLink />
                 <h2 className={styles.sectionTitle}>Minhas Listas</h2>
                 
                 <div className={styles.listsGrid}>
