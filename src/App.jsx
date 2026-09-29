@@ -12,6 +12,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useToast } from './contexts/ToastContext';
 import { MoviesProvider } from './contexts/MoviesContext';
 import { getPeriodOfDay } from './utils/time';
+import { GoogleLinkPasswordModal } from './components/Auth/GoogleLinkPasswordModal';
 import { GoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import './App.css';
@@ -33,7 +34,7 @@ const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
 const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
 
 function App() {
-  const { user, loginEmail, signupEmail, loginWithGoogle, loginDemo } = useAuth();
+  const { user, loginEmail, signupEmail, loginWithGoogle, confirmGoogleLink, loginDemo } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
   
@@ -98,6 +99,10 @@ function App() {
   };
 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleLinkModalOpen, setIsGoogleLinkModalOpen] = useState(false);
+  const [isGoogleLinkSubmitting, setIsGoogleLinkSubmitting] = useState(false);
+  const [pendingGoogleCredential, setPendingGoogleCredential] = useState('');
+  const [googleLinkError, setGoogleLinkError] = useState('');
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
   const isDemoAuthEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
@@ -111,9 +116,43 @@ function App() {
       await loginWithGoogle(credentialResponse.credential);
       addToast('Login com Google realizado com sucesso!', 'success');
     } catch (err) {
-      addToast(err.response?.data?.detail || err.message || 'Falha ao autenticar com Google.', 'error');
+      if (err.response?.status === 409) {
+        setPendingGoogleCredential(credentialResponse.credential);
+        setGoogleLinkError('');
+        setIsGoogleLinkModalOpen(true);
+      } else {
+        addToast(err.response?.data?.detail || err.message || 'Falha ao autenticar com Google.', 'error');
+      }
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const closeGoogleLinkModal = () => {
+    setIsGoogleLinkModalOpen(false);
+    setPendingGoogleCredential('');
+    setGoogleLinkError('');
+  };
+
+  const handleGoogleLinkConfirmation = async (localPassword) => {
+    if (!pendingGoogleCredential) return;
+
+    setIsGoogleLinkSubmitting(true);
+    setGoogleLinkError('');
+    try {
+      await confirmGoogleLink(pendingGoogleCredential, localPassword);
+      closeGoogleLinkModal();
+      addToast('Login com Google realizado com sucesso!', 'success');
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setGoogleLinkError('A senha informada está incorreta.');
+      } else {
+        setGoogleLinkError(
+          err.response?.data?.detail || 'Não foi possível vincular o Google agora.',
+        );
+      }
+    } finally {
+      setIsGoogleLinkSubmitting(false);
     }
   };
 
@@ -362,6 +401,14 @@ function App() {
           </div>
         </div>
       )}
+
+      <GoogleLinkPasswordModal
+        isOpen={isGoogleLinkModalOpen}
+        isSubmitting={isGoogleLinkSubmitting}
+        error={googleLinkError}
+        onClose={closeGoogleLinkModal}
+        onSubmit={handleGoogleLinkConfirmation}
+      />
     </Layout>
   );
 }

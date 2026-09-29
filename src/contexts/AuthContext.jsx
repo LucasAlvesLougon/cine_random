@@ -63,18 +63,16 @@ export function AuthProvider({ children }) {
     };
 
     const loginWithGoogle = async (credential) => {
-        try {
-            const response = await api.post('/auth/google', { credential });
-            return persistSession(response.data);
-        } catch (error) {
-            console.error('Erro no login com Google:', error);
-            throw error;
-        }
+        const response = await api.post('/auth/google', { credential });
+        return persistSession(response.data);
     };
 
-    const linkGoogleAccount = async (credential) => {
-        const response = await api.post('/auth/google/link', { credential });
-        return response.data;
+    const confirmGoogleLink = async (credential, password) => {
+        const response = await api.post('/auth/google/confirm-link', {
+            credential,
+            password,
+        });
+        return persistSession(response.data);
     };
 
     const processGoogleToken = async (credential) => {
@@ -96,7 +94,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, loginWithGoogle, linkGoogleAccount, loginDemo, processGoogleToken, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, loginWithGoogle, confirmGoogleLink, loginDemo, processGoogleToken, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

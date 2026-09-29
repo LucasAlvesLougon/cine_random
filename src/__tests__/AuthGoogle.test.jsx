@@ -6,6 +6,7 @@ import { ToastProvider } from '../contexts/ToastContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const mockLoginWithGoogle = vi.fn();
+const mockConfirmGoogleLink = vi.fn();
 const mockLoginDemo = vi.fn();
 
 vi.mock('@react-oauth/google', () => ({
@@ -32,6 +33,7 @@ vi.mock('../contexts/AuthContext', () => ({
         loginEmail: vi.fn(),
         signupEmail: vi.fn(),
         loginWithGoogle: mockLoginWithGoogle,
+        confirmGoogleLink: mockConfirmGoogleLink,
         loginDemo: mockLoginDemo,
         processGoogleToken: mockLoginWithGoogle,
         logout: vi.fn(),
@@ -97,6 +99,39 @@ describe('Google Authentication & Modal in App', () => {
 
         await waitFor(() => {
             expect(mockLoginWithGoogle).toHaveBeenCalledWith('signed-google-id-token');
+        });
+    });
+
+    it('asks for the local password when the Google email already has an account', async () => {
+        mockLoginWithGoogle.mockRejectedValueOnce({
+            response: {
+                status: 409,
+                data: { detail: 'Entre com sua senha para vincular esta conta ao Google.' },
+            },
+        });
+        mockConfirmGoogleLink.mockResolvedValueOnce({
+            access_token: 'linked-token',
+            email: 'existing@example.com',
+        });
+
+        renderApp();
+        fireEvent.click(screen.getByRole('button', { name: /Continue with Google/i }));
+
+        expect(
+            await screen.findByText('Já existe uma conta com este email.'),
+        ).toBeDefined();
+
+        fireEvent.change(screen.getByLabelText('Senha da conta existente'), {
+            target: { value: 'securepassword123' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Vincular e entrar' }));
+
+        await waitFor(() => {
+            expect(mockConfirmGoogleLink).toHaveBeenCalledWith(
+                'signed-google-id-token',
+                'securepassword123',
+            );
+            expect(screen.queryByRole('dialog')).toBeNull();
         });
     });
 

@@ -5,8 +5,6 @@ import { Home } from '../components/Home/Home';
 import { ToastProvider } from '../contexts/ToastContext';
 import { api } from '../services/api';
 
-const mockLinkGoogleAccount = vi.fn();
-
 vi.mock('../services/api', () => ({
     api: {
         get: vi.fn(),
@@ -19,17 +17,8 @@ vi.mock('../contexts/AuthContext', () => ({
         user: { id: 1, email: 'teste@cinema.com' },
         loginEmail: vi.fn(),
         signupEmail: vi.fn(),
-        linkGoogleAccount: mockLinkGoogleAccount,
         logout: vi.fn()
     })
-}));
-
-vi.mock('@react-oauth/google', () => ({
-    GoogleLogin: ({ onSuccess }) => (
-        <button type="button" onClick={() => onSuccess({ credential: 'signed-google-id-token' })}>
-            Vincular com Google
-        </button>
-    ),
 }));
 
 vi.mock('../hooks/usePwaInstall', () => ({
@@ -66,21 +55,6 @@ describe('Home Component', () => {
         localStorage.clear();
         localStorage.setItem('access_token', 'mock_token');
         api.get.mockResolvedValue({ data: [] });
-    });
-
-    it('permite vincular uma conta Google usando a conta local autenticada', async () => {
-        mockLinkGoogleAccount.mockResolvedValueOnce({
-            detail: 'Conta Google vinculada com sucesso.',
-        });
-
-        renderWithProviders(<Home onSelectList={vi.fn()} />);
-
-        fireEvent.click(screen.getByRole('button', { name: 'Vincular com Google' }));
-
-        await waitFor(() => {
-            expect(mockLinkGoogleAccount).toHaveBeenCalledWith('signed-google-id-token');
-            expect(screen.getByRole('status')).toHaveTextContent('Conta Google vinculada com sucesso.');
-        });
     });
 
     it('deve carregar e exibir listas do cache local instantaneamente (0ms)', async () => {
