@@ -3,7 +3,7 @@
 [![React 19](https://img.shields.io/badge/React-19.2.8-blue?logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8.2.2-646CFF?logo=vite)](https://vitejs.dev/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-13.1.1-black?logo=framer)](https://www.framer.com/motion/)
-[![Vitest](https://img.shields.io/badge/Vitest-31%2F31_Passed-green?logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-tested-green?logo=vitest)](https://vitest.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable-purple?logo=pwa)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
 O **Cine Random** é uma aplicação web moderna e **Progressive Web App (PWA)** voltada para cinéfilos e grupos de amigos. Permite criar, gerenciar e compartilhar listas colaborativas de filmes em tempo real, realizar sorteios interativos na roleta, jogar o *Match da Galera* (estilo Tinder de filmes), gerar convites de cinema para WhatsApp e acompanhar o histórico de sessões.
@@ -21,7 +21,7 @@ A interface segue uma estética sofisticada inspirada em plataformas de streamin
 * **Axios & Interceptors:** Centralização de chamadas HTTP com injeção automática de token Bearer JWT e renovação.
 * **WebSockets Autenticados:** Sincronização multi-player instantânea com passagem de token JWT no handshake.
 * **Google OAuth 2.0 (`@react-oauth/google`):** Login social rápido e seguro com Google Identity Services.
-* **Vitest + React Testing Library:** Suíte completa de testes automatizados com **31/31 testes aprovados**.
+* **Vitest + React Testing Library:** Suíte completa de testes automatizados.
 
 ---
 
@@ -81,6 +81,9 @@ VITE_GOOGLE_CLIENT_ID=seu_client_id.apps.googleusercontent.com
 
 # Chave de API do TMDB (The Movie Database)
 VITE_TMDB_API_KEY=sua_chave_tmdb
+
+# Login simulado somente para desenvolvimento local
+VITE_ENABLE_DEMO_LOGIN=false
 ```
 
 ---

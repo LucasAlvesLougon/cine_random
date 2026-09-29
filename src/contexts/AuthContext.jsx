@@ -52,19 +52,20 @@ export function AuthProvider({ children }) {
         await loginEmail(email, password);
     };
 
-    const loginWithGoogle = async (googleData) => {
+    const persistSession = (data, fallbackEmail) => {
+        const sessionEmail = data.email || fallbackEmail;
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', sessionEmail);
+        localStorage.setItem('last_google_email', sessionEmail);
+        if (data.user_id) localStorage.setItem('user_id', String(data.user_id));
+        setUser({ email: sessionEmail, id: data.user_id });
+        return data;
+    };
+
+    const loginWithGoogle = async (credential) => {
         try {
-            const payload = typeof googleData === 'string'
-                ? { idToken: googleData }
-                : googleData;
-            const response = await api.post('/auth/google', payload);
-            const data = response.data;
-            localStorage.setItem('access_token', data.access_token);
-            localStorage.setItem('user_email', data.email);
-            localStorage.setItem('last_google_email', data.email);
-            if (data.user_id) localStorage.setItem('user_id', String(data.user_id));
-            setUser({ email: data.email, id: data.user_id });
-            return data;
+            const response = await api.post('/auth/google', { credential });
+            return persistSession(response.data);
         } catch (error) {
             console.error('Erro no login com Google:', error);
             throw error;
@@ -72,7 +73,12 @@ export function AuthProvider({ children }) {
     };
 
     const processGoogleToken = async (credential) => {
-        return loginWithGoogle({ idToken: credential });
+        return loginWithGoogle(credential);
+    };
+
+    const loginDemo = async (email) => {
+        const response = await api.post('/auth/demo', { email });
+        return persistSession(response.data, email);
     };
 
     const logout = () => {
@@ -85,7 +91,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, loginWithGoogle, processGoogleToken, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginEmail, signupEmail, loginWithGoogle, loginDemo, processGoogleToken, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

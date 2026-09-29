@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from '../App';
@@ -6,6 +6,16 @@ import { ToastProvider } from '../contexts/ToastContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const mockLoginWithGoogle = vi.fn();
+const mockLoginDemo = vi.fn();
+
+vi.mock('@react-oauth/google', () => ({
+    GoogleOAuthProvider: ({ children }) => <div>{children}</div>,
+    GoogleLogin: ({ onSuccess }) => (
+        <button type="button" onClick={() => onSuccess({ credential: 'signed-google-id-token' })}>
+            Continue with Google
+        </button>
+    ),
+}));
 
 vi.mock('../services/api', () => ({
     api: {
@@ -22,6 +32,7 @@ vi.mock('../contexts/AuthContext', () => ({
         loginEmail: vi.fn(),
         signupEmail: vi.fn(),
         loginWithGoogle: mockLoginWithGoogle,
+        loginDemo: mockLoginDemo,
         processGoogleToken: mockLoginWithGoogle,
         logout: vi.fn(),
     }),
@@ -58,8 +69,13 @@ function renderApp() {
 describe('Google Authentication & Modal in App', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.stubEnv('VITE_ENABLE_DEMO_LOGIN', 'true');
         localStorage.clear();
         delete window.google;
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
     });
 
     it('renders the custom Google login button and demo link', () => {
@@ -69,13 +85,19 @@ describe('Google Authentication & Modal in App', () => {
         expect(screen.getByText('Simular contas Google / Demo')).toBeDefined();
     });
 
-    it('starts Google direct login on clicking Continue with Google', () => {
+    it('submits the signed Google credential returned by GIS', async () => {
+        mockLoginWithGoogle.mockResolvedValueOnce({
+            access_token: 'app-token',
+            email: 'google@example.com'
+        });
         renderApp();
 
         const googleBtn = screen.getByRole('button', { name: /Continue with Google/i });
         fireEvent.click(googleBtn);
 
-        expect(screen.getByText('Entrando com Google...')).toBeDefined();
+        await waitFor(() => {
+            expect(mockLoginWithGoogle).toHaveBeenCalledWith('signed-google-id-token');
+        });
     });
 
     it('opens Google simulation modal when clicking demo link', () => {
@@ -89,8 +111,8 @@ describe('Google Authentication & Modal in App', () => {
         expect(screen.getByText('Cinéfilo Demo')).toBeDefined();
     });
 
-    it('triggers loginWithGoogle when choosing an account in the modal', async () => {
-        mockLoginWithGoogle.mockResolvedValueOnce({
+    it('triggers the isolated demo login when choosing an account in the modal', async () => {
+        mockLoginDemo.mockResolvedValueOnce({
             access_token: 'fake-token',
             email: 'lucas@gmail.com'
         });
@@ -105,17 +127,12 @@ describe('Google Authentication & Modal in App', () => {
         fireEvent.click(lucasCard);
 
         await waitFor(() => {
-            expect(mockLoginWithGoogle).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    email: 'lucas@gmail.com',
-                    name: 'Lucas Lougon'
-                })
-            );
+            expect(mockLoginDemo).toHaveBeenCalledWith('lucas@gmail.com');
         });
     });
 
     it('allows typing a custom email in the modal and logs in', async () => {
-        mockLoginWithGoogle.mockResolvedValueOnce({
+        mockLoginDemo.mockResolvedValueOnce({
             access_token: 'fake-token',
             email: 'outro@gmail.com'
         });
@@ -132,13 +149,16 @@ describe('Google Authentication & Modal in App', () => {
         fireEvent.click(submitBtn);
 
         await waitFor(() => {
-            expect(mockLoginWithGoogle).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    email: 'outro@gmail.com',
-                    name: 'outro'
-                })
-            );
+            expect(mockLoginDemo).toHaveBeenCalledWith('outro@gmail.com');
         });
+    });
+
+    it('hides the demo login unless the build flag is explicitly enabled', () => {
+        vi.stubEnv('VITE_ENABLE_DEMO_LOGIN', 'false');
+
+        renderApp();
+
+        expect(screen.queryByText('Simular contas Google / Demo')).toBeNull();
     });
 
     it('closes the modal when clicking the close button', () => {

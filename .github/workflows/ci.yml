@@ -7,7 +7,7 @@ on:
     branches: [main, master, dev]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-and-lint:
@@ -27,6 +27,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Audit Production Dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Run ESLint
         run: npm run lint
 
@@ -37,9 +40,11 @@ jobs:
         run: npm run build
 
   auto-sync:
-    name: Auto Sync Branches (dev <-> master)
+    name: Promote dev to master
     needs: build-and-lint
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
@@ -55,15 +60,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Sync from dev to master
-        if: github.ref == 'refs/heads/dev'
         run: |
           git checkout master
           git merge origin/dev --ff-only || git merge origin/dev -m "ci: auto-sync dev into master [skip ci]"
           git push origin master
-
-      - name: Sync from master to dev
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-        run: |
-          git checkout dev
-          git merge origin/master --ff-only || git merge origin/master -m "ci: auto-sync master into dev [skip ci]"
-          git push origin dev
