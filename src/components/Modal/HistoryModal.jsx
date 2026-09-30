@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './HistoryModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     const { addToast } = useToast();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -68,8 +70,8 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
 
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="history-modal-title" tabIndex={-1}>
+                <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar histórico">✕</button>
 
                 <div className={styles.header}>
                     <div className={styles.headerTopRow}>
@@ -90,7 +92,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                             </button>
                         )}
                     </div>
-                    <h3 className={styles.title}>Histórico de Sorteios</h3>
+                    <h3 id="history-modal-title" className={styles.title}>Histórico de Sorteios</h3>
                     <p className={styles.subtitle}>Filmes sorteados e selecionados nas sessões anteriores</p>
                 </div>
 
@@ -119,8 +121,18 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 <div 
                                     key={item.id} 
                                     className={styles.historyItem}
+                                    role={item.movie_id ? 'button' : undefined}
+                                    tabIndex={item.movie_id ? 0 : undefined}
+                                    aria-label={item.movie_id ? `Ver detalhes de ${item.movie_title}` : undefined}
                                     onClick={() => {
                                         if (item.movie_id) {
+                                            onClose();
+                                            onOpenInfo({ id: item.movie_id, title: item.movie_title, posterUrl: item.movie_poster });
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (item.movie_id && (e.key === 'Enter' || e.key === ' ')) {
+                                            e.preventDefault();
                                             onClose();
                                             onOpenInfo({ id: item.movie_id, title: item.movie_title, posterUrl: item.movie_poster });
                                         }

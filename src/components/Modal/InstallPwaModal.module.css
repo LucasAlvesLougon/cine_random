@@ -119,8 +119,8 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #0071e3;
-    color: #fff;
+    background: var(--red);
+    color: #170302;
     font-size: 12px;
     font-weight: 700;
     display: flex;
@@ -182,15 +182,15 @@
 
 .btnInstall {
     width: 100%;
-    background: linear-gradient(135deg, #0071e3, #0077ed);
-    color: #fff;
+    background: var(--red);
+    color: #170302;
     border: none;
     border-radius: 12px;
     padding: 14px;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 69, 58, 0.24);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 

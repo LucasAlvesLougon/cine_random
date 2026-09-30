@@ -174,9 +174,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(52, 199, 89, 0.12);
-    border: 1px solid rgba(52, 199, 89, 0.3);
-    color: #30d158;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
     padding: 12px 14px;
     border-radius: 12px;
     font-size: 13.5px;
@@ -187,7 +187,7 @@
 }
 
 .btnInstallDrawer:hover {
-    background: rgba(52, 199, 89, 0.22);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .drawerFooter {
@@ -206,7 +206,7 @@
     height: 38px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary, #ff453a), #ff7b7b);
-    color: #fff;
+    color: #170302;
     display: flex;
     align-items: center;
     justify-content: center;

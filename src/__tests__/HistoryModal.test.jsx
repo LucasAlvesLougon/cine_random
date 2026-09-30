@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { HistoryModal } from '../components/Modal/HistoryModal';
 import { ToastProvider } from '../contexts/ToastContext';
 import { api } from '../services/api';
@@ -51,5 +51,16 @@ describe('HistoryModal', () => {
             expect(screen.getByText('Roleta')).toBeInTheDocument();
             expect(screen.getByText('Arquivar (+30 dias)')).toBeInTheDocument();
         });
+    });
+
+    it('permite abrir a ficha de um filme salvo pelo teclado', async () => {
+        const onOpenInfo = vi.fn();
+        const onClose = vi.fn();
+        api.get.mockResolvedValueOnce({ data: [{ id: 2, movie_id: 10, movie_title: 'Matrix', movie_poster: null, draw_type: 'roulette', drawn_at: '2026-09-02T15:00:00Z' }] });
+        render(<ToastProvider><HistoryModal isOpen onClose={onClose} listCode="PIP01" onOpenInfo={onOpenInfo} /></ToastProvider>);
+        const item = await screen.findByRole('button', { name: 'Ver detalhes de Matrix' });
+        fireEvent.keyDown(item, { key: 'Enter' });
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(onOpenInfo).toHaveBeenCalledWith(expect.objectContaining({ id: 10, title: 'Matrix' }));
     });
 });

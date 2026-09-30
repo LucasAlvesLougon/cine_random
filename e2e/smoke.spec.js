@@ -16,3 +16,13 @@ test('não exibe a funcionalidade removida de Match na tela de login', async ({ 
 
     await expect(page.getByText('Match da Galera')).toHaveCount(0);
 });
+
+test('entrada explica o produto e alterna para criar conta pelo teclado', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('Monte uma lista de filmes com amigos e sorteie o filme da próxima sessão.')).toBeVisible();
+    const toggle = page.getByRole('button', { name: 'Ainda não tem conta? Criar conta' });
+    await toggle.focus();
+    await expect(toggle).toHaveCSS('outline-style', 'solid');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Criar Conta' })).toBeVisible();
+});

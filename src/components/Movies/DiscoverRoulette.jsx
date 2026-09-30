@@ -90,7 +90,7 @@ export function DiscoverRoulette({ onOpenInfo, listCode }) {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div className={styles.headerTop}>
-                    <h3>Modo Descoberta Avançado</h3>
+                    <h3>Descobrir filme novo</h3>
                     <button 
                         type="button" 
                         onClick={() => setIsFilterModalOpen(true)}
@@ -108,10 +108,10 @@ export function DiscoverRoulette({ onOpenInfo, listCode }) {
                             <line x1="9" y1="8" x2="15" y2="8"></line>
                             <line x1="17" y1="16" x2="23" y2="16"></line>
                         </svg>
-                        Filtros {activeFilterCount > 0 && <span className={styles.filterBadge}>{activeFilterCount}</span>}
+                        Filtros da descoberta {activeFilterCount > 0 && <span className={styles.filterBadge}>{activeFilterCount}</span>}
                     </button>
                 </div>
-                <p>Explore o catálogo mundial e deixe o algoritmo sortear um filme ideal para sua sessão.</p>
+                <p>Busque uma surpresa fora da lista. Depois, você pode salvá-la para o grupo.</p>
             </div>
 
             <div className={styles.actionsBlock}>
@@ -121,7 +121,7 @@ export function DiscoverRoulette({ onOpenInfo, listCode }) {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
                                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
                             </svg>
-                            Sortear Filme da Internet
+                            Descobrir filme novo
                         </>
                     )}
                 </button>

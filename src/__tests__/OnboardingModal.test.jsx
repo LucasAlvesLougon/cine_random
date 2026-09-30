@@ -23,4 +23,19 @@ describe('OnboardingModal', () => {
 
         expect(onClose).toHaveBeenCalledTimes(1);
     });
+
+    it('move o foco para o diálogo e permite fechar com Escape, retornando ao acionador', () => {
+        const onClose = vi.fn();
+        const trigger = document.createElement('button');
+        document.body.appendChild(trigger);
+        trigger.focus();
+        const { rerender } = render(<OnboardingModal isOpen onClose={onClose} />);
+
+        expect(screen.getByRole('dialog', { name: 'Sua próxima sessão começa aqui' })).toContainElement(document.activeElement);
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(onClose).toHaveBeenCalledTimes(1);
+        rerender(<OnboardingModal isOpen={false} onClose={onClose} />);
+        expect(trigger).toHaveFocus();
+        trigger.remove();
+    });
 });

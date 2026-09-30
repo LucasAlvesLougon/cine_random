@@ -3,8 +3,12 @@ import { createPortal } from 'react-dom';
 import styles from './DrawModal.module.css';
 import { api } from '../../services/api';
 import { triggerHaptic } from '../../utils/haptics';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useReducedMotion } from 'framer-motion';
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onOpenInfo, listCode }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
+    const reduceMotion = useReducedMotion();
     const hasRecordedRef = useRef(false);
 
     useEffect(() => {
@@ -31,10 +35,10 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onOpe
                     }
                     onClose();
                 }
-            }, 2200); // 2.2s de suspense girando a roleta
+            }, reduceMotion ? 350 : 2200); // A roleta não prende quem prefere menos movimento
             return () => clearTimeout(timer);
         }
-    }, [isOpen, winnerMovie, listCode, onOpenInfo, onClose]);
+    }, [isOpen, winnerMovie, listCode, onOpenInfo, onClose, reduceMotion]);
 
     if (!isOpen) return null;
 
@@ -58,12 +62,12 @@ export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onOpe
 
     return createPortal(
     <div className={styles.overlay} onClick={onClose}>
-        <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="draw-modal-title" tabIndex={-1}>
+            <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar sorteio">✕</button>
             
             <div className={styles.spinningState}>
                 <div className={styles.badge}>Sorteando Filme</div>
-                <h2 className={styles.spinningTitle}>O destino está escolhendo...</h2>
+                <h2 id="draw-modal-title" className={styles.spinningTitle}>O destino está escolhendo...</h2>
                 
                 <div className={styles.slotMachine}>
                     <div 
