@@ -107,10 +107,31 @@
     font-weight: 700;
 }
 
+.loadMoreWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 28px 40px 12px;
+}
+
+.loadMoreButton {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    padding: 10px 18px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.07);
+    cursor: pointer;
+}
+
+.loadMoreButton:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
 @media (max-width: 700px) {
     .filterBar { padding: 0 20px; }
     .searchWrapper { max-width: 100%; }
     .resultsInfo { padding: 0 20px; }
+    .loadMoreWrapper { padding-left: 20px; padding-right: 20px; }
     .grid { 
         padding: 0 20px; 
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

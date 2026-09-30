@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './MovieList.module.css';
 
 export function MovieList({ onOpenInfo }) {
-    const { movies, toggleWatched, deleteMovie } = useMovies();
+    const { movies, toggleWatched, deleteMovie, loadMoreMovies, hasMoreMovies, isLoadingMoreMovies } = useMovies();
 
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('added_desc');
@@ -158,6 +158,13 @@ export function MovieList({ onOpenInfo }) {
                     ))}
                 </AnimatePresence>
             </motion.div>
+                {hasMoreMovies && (
+                    <div className={styles.loadMoreWrapper}>
+                        <button type="button" className={styles.loadMoreButton} onClick={() => loadMoreMovies()} disabled={isLoadingMoreMovies}>
+                            {isLoadingMoreMovies ? 'Carregando...' : 'Carregar mais filmes'}
+                        </button>
+                    </div>
+                )}
             </>
         )}
     </>

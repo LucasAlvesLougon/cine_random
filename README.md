@@ -56,7 +56,7 @@ cine_random/src/
 | Recurso | Descrição |
 | :--- | :--- |
 | **Multi-Listas Colaborativas** | Crie várias listas ou entre em listas existentes com códigos alfanuméricos (`PIP01`, `VIP01`). |
-| **Catálogo com TMDB & JustWatch** | Pôsteres em alta definição, sinopse, trailers embutidos e badges de provedores de streaming. |
+| **Catálogo com TMDB & JustWatch** | Pôsteres em alta definição, sinopse, trailers embutidos e badges de provedores de streaming via proxy seguro do backend. |
 | **Ordenação Flexível** | Ordene por **Adição** (Recentes / Antigos), **Lançamento** (Novos / Clássicos) e **Nota TMDB** (Melhores / Piores). |
 | **Ficha Técnica & Casting** | Exibição de Diretor e carrossel de elenco principal (Top 8 atores com fotos e personagens). |
 | **Roleta Sorteador & Modo Descoberta** | Sorteie filmes da lista ou descubra novos títulos filtrando por gênero, época e streaming. |
@@ -80,8 +80,7 @@ VITE_API_URL=http://localhost:8000
 # Client ID do Google OAuth 2.0 (Google Cloud Console)
 VITE_GOOGLE_CLIENT_ID=seu_client_id.apps.googleusercontent.com
 
-# Chave de API do TMDB (The Movie Database)
-VITE_TMDB_API_KEY=sua_chave_tmdb
+# A credencial TMDB fica somente no backend; o frontend usa os endpoints /tmdb da API.
 
 # Login simulado somente para desenvolvimento local
 VITE_ENABLE_DEMO_LOGIN=false
