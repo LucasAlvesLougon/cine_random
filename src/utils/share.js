@@ -29,6 +29,18 @@ export async function shareContent({ title, text, url }) {
   return { shared: true, method: 'clipboard' };
 }
 
+export function getListInviteUrl(code, origin = window.location.origin) {
+  return new URL(`/join/${encodeURIComponent(code)}`, origin).href;
+}
+
+export function shareListInvite({ code, name }) {
+  return shareContent({
+    title: `Cine Random - ${name}`,
+    text: `Entre na lista "${name}" no Cine Random. Código: ${code}.`,
+    url: getListInviteUrl(code),
+  });
+}
+
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);

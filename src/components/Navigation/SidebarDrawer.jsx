@@ -2,9 +2,11 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { shareContent } from '../../utils/share';
+import { shareListInvite } from '../../utils/share';
 import { formatUserName } from '../../utils/format';
 import styles from './SidebarDrawer.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useReducedMotion } from 'framer-motion';
 
 export function SidebarDrawer({ 
     isOpen, 
@@ -18,6 +20,8 @@ export function SidebarDrawer({
     isInstalled,
     isIos
 }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
+    const reduceMotion = useReducedMotion();
     const { user, logout } = useAuth();
     const { addToast } = useToast();
 
@@ -26,13 +30,11 @@ export function SidebarDrawer({
 
     const handleCopyCode = async () => {
         if (!activeList) return;
-        const res = await shareContent({
-            title: `Cine Random - ${activeList.name}`,
-            text: `🍿 Entre na minha lista "${activeList.name}" no Cine Random com o código: ${activeList.code}`,
-            url: window.location.origin
-        });
-        if (res.method === 'clipboard') {
-            addToast(`Código ${activeList.code} copiado para convidar amigos!`, 'success');
+        try {
+            const res = await shareListInvite({ code: activeList.code, name: activeList.name });
+            if (res.method === 'clipboard') addToast('Link direto e código de convite copiados!', 'success');
+        } catch {
+            addToast('Não foi possível compartilhar o convite.', 'error');
         }
     };
 
@@ -42,28 +44,33 @@ export function SidebarDrawer({
                 <>
                     {/* Backdrop */}
                     <motion.div 
-                        initial={{ opacity: 0 }}
+                        initial={reduceMotion ? false : { opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
                         className={styles.backdrop} 
                         onClick={onClose} 
                     />
 
                     {/* Drawer Painel Lateral */}
                     <motion.div 
-                        initial={{ x: '-100%' }}
+                        initial={reduceMotion ? false : { x: '-100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
-                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                        transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32 }}
                         className={styles.drawer}
                         onClick={(e) => e.stopPropagation()}
+                        ref={dialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Menu de navegação"
+                        tabIndex={-1}
                     >
                         <div className={styles.drawerHeader}>
                             <div className={styles.brand}>
                                 <span className={styles.brandRed}>Cine</span>Random
                             </div>
-                            <button className={styles.closeBtn} onClick={onClose} title="Fechar Menu">
+                            <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar menu">
                                 ✕
                             </button>
                         </div>
@@ -112,7 +119,7 @@ export function SidebarDrawer({
                                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                                 </svg>
-                                                <span>Compartilhar Código</span>
+                                                <span>Convidar amigos</span>
                                             </button>
 
                                             {onBackToLists && (
@@ -163,7 +170,7 @@ export function SidebarDrawer({
                                         <strong>{displayName}</strong>
                                         <span>{user.email}</span>
                                     </div>
-                                    <button onClick={() => { onClose(); logout(); }} className={styles.btnLogout} title="Sair da Conta">
+                                    <button onClick={() => { onClose(); logout(); }} className={styles.btnLogout} aria-label="Sair da conta">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                             <polyline points="16 17 21 12 16 7"></polyline>

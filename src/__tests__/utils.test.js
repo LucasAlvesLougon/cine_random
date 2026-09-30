@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { formatUserName } from '../utils/format';
 import { getPeriodOfDay } from '../utils/time';
+import { getListInviteUrl } from '../utils/share';
+
+describe('convite direto', () => {
+    it('aponta para /join/{code}, preservando o código como alternativa na mensagem', () => {
+        expect(getListInviteUrl('ABC123', 'https://cine.example')).toBe('https://cine.example/join/ABC123');
+    });
+});
 
 describe('formatUserName', () => {
     it('deve retornar "Usuário" quando o email for nulo ou vazio', () => {

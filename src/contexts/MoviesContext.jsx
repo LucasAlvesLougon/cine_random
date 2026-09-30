@@ -67,9 +67,38 @@ export function MoviesProvider({ children, listCode }) {
         enabled: Boolean(listCode && user?.id),
     });
 
-    const movies = (moviePages?.pages || []).flatMap(page => page.items || []);
+    const movies = useMemo(() => {
+        const seen = new Set();
+        return (moviePages?.pages || []).flatMap(page => page.items || []).filter(movie => {
+            if (seen.has(movie.id)) return false;
+            seen.add(movie.id);
+            return true;
+        });
+    }, [moviePages]);
+    const totalMovies = moviePages?.pages?.[0]?.total ?? movies.length;
 
-    const updateMoviePages = useCallback((updateItems, firstPageOnly = false) => {
+    const getAllMoviesForDraw = useCallback(async () => {
+        const refreshed = await fetchMovies();
+        if (refreshed.error) throw refreshed.error;
+        let data = refreshed.data;
+        while (data?.pages?.at(-1)?.has_next) {
+            const previousPageCount = data.pages.length;
+            const next = await fetchNextPage();
+            if (next.error) throw next.error;
+            data = next.data;
+            if (!data || data.pages.length <= previousPageCount) {
+                throw new Error('Não foi possível carregar a lista completa para o sorteio.');
+            }
+        }
+        const seen = new Set();
+        return (data?.pages || []).flatMap(page => page.items || []).filter(movie => {
+            if (seen.has(movie.id)) return false;
+            seen.add(movie.id);
+            return true;
+        });
+    }, [fetchMovies, fetchNextPage]);
+
+    const updateMoviePages = useCallback((updateItems, firstPageOnly = false, totalDelta = 0) => {
         queryClient.setQueryData(queryKey, current => {
             if (!current?.pages) return current;
             return {
@@ -77,7 +106,7 @@ export function MoviesProvider({ children, listCode }) {
                 pages: current.pages.map((page, index) => (
                     firstPageOnly && index > 0
                         ? page
-                        : { ...page, items: updateItems(page.items || []) }
+                        : { ...page, items: updateItems(page.items || []), total: Math.max(0, (page.total ?? 0) + totalDelta) }
                 )),
             };
         });
@@ -185,7 +214,7 @@ export function MoviesProvider({ children, listCode }) {
         try {
             const res = await api.post('/lists/' + listCode + '/movies', movieData);
             if (res.data && res.data.id) {
-                updateMoviePages(items => [res.data, ...items.filter(movie => movie.id !== res.data.id)], true);
+                updateMoviePages(items => [res.data, ...items.filter(movie => movie.id !== res.data.id)], true, 1);
             }
             addToast('Filme adicionado à lista.', 'success');
         } catch (err) {
@@ -213,7 +242,7 @@ export function MoviesProvider({ children, listCode }) {
     const deleteMovie = useCallback(async (movieId) => {
         const previousMovies = queryClient.getQueryData(queryKey);
         // Optimistic UI: remoção instantânea no cache do React Query
-        updateMoviePages(items => items.filter(movie => movie.id !== movieId));
+        updateMoviePages(items => items.filter(movie => movie.id !== movieId), false, -1);
         try {
             await api.delete('/lists/movies/' + movieId);
         } catch (err) {
@@ -225,6 +254,8 @@ export function MoviesProvider({ children, listCode }) {
 
     const contextValue = useMemo(() => ({
         movies,
+        totalMovies,
+        getAllMoviesForDraw,
         addMovie,
         toggleWatched,
         deleteMovie,
@@ -234,6 +265,8 @@ export function MoviesProvider({ children, listCode }) {
         isLoadingMoreMovies: isFetchingNextPage,
     }), [
         movies,
+        totalMovies,
+        getAllMoviesForDraw,
         addMovie,
         toggleWatched,
         deleteMovie,

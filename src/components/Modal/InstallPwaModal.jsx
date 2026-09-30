@@ -1,13 +1,15 @@
 import { createPortal } from 'react-dom';
 import styles from './InstallPwaModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function InstallPwaModal({ isOpen, onClose, isIos, onInstall }) {
+  const dialogRef = useDialogFocus(isOpen, onClose);
   if (!isOpen) return null;
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+      <div ref={dialogRef} className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="install-pwa-title" tabIndex={-1}>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar instalação">✕</button>
 
         <div className={styles.iconHeader}>
           <div className={styles.appIconWrapper}>
@@ -22,7 +24,7 @@ export function InstallPwaModal({ isOpen, onClose, isIos, onInstall }) {
               <line x1="17" y1="7" x2="22" y2="7"></line>
             </svg>
           </div>
-          <h3 className={styles.title}>Instalar Cine Random</h3>
+          <h3 id="install-pwa-title" className={styles.title}>Instalar Cine Random</h3>
           <p className={styles.subtitle}>
             Acesse seus filmes direto da tela inicial em tela cheia e com abertura instantânea.
           </p>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { MovieList } from './components/Movies/MovieList';
@@ -16,6 +16,7 @@ import { GoogleLinkPasswordModal } from './components/Auth/GoogleLinkPasswordMod
 import { GoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
 import { getUserCacheKey } from './utils/storage';
+import { useDialogFocus } from './hooks/useDialogFocus';
 import './App.css';
 
 const GoogleIcon = (props) => (
@@ -139,6 +140,7 @@ function App() {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
   const isDemoAuthEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
+  const demoDialogRef = useDialogFocus(isDemoAuthEnabled && isGoogleModalOpen, () => setIsGoogleModalOpen(false));
 
   const handleGoogleCredential = async (credentialResponse) => {
     setIsGoogleLoading(true);
@@ -204,8 +206,10 @@ function App() {
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const addMovieInputRef = useRef(null);
+  const inviteCode = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)\/?$/)?.[1] || '';
 
-  if (user && !activeList) {
+  if (user && (!activeList || inviteCode)) {
     return (
       <Layout 
         activeList={null}
@@ -237,10 +241,13 @@ function App() {
             setIsHistoryOpen={setIsHistoryOpen}
           />
           <div className='actionPanels'>
-              <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
+              <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} inputRef={addMovieInputRef} />
               <DiscoverRoulette onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
           </div>
-          <MovieList onOpenInfo={setSelectedMovie} />
+          <MovieList onOpenInfo={setSelectedMovie} onAddFirstMovie={() => {
+            addMovieInputRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+            addMovieInputRef.current?.focus();
+          }} />
           
           <InfoModal 
             isOpen={!!selectedMovie} 
@@ -274,25 +281,25 @@ function App() {
         <div className='loginHero'>
           <div className='loginCard'>
             <h1 className='loginTitle'>Sua {period} de Cinema.</h1>
-            <p className='loginSubtitle'>Acesse sua conta para organizar seus filmes.</p>
+            <p className='loginSubtitle'>{inviteCode ? `Entre ou crie uma conta para aceitar o convite da lista ${inviteCode}.` : 'Monte uma lista de filmes com amigos e sorteie o filme da próxima sessão.'}</p>
             
             {isPasswordResetView ? (
               <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0, color: 'white' }}>{resetToken ? 'Escolha uma nova senha' : 'Recuperar senha'}</h2>
-                {!resetToken && <input type='email' placeholder='Seu email' value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
-                {resetToken && <input type='password' placeholder='Nova senha (mínimo 8 caracteres)' value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} minLength={8} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                {!resetToken && <input type='email' aria-label='Email para recuperar senha' placeholder='Seu email' value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                {resetToken && <input type='password' aria-label='Nova senha' placeholder='Nova senha (mínimo 8 caracteres)' value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} minLength={8} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
                 <button type='submit' className='loginBtnBig' disabled={isResetSubmitting}>{isResetSubmitting ? 'Enviando...' : resetToken ? 'Salvar nova senha' : 'Enviar instruções'}</button>
-                <button type='button' onClick={() => setIsPasswordResetView(false)} style={{ background: 'none', border: 0, color: 'var(--text-faint)', cursor: 'pointer' }}>Voltar para o login</button>
+                <button type='button' onClick={() => setIsPasswordResetView(false)} className='loginTextButton'>Voltar para o login</button>
               </form>
             ) : (
               <>
                 <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-                  <input type='email' placeholder='Seu email' value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
-                  <input type='password' placeholder='Sua senha' value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <input type='email' aria-label='Seu email' placeholder='Seu email' value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <input type='password' aria-label='Sua senha' placeholder='Sua senha' value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
                   <button type='submit' className='loginBtnBig' style={{ marginTop: '0.5rem' }}>{isLoginView ? 'Entrar com Email' : 'Criar Conta'}</button>
                 </form>
-                {isLoginView && <button type='button' onClick={() => setIsPasswordResetView(true)} style={{ display: 'block', margin: '-0.5rem auto 1rem', background: 'none', border: 0, color: 'var(--text-faint)', cursor: 'pointer' }}>Esqueci minha senha</button>}
-                <p onClick={() => setIsLoginView(!isLoginView)} style={{ cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '1.5rem' }}>{isLoginView ? 'Ainda não tem conta? Criar' : 'Já tem conta? Fazer login'}</p>
+                {isLoginView && <button type='button' onClick={() => setIsPasswordResetView(true)} className='loginTextButton'>Esqueci minha senha</button>}
+                <button type='button' onClick={() => setIsLoginView(!isLoginView)} className='loginTextButton loginSwitchButton'>{isLoginView ? 'Ainda não tem conta? Criar conta' : 'Já tem conta? Fazer login'}</button>
               </>
             )}
 
@@ -343,7 +350,7 @@ function App() {
 
       {isDemoAuthEnabled && isGoogleModalOpen && (
         <div className="googleModalOverlay" onClick={() => setIsGoogleModalOpen(false)}>
-          <div className="googleModalContent" onClick={(e) => e.stopPropagation()}>
+          <div ref={demoDialogRef} className="googleModalContent" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Escolher conta de demonstração" tabIndex={-1}>
             <button
               type="button"
               className="googleModalClose"
@@ -408,6 +415,7 @@ function App() {
               >
                 <input
                   type="email"
+                  aria-label="Outro email para demonstração"
                   placeholder="outro@gmail.com"
                   value={customGoogleEmail}
                   onChange={(e) => setCustomGoogleEmail(e.target.value)}

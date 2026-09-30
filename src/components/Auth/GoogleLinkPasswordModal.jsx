@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styles from './GoogleLinkPasswordModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function GoogleLinkPasswordModal({
     isOpen,
@@ -8,6 +9,7 @@ export function GoogleLinkPasswordModal({
     onClose,
     onSubmit,
 }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     const [password, setPassword] = useState('');
 
     useEffect(() => {
@@ -24,10 +26,12 @@ export function GoogleLinkPasswordModal({
     return (
         <div className={styles.overlay} role="presentation">
             <div
+                ref={dialogRef}
                 className={styles.modal}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="google-link-title"
+                tabIndex={-1}
             >
                 <button
                     type="button"

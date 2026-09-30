@@ -62,5 +62,6 @@ describe('ShareCardModal', () => {
         expect(writeTextMock).toHaveBeenCalled();
         expect(writeTextMock.mock.calls[0][0]).toContain('Interestelar');
         expect(writeTextMock.mock.calls[0][0]).toContain('ABC123');
+        expect(writeTextMock.mock.calls[0][0]).toContain('/join/ABC123');
     });
 });

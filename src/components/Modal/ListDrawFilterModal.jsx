@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './FilterModals.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function ListDrawFilterModal({
     isOpen,
@@ -11,6 +12,7 @@ export function ListDrawFilterModal({
     setSelectedProviders,
     availableProviders = []
 }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     const [tempIncludeWatched, setTempIncludeWatched] = useState(includeWatched);
     const [tempProviders, setTempProviders] = useState(selectedProviders);
 
@@ -44,9 +46,9 @@ export function ListDrawFilterModal({
 
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="list-draw-filter-title" tabIndex={-1}>
                 <div className={styles.header}>
-                    <h3 className={styles.headerTitle}>
+                    <h3 id="list-draw-filter-title" className={styles.headerTitle}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="4" y1="21" x2="4" y2="14"></line>
                             <line x1="4" y1="10" x2="4" y2="3"></line>
@@ -60,16 +62,17 @@ export function ListDrawFilterModal({
                         </svg>
                         Filtros de Sorteio da Lista
                     </h3>
-                    <button className={styles.closeBtn} onClick={onClose}>✕</button>
+                    <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Fechar filtros do sorteio">✕</button>
                 </div>
 
                 <div className={styles.body}>
                     {/* Toggle Filmes Assistidos */}
                     <div className={styles.section}>
                         <span className={styles.sectionLabel}>Status dos Filmes</span>
-                        <div 
+                        <button type="button"
                             className={styles.toggleRow} 
                             onClick={() => setTempIncludeWatched(!tempIncludeWatched)}
+                            aria-pressed={tempIncludeWatched}
                         >
                             <div className={styles.toggleInfo}>
                                 <span className={styles.toggleTitle}>Incluir filmes assistidos</span>
@@ -80,7 +83,7 @@ export function ListDrawFilterModal({
                             <div className={`${styles.toggleSwitch} ${tempIncludeWatched ? styles.toggleSwitchActive : ''}`}>
                                 <div className={styles.toggleKnob} />
                             </div>
-                        </div>
+                        </button>
                     </div>
 
                     {/* Streamings */}

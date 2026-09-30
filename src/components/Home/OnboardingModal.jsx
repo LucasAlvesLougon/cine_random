@@ -1,4 +1,5 @@
 import styles from './OnboardingModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 const steps = [
     { title: 'Crie uma lista', text: 'Dê um nome para a sua sessão de cinema.' },
@@ -8,9 +9,10 @@ const steps = [
 ];
 
 export function OnboardingModal({ isOpen, onClose }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     if (!isOpen) return null;
     return (
-        <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+        <div ref={dialogRef} className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" tabIndex={-1}>
             <div className={styles.modal}>
                 <div className={styles.eyebrow}>COMECE EM 2 MINUTOS</div>
                 <h2 id="onboarding-title">Sua próxima sessão começa aqui</h2>

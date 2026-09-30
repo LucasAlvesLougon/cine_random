@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,11 +20,13 @@ export function Home({ onSelectList }) {
     const [newListName, setNewListName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isJoining, setIsJoining] = useState(false);
+    const [inviteFailed, setInviteFailed] = useState(false);
     const [isInstallOpen, setIsInstallOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
     const listsCacheKey = user?.id ? getUserCacheKey(LIST_CACHE_PREFIX, user.id) : null;
     const listQueryKey = useMemo(() => ['my-lists', user?.id], [user?.id]);
     const inviteCode = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)\/?$/)?.[1]?.toUpperCase() || '';
+    const attemptedInviteRef = useRef('');
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(() => (
         Boolean(user?.id && !localStorage.getItem(`cine_random_onboarding_seen_${user.id}`))
     ));
@@ -67,6 +69,7 @@ export function Home({ onSelectList }) {
 
     const joinList = useCallback(async (code) => {
         if (!code?.trim() || isJoining) return;
+        setInviteFailed(false);
         setIsJoining(true);
         try {
             const res = await api.post('/lists/join/' + code.trim().toUpperCase());
@@ -79,19 +82,36 @@ export function Home({ onSelectList }) {
             queryClient.invalidateQueries({ queryKey: listQueryKey });
             setJoinCode('');
             addToast('Você entrou na lista!', 'success');
-            if (inviteCode) window.history.replaceState({}, '', '/');
+            if (inviteCode) {
+                window.history.replaceState({}, '', '/');
+                onSelectList(res.data);
+            }
         } catch (error) {
+            if (inviteCode && [400, 409].includes(error.response?.status)) {
+                try {
+                    const response = await api.get('/lists/my');
+                    const existing = response.data.find(list => list.code === code.trim().toUpperCase());
+                    if (existing) {
+                        window.history.replaceState({}, '', '/');
+                        onSelectList(existing);
+                        return;
+                    }
+                } catch {
+                    // Mantém o convite aberto para uma nova tentativa manual.
+                }
+            }
+            setJoinCode(code.trim().toUpperCase());
+            if (inviteCode) setInviteFailed(true);
             addToast(error.response?.data?.detail || 'Não foi possível aceitar este convite.', 'error');
         } finally {
             setIsJoining(false);
         }
-    }, [addToast, inviteCode, isJoining, listQueryKey, listsCacheKey, queryClient]);
+    }, [addToast, inviteCode, isJoining, listQueryKey, listsCacheKey, onSelectList, queryClient]);
 
     useEffect(() => {
         if (!inviteCode || !user?.id) return;
-        const inviteKey = `cine_random_invite_${user.id}_${inviteCode}`;
-        if (sessionStorage.getItem(inviteKey)) return;
-        sessionStorage.setItem(inviteKey, '1');
+        if (attemptedInviteRef.current === inviteCode) return;
+        attemptedInviteRef.current = inviteCode;
         joinList(inviteCode);
     }, [inviteCode, joinList, user?.id]);
 
@@ -124,6 +144,11 @@ export function Home({ onSelectList }) {
         await joinList(joinCode);
     };
 
+    const handleSelectList = (list) => {
+        if (inviteCode) window.history.replaceState({}, '', '/');
+        onSelectList(list);
+    };
+
     return (
         <div className={styles.container}>
             <header className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -136,7 +161,7 @@ export function Home({ onSelectList }) {
                     {!isInstalled && (isInstallable || isIos) && (
                         <button
                             onClick={() => setIsInstallOpen(true)}
-                            style={{ background: 'rgba(52, 199, 89, 0.15)', border: '1px solid rgba(52, 199, 89, 0.35)', color: '#30d158', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -150,6 +175,7 @@ export function Home({ onSelectList }) {
             </header>
 
             <div className={styles.content}>
+                {inviteCode && <p className={styles.inviteNotice} role="status">{inviteFailed ? `Não foi possível aceitar o convite para ${inviteCode} automaticamente. Confira o código abaixo ou abra outra lista.` : `Convite para a lista ${inviteCode}. Estamos tentando adicionar você.`}</p>}
                 <h2 className={styles.sectionTitle}>Minhas Listas</h2>
                 
                 <div className={styles.listsGrid}>
@@ -173,18 +199,19 @@ export function Home({ onSelectList }) {
                     )}
 
                     {lists.map(list => (
-                        <div key={list.id} className={styles.listCard} onClick={() => onSelectList(list)}>
+                        <div key={list.id} className={styles.listCard}>
                             <h3>{list.name}</h3>
                             <p>Código para convidar: <strong>{list.code}</strong></p>
                             <span className={styles.openBtn}>Abrir Lista</span>
+                            <button type="button" className={styles.cardAction} onClick={() => handleSelectList(list)} aria-label={`Abrir lista ${list.name}`} />
                         </div>
                     ))}
                     
                     {!isCreating ? (
-                        <div className={styles.createCard} onClick={() => setIsCreating(true)}>
-                            <h3>+ Nova Lista</h3>
-                            <p>Criar uma lista do zero</p>
-                        </div>
+                        <button type="button" className={styles.createCard} onClick={() => setIsCreating(true)}>
+                            <span className={styles.createTitle}>+ Nova Lista</span>
+                            <span>Criar uma lista do zero</span>
+                        </button>
                     ) : (
                         <div className={styles.createFormCard}>
                             <form onSubmit={handleCreateList}>
@@ -205,11 +232,12 @@ export function Home({ onSelectList }) {
                     )}
 
                     <div className={styles.joinCard}>
-                        <h3>Entrar com Código</h3>
+                        <h3>Entrar com código</h3>
                         <p>Já tem um convite?</p>
                         <form onSubmit={handleJoinList} className={styles.joinForm}>
                             <input 
                                 type='text' 
+                                aria-label='Código da lista'
                                 placeholder='Ex: A4B2C9' 
                                 value={joinCode}
                                 onChange={e => setJoinCode(e.target.value)}

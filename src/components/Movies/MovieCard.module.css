@@ -11,6 +11,10 @@
 }
 
 .posterWrapper {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
     width: 100%;
     aspect-ratio: 2 / 3;
     border-radius: 12px;
@@ -81,6 +85,21 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.titleButton {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
 }
 
