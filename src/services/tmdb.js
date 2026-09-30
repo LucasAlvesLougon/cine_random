@@ -1,12 +1,15 @@
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const BASE_URL = "https://api.themoviedb.org/3";
+import { api } from './api';
+
+async function tmdbGet(path, params = {}) {
+    const response = await api.get(`/tmdb${path}`, { params });
+    return response.data;
+}
 
 export async function searchMoviesAutocomplete(query) {
     if (!query || query.trim().length < 2) return [];
 
     try {
-        const res = await fetch(`${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=pt-BR&page=1`);
-        const data = await res.json();
+        const data = await tmdbGet('/search', { query: query.trim(), language: 'pt-BR', page: 1 });
         
         if (!data.results) return [];
 
@@ -25,8 +28,7 @@ export async function searchMoviesAutocomplete(query) {
 
 export async function fetchMovieDetailsById(tmdbId) {
     try {
-        const detailsRes = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos,credits&include_video_language=pt-BR,en,null`);
-        const movie = await detailsRes.json();
+        const movie = await tmdbGet(`/movie/${tmdbId}`, { language: 'pt-BR' });
 
         const providersBR = movie['watch/providers']?.results?.BR?.flatrate || [];
         const watchProviders = providersBR.map(p => ({
@@ -69,8 +71,7 @@ export async function fetchMovieDetailsById(tmdbId) {
 
 export async function fetchMovieDetails(movieTitle) {
     try {
-        const searchRes = await fetch(`${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movieTitle)}&language=pt-BR`);
-        const searchData = await searchRes.json();
+        const searchData = await tmdbGet('/search', { query: movieTitle, language: 'pt-BR', page: 1 });
 
         if (!searchData.results || searchData.results.length === 0) {
             throw new Error("Filme não encontrado");
@@ -92,36 +93,19 @@ function getCacheKey(genreId, decade) {
 }
 
 async function fetchMoviesFromTmdb(genreId, decade) {
-    let url = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc&vote_count.gte=30`;
-    
-    if (genreId) url += `&with_genres=${genreId}`;
-    
-    if (decade) {
-        if (decade === 'recent') {
-            url += `&primary_release_date.gte=2020-01-01`;
-        } else {
-            const startYear = decade;
-            const endYear = parseInt(decade) + 9;
-            url += `&primary_release_date.gte=${startYear}-01-01&primary_release_date.lte=${endYear}-12-31`;
-        }
-    }
-
-    const initialRes = await fetch(url);
-    const initialData = await initialRes.json();
+    const discoverParams = { genre_id: genreId || undefined, decade: decade || undefined, page: 1 };
+    const initialData = await tmdbGet('/discover', discoverParams);
     
     if (!initialData.results || initialData.results.length === 0) {
         // Se filtro específico não retornou, tenta com menos restrição
-        const fallbackUrl = `${BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=pt-BR&sort_by=popularity.desc`;
-        const fbRes = await fetch(fallbackUrl);
-        const fbData = await fbRes.json();
+        const fbData = await tmdbGet('/discover', { page: 1 });
         return fbData.results || [];
     }
 
     const totalPages = Math.min(initialData.total_pages || 1, 20);
     const randomPage = Math.floor(Math.random() * totalPages) + 1;
     
-    const pageRes = await fetch(`${url}&page=${randomPage}`);
-    const pageData = await pageRes.json();
+    const pageData = await tmdbGet('/discover', { ...discoverParams, page: randomPage });
     
     return pageData.results && pageData.results.length > 0 ? pageData.results : initialData.results;
 }
@@ -197,8 +181,7 @@ export async function fetchRandomMovieByOptions({ genreId, decade }) {
     }
 
     // 4. Último fallback de segurança absoluto (filme popular do TMDB)
-    const popRes = await fetch(`${BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`);
-    const popData = await popRes.json();
+    const popData = await tmdbGet('/popular', { page: 1 });
     if (popData.results && popData.results.length > 0) {
         const randomMovie = popData.results[Math.floor(Math.random() * popData.results.length)];
         return await fetchMovieDetailsById(randomMovie.id);
@@ -209,8 +192,7 @@ export async function fetchRandomMovieByOptions({ genreId, decade }) {
 
 export async function fetchExtraMovieDetails(tmdbId) {
     try {
-        const res = await fetch(`${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=watch/providers,videos,credits&include_video_language=pt-BR,en,null`);
-        const data = await res.json();
+        const data = await tmdbGet(`/movie/${tmdbId}`, { language: 'pt-BR' });
         
         const providersBR = data['watch/providers']?.results?.BR?.flatrate || [];
         const watchProviders = providersBR.map(p => ({
