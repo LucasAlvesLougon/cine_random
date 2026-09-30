@@ -6,7 +6,7 @@
 [![Vitest](https://img.shields.io/badge/Vitest-tested-green?logo=vitest)](https://vitest.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable-purple?logo=pwa)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
-O **Cine Random** é uma aplicação web moderna e **Progressive Web App (PWA)** voltada para cinéfilos e grupos de amigos. Permite criar, gerenciar e compartilhar listas colaborativas de filmes em tempo real, realizar sorteios interativos na roleta, jogar o *Match da Galera* (estilo Tinder de filmes), gerar convites de cinema para WhatsApp e acompanhar o histórico de sessões.
+O **Cine Random** é uma aplicação web moderna e **Progressive Web App (PWA)** voltada para cinéfilos e grupos de amigos. Permite criar, gerenciar e compartilhar listas colaborativas de filmes em tempo real, realizar sorteios interativos na roleta, gerar convites de cinema para WhatsApp e acompanhar o histórico de sessões.
 
 A interface segue uma estética sofisticada inspirada em plataformas de streaming (Apple TV / Netflix) com Glassmorphism, microinterações a 60 FPS com Framer Motion e estilos modulares com CSS Modules.
 
@@ -19,7 +19,7 @@ A interface segue uma estética sofisticada inspirada em plataformas de streamin
 * **Framer Motion:** Animações físicas e transições de layout suaves na roleta caça-níqueis e no swipe de votação.
 * **CSS Modules:** Estilização encapsulada por componente, sem vazamento de escopo global.
 * **Axios & Interceptors:** Centralização de chamadas HTTP com injeção automática de token Bearer JWT e renovação.
-* **WebSockets Autenticados:** Sincronização multi-player instantânea com passagem de token JWT no handshake.
+* **WebSockets Autenticados:** Sincronização multi-player instantânea com ticket efêmero de sessão no handshake.
 * **Google OAuth 2.0 (`@react-oauth/google`):** Login social rápido e seguro com Google Identity Services.
 * **Vitest + React Testing Library:** Suíte completa de testes automatizados.
 
@@ -35,7 +35,7 @@ cine_random/src/
 │   ├── Header.jsx       # Cabeçalho com logo, status e atalho PWA
 │   ├── Layout.jsx       # Layout responsivo e casca da aplicação
 │   ├── Loading.jsx      # Shimmer / Spinners de carregamento
-│   ├── Modal/           # Modais (InfoModal, DrawModal, MatchModal, HistoryModal, etc.)
+│   ├── Modal/           # Modais (InfoModal, DrawModal, HistoryModal, etc.)
 │   ├── Movies/          # Componentes de Catálogo (MovieList, MovieCard, AddMovieForm)
 │   └── Navigation/      # Menu lateral retrátil (SidebarDrawer)
 ├── contexts/            # Provedores de Estado Global React
@@ -60,9 +60,10 @@ cine_random/src/
 | **Ordenação Flexível** | Ordene por **Adição** (Recentes / Antigos), **Lançamento** (Novos / Clássicos) e **Nota TMDB** (Melhores / Piores). |
 | **Ficha Técnica & Casting** | Exibição de Diretor e carrossel de elenco principal (Top 8 atores com fotos e personagens). |
 | **Roleta Sorteador & Modo Descoberta** | Sorteie filmes da lista ou descubra novos títulos filtrando por gênero, época e streaming. |
-| **Modo Match da Galera (Group Swipe)** | Votação estilo Tinder com detecção instantânea de consenso unânime. |
 | **Convite Sessão Pipoca** | Cartão estilizado com pôster e botão para compartilhar convite formatado no WhatsApp. |
-| **Histórico & Limpeza (+7 dias)** | Registro completo de sorteios anteriores com botão de expurgo de sessões antigas. |
+| **Convites por link** | Aceite convites automaticamente ao abrir uma URL compartilhada. |
+| **Histórico & Arquivamento (+30 dias)** | Registro completo de sorteios anteriores com arquivamento de sessões antigas. |
+| **Onboarding** | Guia inicial curto para criar lista, adicionar filmes, convidar amigos e sortear. |
 | **Painel de Membros** | Listagem de participantes em tempo real com destaque para o `👑 Criador da Lista`. |
 | **PWA Instalável** | Instale diretamente na tela inicial do celular ou desktop com acesso offline. |
 

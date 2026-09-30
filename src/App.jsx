@@ -77,6 +77,11 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginView, setIsLoginView] = useState(true);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetToken] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
+  const [isPasswordResetView, setIsPasswordResetView] = useState(() => window.location.pathname === '/reset-password');
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [listToDelete, setListToDelete] = useState(null);
   
   const period = getPeriodOfDay();
@@ -98,6 +103,31 @@ function App() {
       } else {
         addToast("Erro na autenticação. Verifique os dados e tente novamente.", "error");
       }
+    }
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setIsResetSubmitting(true);
+    try {
+      if (resetToken) {
+        await api.post('/auth/password-reset/confirm', {
+          token: resetToken,
+          new_password: resetPassword,
+        });
+        addToast('Senha redefinida. Faça login com a nova senha.', 'success');
+        window.history.replaceState({}, '', '/');
+        setIsPasswordResetView(false);
+        setIsLoginView(true);
+        setResetPassword('');
+      } else {
+        await api.post('/auth/password-reset/request', { email: resetEmail });
+        addToast('Se o email estiver cadastrado, enviaremos as instruções.', 'success');
+      }
+    } catch (error) {
+      addToast(error.response?.data?.detail || 'Não foi possível processar a recuperação.', 'error');
+    } finally {
+      setIsResetSubmitting(false);
     }
   };
 
@@ -246,42 +276,33 @@ function App() {
             <h1 className='loginTitle'>Sua {period} de Cinema.</h1>
             <p className='loginSubtitle'>Acesse sua conta para organizar seus filmes.</p>
             
-            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <input 
-                type='email' 
-                placeholder='Seu email' 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }}
-                required 
-              />
-              <input 
-                type='password' 
-                placeholder='Sua senha' 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }}
-                required 
-              />
-              <button type='submit' className='loginBtnBig' style={{ marginTop: '0.5rem' }}>
-                {isLoginView ? 'Entrar com Email' : 'Criar Conta'}
-              </button>
-            </form>
-            
-            <p 
-              onClick={() => setIsLoginView(!isLoginView)}
-              style={{ cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '1.5rem' }}
-            >
-              {isLoginView ? 'Ainda não tem conta? Criar' : 'Já tem conta? Fazer login'}
-            </p>
+            {isPasswordResetView ? (
+              <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0, color: 'white' }}>{resetToken ? 'Escolha uma nova senha' : 'Recuperar senha'}</h2>
+                {!resetToken && <input type='email' placeholder='Seu email' value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                {resetToken && <input type='password' placeholder='Nova senha (mínimo 8 caracteres)' value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} minLength={8} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                <button type='submit' className='loginBtnBig' disabled={isResetSubmitting}>{isResetSubmitting ? 'Enviando...' : resetToken ? 'Salvar nova senha' : 'Enviar instruções'}</button>
+                <button type='button' onClick={() => setIsPasswordResetView(false)} style={{ background: 'none', border: 0, color: 'var(--text-faint)', cursor: 'pointer' }}>Voltar para o login</button>
+              </form>
+            ) : (
+              <>
+                <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                  <input type='email' placeholder='Seu email' value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <input type='password' placeholder='Sua senha' value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <button type='submit' className='loginBtnBig' style={{ marginTop: '0.5rem' }}>{isLoginView ? 'Entrar com Email' : 'Criar Conta'}</button>
+                </form>
+                {isLoginView && <button type='button' onClick={() => setIsPasswordResetView(true)} style={{ display: 'block', margin: '-0.5rem auto 1rem', background: 'none', border: 0, color: 'var(--text-faint)', cursor: 'pointer' }}>Esqueci minha senha</button>}
+                <p onClick={() => setIsLoginView(!isLoginView)} style={{ cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '1.5rem' }}>{isLoginView ? 'Ainda não tem conta? Criar' : 'Já tem conta? Fazer login'}</p>
+              </>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+            {!isPasswordResetView && <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
               <span style={{ color: '#666', fontSize: '0.9rem' }}>OU</span>
               <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
-            </div>
+            </div>}
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            {!isPasswordResetView && <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               {isGoogleLoading ? (
                 <button type="button" className="googleLoginBtn" disabled>
                   <span className="googleSpinner" />
@@ -315,7 +336,7 @@ function App() {
                   Simular contas Google / Demo
                 </button>
               </div>}
-            </div>
+            </div>}
           </div>
         </div>
       )}

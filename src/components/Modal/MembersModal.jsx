@@ -36,13 +36,14 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
     if (!isOpen) return null;
 
     const handleCopyCode = async () => {
+        const inviteUrl = `${window.location.origin}/join/${listCode}`;
         const res = await shareContent({
             title: `Cine Random - Lista ${listCode}`,
-            text: `🍿 Entre no meu Cine Clube no Cine Random com o código: ${listCode}`,
-            url: window.location.origin
+            text: `🍿 Entre no meu Cine Clube no Cine Random: ${inviteUrl}`,
+            url: inviteUrl
         });
         if (res.method === 'clipboard') {
-            addToast(`Código ${listCode} copiado para convidar amigos!`, 'success');
+            addToast('Link de convite copiado!', 'success');
         }
     };
 
@@ -112,7 +113,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
 
                 <div className={styles.footer}>
                     <button onClick={handleCopyCode} className={styles.btnInvite}>
-                        Copiar Código de Convite ({listCode})
+                        Copiar Link de Convite
                     </button>
                 </div>
 
