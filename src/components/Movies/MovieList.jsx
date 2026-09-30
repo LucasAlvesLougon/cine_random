@@ -16,6 +16,7 @@ export function MovieList({ onOpenInfo }) {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     const deferredSearchTerm = useDeferredValue(searchTerm);
+    const selectedProviderSet = useMemo(() => new Set(selectedProviders), [selectedProviders]);
 
     const availableGenres = useMemo(() => {
         return Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
@@ -38,7 +39,7 @@ export function MovieList({ onOpenInfo }) {
             const matchesSearch = !query || movie.title.toLowerCase().includes(query);
             const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
             const matchesProvider = selectedProviders.length === 0 || 
-                                  (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
+                                  (movie.watchProviders && movie.watchProviders.some(p => selectedProviderSet.has(p.name)));
             return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
         }).sort((a, b) => {
         switch (sortBy) {
@@ -63,7 +64,7 @@ export function MovieList({ onOpenInfo }) {
                 return (b.id || 0) - (a.id || 0);
         }
         });
-    }, [movies, deferredSearchTerm, filter, sortBy, selectedGenre, selectedProviders]);
+    }, [movies, deferredSearchTerm, filter, sortBy, selectedGenre, selectedProviderSet, selectedProviders.length]);
 
     const activeFilterCount = (filter !== 'all' ? 1 : 0) + 
                               (sortBy !== 'added_desc' ? 1 : 0) + 
@@ -133,20 +134,16 @@ export function MovieList({ onOpenInfo }) {
                 <div className={styles.resultsInfo}>
                     <span>Exibindo <strong>{filteredMovies.length}</strong> {filteredMovies.length === 1 ? 'filme' : 'filmes'}</span>
                 </div>
-                <motion.div layout className={styles.grid}>
-                    <AnimatePresence mode='popLayout'>
+                <motion.div className={styles.grid}>
+                    <AnimatePresence>
                     {filteredMovies.map(movie => (
                         <motion.div
                             key={movie.id}
-                            layout
+                            className={styles.movieItem}
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ 
-                                layout: { type: 'spring', stiffness: 120, damping: 20 },
-                                opacity: { duration: 0.3 },
-                                scale: { duration: 0.3 }
-                            }}
+                            transition={{ opacity: { duration: 0.2 }, scale: { duration: 0.2 } }}
                         >
                             <MovieCard
                                 movie={movie}

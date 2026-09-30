@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { sendBrowserNotification, requestNotificationPermission } from '../utils/notifications';
@@ -61,12 +61,15 @@ export function MoviesProvider({ children, listCode }) {
                 return undefined;
             }
         },
+        // Mostra o cache imediatamente, mas não o trata como dado fresco:
+        // a lista é revalidada em segundo plano ao abrir uma sessão.
+        initialDataUpdatedAt: 0,
         enabled: Boolean(listCode && user?.id),
     });
 
     const movies = (moviePages?.pages || []).flatMap(page => page.items || []);
 
-    const updateMoviePages = (updateItems, firstPageOnly = false) => {
+    const updateMoviePages = useCallback((updateItems, firstPageOnly = false) => {
         queryClient.setQueryData(queryKey, current => {
             if (!current?.pages) return current;
             return {
@@ -78,16 +81,33 @@ export function MoviesProvider({ children, listCode }) {
                 )),
             };
         });
-    };
+    }, [queryClient, queryKey]);
 
     useEffect(() => {
         if (!movieCacheKey || !moviePages) return;
-        try {
-            const cachedMovies = moviePages.pages.flatMap(page => page.items || []);
-            localStorage.setItem(movieCacheKey, JSON.stringify(cachedMovies));
-        } catch (error) {
-            console.error('Erro ao salvar cache de filmes:', error);
+        let idleId;
+        let timeoutId;
+        const persist = () => {
+            try {
+                const cachedMovies = moviePages.pages.flatMap(page => page.items || []);
+                localStorage.setItem(movieCacheKey, JSON.stringify(cachedMovies));
+            } catch (error) {
+                console.error('Erro ao salvar cache de filmes:', error);
+            }
+        };
+
+        // JSON.stringify + localStorage são síncronos; adie a persistência para
+        // que o feedback visual das ações seja pintado primeiro.
+        if ('requestIdleCallback' in window) {
+            idleId = window.requestIdleCallback(persist, { timeout: 500 });
+        } else {
+            timeoutId = window.setTimeout(persist, 0);
         }
+
+        return () => {
+            if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+            if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+        };
     }, [movieCacheKey, moviePages]);
 
     useEffect(() => {
@@ -161,22 +181,21 @@ export function MoviesProvider({ children, listCode }) {
         };
     }, [listCode, queryClient, queryKey, user?.id, addToast]);
 
-    const addMovie = async (movieData) => {
+    const addMovie = useCallback(async (movieData) => {
         try {
             const res = await api.post('/lists/' + listCode + '/movies', movieData);
             if (res.data && res.data.id) {
                 updateMoviePages(items => [res.data, ...items.filter(movie => movie.id !== res.data.id)], true);
             }
-            queryClient.invalidateQueries({ queryKey });
             addToast('Filme adicionado à lista.', 'success');
         } catch (err) {
             queryClient.invalidateQueries({ queryKey });
             addToast(err.response?.data?.detail || 'Não foi possível adicionar o filme.', 'error');
             throw err;
         }
-    };
+    }, [addToast, listCode, queryClient, queryKey, updateMoviePages]);
 
-    const toggleWatched = async (movieId) => {
+    const toggleWatched = useCallback(async (movieId) => {
         const previousMovies = queryClient.getQueryData(queryKey);
         // Optimistic UI: atualização instantânea no cache do React Query
         updateMoviePages(items => items.map(movie =>
@@ -189,9 +208,9 @@ export function MoviesProvider({ children, listCode }) {
             queryClient.setQueryData(queryKey, previousMovies);
             addToast(err.response?.data?.detail || 'Não foi possível atualizar o filme.', 'error');
         }
-    };
+    }, [addToast, queryClient, queryKey, updateMoviePages]);
 
-    const deleteMovie = async (movieId) => {
+    const deleteMovie = useCallback(async (movieId) => {
         const previousMovies = queryClient.getQueryData(queryKey);
         // Optimistic UI: remoção instantânea no cache do React Query
         updateMoviePages(items => items.filter(movie => movie.id !== movieId));
@@ -202,19 +221,30 @@ export function MoviesProvider({ children, listCode }) {
             queryClient.setQueryData(queryKey, previousMovies);
             addToast(err.response?.data?.detail || 'Não foi possível excluir o filme.', 'error');
         }
-    };
+    }, [addToast, queryClient, queryKey, updateMoviePages]);
+
+    const contextValue = useMemo(() => ({
+        movies,
+        addMovie,
+        toggleWatched,
+        deleteMovie,
+        fetchMovies,
+        loadMoreMovies: fetchNextPage,
+        hasMoreMovies: Boolean(hasNextPage),
+        isLoadingMoreMovies: isFetchingNextPage,
+    }), [
+        movies,
+        addMovie,
+        toggleWatched,
+        deleteMovie,
+        fetchMovies,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    ]);
 
     return (
-        <MoviesContext.Provider value={{
-            movies,
-            addMovie,
-            toggleWatched,
-            deleteMovie,
-            fetchMovies,
-            loadMoreMovies: fetchNextPage,
-            hasMoreMovies: Boolean(hasNextPage),
-            isLoadingMoreMovies: isFetchingNextPage,
-        }}>
+        <MoviesContext.Provider value={contextValue}>
             {children}
         </MoviesContext.Provider>
     );
