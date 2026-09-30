@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearSessionStorage } from '../utils/storage';
 
 // Cria uma base que aponta automaticamente para o nosso FastAPI
 export const api = axios.create({
@@ -28,9 +29,7 @@ api.interceptors.response.use(
             const url = error.config?.url || '';
             const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/signup') || url.includes('/auth/google');
             if (!isAuthRoute) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('user_email');
-                localStorage.removeItem('user_id');
+                clearSessionStorage();
                 window.dispatchEvent(new Event('auth:unauthorized'));
             }
         }

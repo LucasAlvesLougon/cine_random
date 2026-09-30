@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { clearSessionStorage } from '../utils/storage';
 
 const AuthContext = createContext();
 
@@ -23,11 +24,7 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const handleUnauthorized = () => {
             setUser(null);
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_email');
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('cine_random_active_list');
-            localStorage.removeItem('cine_random_my_lists_cache');
+            clearSessionStorage();
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -85,11 +82,7 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_email');
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('cine_random_active_list');
-        localStorage.removeItem('cine_random_my_lists_cache');
+        clearSessionStorage();
         setUser(null);
     };
 

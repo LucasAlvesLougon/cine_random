@@ -62,7 +62,7 @@ describe('Home Component', () => {
             { id: 1, name: 'Lista Cacheada 1', code: 'CACH01' },
             { id: 2, name: 'Lista Cacheada 2', code: 'CACH02' }
         ];
-        localStorage.setItem('cine_random_my_lists_cache', JSON.stringify(cachedLists));
+        localStorage.setItem('cine_random_my_lists_cache_1', JSON.stringify(cachedLists));
         api.get.mockResolvedValue({ data: cachedLists });
 
         renderWithProviders(<Home onSelectList={vi.fn()} />);
