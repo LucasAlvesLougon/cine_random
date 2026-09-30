@@ -6,9 +6,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { InstallPwaModal } from '../Modal/InstallPwaModal';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { getUserCacheKey } from '../../utils/storage';
 import styles from './Home.module.css';
 
-const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
+const LIST_CACHE_PREFIX = 'cine_random_my_lists_cache';
 
 export function Home({ onSelectList }) {
     const { user } = useAuth();
@@ -19,30 +20,32 @@ export function Home({ onSelectList }) {
     const [isCreating, setIsCreating] = useState(false);
     const [isInstallOpen, setIsInstallOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
+    const listsCacheKey = user?.id ? getUserCacheKey(LIST_CACHE_PREFIX, user.id) : null;
+    const listQueryKey = ['my-lists', user?.id];
 
     const { data: lists = [], isLoading } = useQuery({
-        queryKey: ['my-lists'],
+        queryKey: listQueryKey,
         queryFn: async () => {
             const token = localStorage.getItem('access_token');
             if (!token) return [];
             try {
                 const res = await api.get('/lists/my');
                 try {
-                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(res.data));
+                    localStorage.setItem(listsCacheKey, JSON.stringify(res.data));
                 } catch (e) {
                     console.error('Erro ao salvar cache de listas:', e);
                 }
                 return res.data;
             } catch (error) {
                 console.error(error);
-                const cached = localStorage.getItem(MY_LISTS_CACHE_KEY);
+                const cached = listsCacheKey && localStorage.getItem(listsCacheKey);
                 if (cached) return JSON.parse(cached);
                 throw error;
             }
         },
         initialData: () => {
             try {
-                const cached = localStorage.getItem(MY_LISTS_CACHE_KEY);
+                const cached = listsCacheKey && localStorage.getItem(listsCacheKey);
                 return cached ? JSON.parse(cached) : undefined;
             } catch {
                 return undefined;
@@ -60,14 +63,14 @@ export function Home({ onSelectList }) {
             const res = await api.post('/lists/', { name: newListName, code });
             
             // Atualização rápida de cache local
-            queryClient.setQueryData(['my-lists'], (old = []) => [...old, res.data]);
+            queryClient.setQueryData(listQueryKey, (old = []) => [...old, res.data]);
             try {
-                const current = queryClient.getQueryData(['my-lists']) || [];
-                localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                const current = queryClient.getQueryData(listQueryKey) || [];
+                localStorage.setItem(listsCacheKey, JSON.stringify(current));
             } catch (err) {
                 console.error(err);
             }
-            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+            queryClient.invalidateQueries({ queryKey: listQueryKey });
 
             setNewListName('');
             setIsCreating(false);
@@ -83,17 +86,17 @@ export function Home({ onSelectList }) {
         try {
             const res = await api.post('/lists/join/' + joinCode.trim());
             
-            queryClient.setQueryData(['my-lists'], (old = []) => {
+            queryClient.setQueryData(listQueryKey, (old = []) => {
                 if (old.some(l => l.id === res.data.id)) return old;
                 return [...old, res.data];
             });
             try {
-                const current = queryClient.getQueryData(['my-lists']) || [];
-                localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                const current = queryClient.getQueryData(listQueryKey) || [];
+                localStorage.setItem(listsCacheKey, JSON.stringify(current));
             } catch (err) {
                 console.error(err);
             }
-            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+            queryClient.invalidateQueries({ queryKey: listQueryKey });
 
             setJoinCode('');
             addToast('Você entrou na lista!', 'success');
