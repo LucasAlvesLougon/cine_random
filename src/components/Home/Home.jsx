@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,6 +7,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { InstallPwaModal } from '../Modal/InstallPwaModal';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
 import { getUserCacheKey } from '../../utils/storage';
+import { OnboardingModal } from './OnboardingModal';
 import styles from './Home.module.css';
 
 const LIST_CACHE_PREFIX = 'cine_random_my_lists_cache';
@@ -18,10 +19,15 @@ export function Home({ onSelectList }) {
     const [joinCode, setJoinCode] = useState('');
     const [newListName, setNewListName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [isJoining, setIsJoining] = useState(false);
     const [isInstallOpen, setIsInstallOpen] = useState(false);
     const { isInstallable, isInstalled, isIos, promptInstall } = usePwaInstall();
     const listsCacheKey = user?.id ? getUserCacheKey(LIST_CACHE_PREFIX, user.id) : null;
-    const listQueryKey = ['my-lists', user?.id];
+    const listQueryKey = useMemo(() => ['my-lists', user?.id], [user?.id]);
+    const inviteCode = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)\/?$/)?.[1]?.toUpperCase() || '';
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState(() => (
+        Boolean(user?.id && !localStorage.getItem(`cine_random_onboarding_seen_${user.id}`))
+    ));
 
     const { data: lists = [], isLoading } = useQuery({
         queryKey: listQueryKey,
@@ -54,13 +60,46 @@ export function Home({ onSelectList }) {
         staleTime: 1000 * 60 * 3, // 3 minutos
     });
 
+    const completeOnboarding = () => {
+        if (user?.id) localStorage.setItem(`cine_random_onboarding_seen_${user.id}`, '1');
+        setIsOnboardingOpen(false);
+    };
+
+    const joinList = useCallback(async (code) => {
+        if (!code?.trim() || isJoining) return;
+        setIsJoining(true);
+        try {
+            const res = await api.post('/lists/join/' + code.trim().toUpperCase());
+            queryClient.setQueryData(listQueryKey, (old = []) => {
+                if (old.some(l => l.id === res.data.id)) return old;
+                return [...old, res.data];
+            });
+            const current = queryClient.getQueryData(listQueryKey) || [];
+            if (listsCacheKey) localStorage.setItem(listsCacheKey, JSON.stringify(current));
+            queryClient.invalidateQueries({ queryKey: listQueryKey });
+            setJoinCode('');
+            addToast('Você entrou na lista!', 'success');
+            if (inviteCode) window.history.replaceState({}, '', '/');
+        } catch (error) {
+            addToast(error.response?.data?.detail || 'Não foi possível aceitar este convite.', 'error');
+        } finally {
+            setIsJoining(false);
+        }
+    }, [addToast, inviteCode, isJoining, listQueryKey, listsCacheKey, queryClient]);
+
+    useEffect(() => {
+        if (!inviteCode || !user?.id) return;
+        const inviteKey = `cine_random_invite_${user.id}_${inviteCode}`;
+        if (sessionStorage.getItem(inviteKey)) return;
+        sessionStorage.setItem(inviteKey, '1');
+        joinList(inviteCode);
+    }, [inviteCode, joinList, user?.id]);
+
     const handleCreateList = async (e) => {
         e.preventDefault();
         if (!newListName.trim()) return;
         try {
-            // Generate a random 6-character code
-            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-            const res = await api.post('/lists/', { name: newListName, code });
+            const res = await api.post('/lists/', { name: newListName });
             
             // Atualização rápida de cache local
             queryClient.setQueryData(listQueryKey, (old = []) => [...old, res.data]);
@@ -82,27 +121,7 @@ export function Home({ onSelectList }) {
 
     const handleJoinList = async (e) => {
         e.preventDefault();
-        if (!joinCode.trim()) return;
-        try {
-            const res = await api.post('/lists/join/' + joinCode.trim());
-            
-            queryClient.setQueryData(listQueryKey, (old = []) => {
-                if (old.some(l => l.id === res.data.id)) return old;
-                return [...old, res.data];
-            });
-            try {
-                const current = queryClient.getQueryData(listQueryKey) || [];
-                localStorage.setItem(listsCacheKey, JSON.stringify(current));
-            } catch (err) {
-                console.error(err);
-            }
-            queryClient.invalidateQueries({ queryKey: listQueryKey });
-
-            setJoinCode('');
-            addToast('Você entrou na lista!', 'success');
-        } catch (error) {
-            addToast(error.response?.data?.detail || 'Erro ao entrar na lista', 'error');
-        }
+        await joinList(joinCode);
     };
 
     return (
@@ -112,19 +131,22 @@ export function Home({ onSelectList }) {
                     <h1 className={styles.title}>Listas Compartilhadas</h1>
                     <p className={styles.subtitle}>Logado como {user?.email}</p>
                 </div>
-                {!isInstalled && (isInstallable || isIos) && (
-                    <button 
-                        onClick={() => setIsInstallOpen(true)}
-                        style={{ background: 'rgba(52, 199, 89, 0.15)', border: '1px solid rgba(52, 199, 89, 0.35)', color: '#30d158', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Instalar App
-                    </button>
-                )}
+                <div className={styles.headerActions}>
+                    <button type="button" onClick={() => setIsOnboardingOpen(true)} className={styles.helpButton}>Como funciona?</button>
+                    {!isInstalled && (isInstallable || isIos) && (
+                        <button
+                            onClick={() => setIsInstallOpen(true)}
+                            style={{ background: 'rgba(52, 199, 89, 0.15)', border: '1px solid rgba(52, 199, 89, 0.35)', color: '#30d158', padding: '8px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Instalar App
+                        </button>
+                    )}
+                </div>
             </header>
 
             <div className={styles.content}>
@@ -192,7 +214,7 @@ export function Home({ onSelectList }) {
                                 value={joinCode}
                                 onChange={e => setJoinCode(e.target.value)}
                             />
-                            <button type='submit'>Entrar</button>
+                            <button type='submit' disabled={isJoining}>{isJoining ? 'Entrando...' : 'Entrar'}</button>
                         </form>
                     </div>
                 </div>
@@ -207,6 +229,7 @@ export function Home({ onSelectList }) {
                     setIsInstallOpen(false);
                 }}
             />
+            <OnboardingModal isOpen={isOnboardingOpen} onClose={completeOnboarding} />
         </div>
     );
 }

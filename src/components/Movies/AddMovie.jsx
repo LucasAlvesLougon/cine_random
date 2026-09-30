@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { fetchMovieDetails, searchMoviesAutocomplete, fetchMovieDetailsById } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
-import { MatchModal } from '../Modal/MatchModal';
 import { ListDrawFilterModal } from '../Modal/ListDrawFilterModal';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './AddMovie.module.css';
@@ -16,7 +15,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
     const dropdownRef = useRef(null);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
@@ -234,9 +232,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
                     </svg>
                     Me Surpreenda
                 </button>
-                <button onClick={() => setIsMatchModalOpen(true)} className={styles.matchBtn}>
-                    Match da Galera
-                </button>
             </div>
         </div>
 
@@ -259,13 +254,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
             listCode={listCode}
         />
 
-        <MatchModal 
-            isOpen={isMatchModalOpen}
-            onClose={() => setIsMatchModalOpen(false)}
-            movies={movies}
-            onOpenInfo={onOpenInfo}
-            listCode={listCode}
-        />
     </div>
     );
 }

@@ -4,10 +4,11 @@ import { useMovies } from '../../contexts/MoviesContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
+import { getUserCacheKey } from '../../utils/storage';
 import { HistoryModal } from '../Modal/HistoryModal';
 import { MembersModal } from '../Modal/MembersModal';
 
-const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
+const LIST_CACHE_PREFIX = 'cine_random_my_lists_cache';
 
 export function ListHeader({ 
     activeList, 
@@ -40,18 +41,19 @@ export function ListHeader({
         e.preventDefault();
         if (newListName.trim() && newListName !== activeList.name) {
             try {
-                await api.put(`/lists/${activeList.code}`, { name: newListName, code: activeList.code });
+                await api.put(`/lists/${activeList.code}`, { name: newListName });
                 setActiveList({ ...activeList, name: newListName });
-                queryClient.setQueryData(['my-lists'], (old = []) => 
+                const listQueryKey = ['my-lists', user?.id];
+                queryClient.setQueryData(listQueryKey, (old = []) =>
                     old.map(l => l.code === activeList.code ? { ...l, name: newListName } : l)
                 );
                 try {
-                    const current = queryClient.getQueryData(['my-lists']) || [];
-                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                    const current = queryClient.getQueryData(listQueryKey) || [];
+                    if (user?.id) localStorage.setItem(getUserCacheKey(LIST_CACHE_PREFIX, user.id), JSON.stringify(current));
                 } catch (err) {
                     console.error(err);
                 }
-                queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+                queryClient.invalidateQueries({ queryKey: listQueryKey });
                 addToast('Lista renomeada com sucesso!', 'success');
             } catch (error) {
                 addToast(error.response?.data?.detail || 'Erro ao renomear lista.', 'error');

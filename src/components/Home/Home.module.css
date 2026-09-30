@@ -23,6 +23,28 @@
     margin-top: 5px;
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.helpButton {
+    padding: 8px 14px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.helpButton:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+}
+
 .logoutBtn {
     background: transparent;
     border: 1px solid var(--border-color);

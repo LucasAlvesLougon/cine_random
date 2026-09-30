@@ -28,8 +28,8 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
         if (!listCode || isCleaning) return;
         setIsCleaning(true);
         try {
-            const res = await api.delete(`/lists/${listCode}/history/cleanup?days=7`);
-            addToast(res.data.message || 'Histórico com mais de 7 dias limpo com sucesso!', 'success');
+            const res = await api.delete(`/lists/${listCode}/history/cleanup?days=30`);
+            addToast(res.data.message || 'Histórico antigo arquivado com sucesso!', 'success');
             await fetchHistory();
         } catch (error) {
             console.error(error);
@@ -80,13 +80,13 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 onClick={handleCleanupOld}
                                 disabled={isCleaning}
                                 className={styles.btnClearOld}
-                                title="Limpar sorteios realizados há mais de 7 dias"
+                                title="Arquivar sorteios realizados há mais de 30 dias"
                             >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                 </svg>
-                                {isCleaning ? 'Limpando...' : 'Limpar (+7 dias)'}
+                                {isCleaning ? 'Arquivando...' : 'Arquivar (+30 dias)'}
                             </button>
                         )}
                     </div>
@@ -111,7 +111,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 </svg>
                             </div>
                             <h4>Nenhum sorteio registrado ainda</h4>
-                            <p>Use a Roleta ou o Match da Galera para sortear o primeiro filme do grupo.</p>
+                            <p>Use a Roleta ou o Modo Descoberta para sortear o primeiro filme do grupo.</p>
                         </div>
                     ) : (
                         <div className={styles.timeline}>
@@ -140,7 +140,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                         <div className={styles.topRow}>
                                             <strong className={styles.movieTitle}>{item.movie_title}</strong>
                                             <span className={`${styles.typeBadge} ${item.draw_type === 'match' ? styles.badgeMatch : item.draw_type === 'discovery' ? styles.badgeDiscovery : styles.badgeRoulette}`}>
-                                                {item.draw_type === 'match' ? 'Match' : item.draw_type === 'discovery' ? 'Descoberta' : 'Roleta'}
+                                                {item.draw_type === 'match' ? 'Sessão antiga' : item.draw_type === 'discovery' ? 'Descoberta' : 'Roleta'}
                                             </span>
                                         </div>
                                         <span className={styles.date}>{formatDate(item.drawn_at)}</span>
