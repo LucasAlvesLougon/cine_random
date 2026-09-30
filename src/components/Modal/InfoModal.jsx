@@ -6,8 +6,10 @@ import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { CommentSection } from '../Comments/CommentSection';
 import { ShareCardModal } from './ShareCardModal';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function InfoModal({ isOpen, onClose, movie, listCode }) {
+    const dialogRef = useDialogFocus(isOpen && !!movie, onClose);
     const { addToast } = useToast();
     const { movies, addMovie } = useMovies();
     const [providers, setProviders] = useState([]);
@@ -16,6 +18,7 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
     const [cast, setCast] = useState(movie?.cast || []);
     const [isAdding, setIsAdding] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
+    const trailerDialogRef = useDialogFocus(isOpen && showTrailer, () => setShowTrailer(false));
     const [isShareOpen, setIsShareOpen] = useState(false);
 
     const [bannerLoaded, setBannerLoaded] = useState(false);
@@ -79,10 +82,10 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
     return createPortal(
         <>
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="movie-info-title" tabIndex={-1}>
 
                 <div className={styles.closeRow}>
-                    <button className={styles.closeBtn} onClick={onClose}>✕</button>
+                    <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar detalhes do filme">✕</button>
                 </div>
 
                 {/* --- HERO SECTION --- */}
@@ -108,7 +111,7 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
 
                     <div className={styles.heroContent}>
                         <div className={styles.heroText}>
-                            <h2 className={styles.title}>{movie.title}</h2>
+                            <h2 id="movie-info-title" className={styles.title}>{movie.title}</h2>
 
                             <div className={styles.metaRow}>
                                 <span className={styles.appleBadge}>TMDB {movie.tmdbRating}</span>
@@ -251,8 +254,8 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
 
         {/* --- TRAILER OVERLAY FULLSCREEN --- */}
         {showTrailer && trailerKey && (
-            <div className={styles.fullScreenTrailer} onClick={() => setShowTrailer(false)}>
-                <button className={styles.closeTrailerBtn} onClick={() => setShowTrailer(false)}>✕</button>
+            <div ref={trailerDialogRef} className={styles.fullScreenTrailer} onClick={() => setShowTrailer(false)} role="dialog" aria-modal="true" aria-label={`Trailer de ${movie.title}`} tabIndex={-1}>
+                <button className={styles.closeTrailerBtn} onClick={() => setShowTrailer(false)} aria-label="Fechar trailer">✕</button>
                 <div className={styles.trailerBox} onClick={e => e.stopPropagation()}>
                     <iframe
                         width="100%"

@@ -12,7 +12,7 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
 
     return (
     <div className={styles.card}>
-        <div className={styles.posterWrapper} onClick={() => onOpenInfo(movie)}>
+        <button type="button" className={styles.posterWrapper} onClick={() => onOpenInfo(movie)} aria-label={`Ver detalhes de ${movie.title} no pôster`}>
             {movie.posterUrl ? (
                 <img 
                     src={movie.posterUrl} 
@@ -36,15 +36,13 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
                     )}
                 </div>
             )}
-        </div>
+        </button>
 
         <div className={styles.info}>
-            <h3 
-                className={styles.title} 
-                onClick={() => onOpenInfo(movie)}
-                style={{ cursor: 'pointer' }}
-            >
-                {movie.title}
+            <h3 className={styles.title}>
+                <button type="button" className={styles.titleButton} onClick={() => onOpenInfo(movie)} aria-label={`Ver detalhes de ${movie.title}`}>
+                    {movie.title}
+                </button>
             </h3>
             <div className={styles.meta}>
                 {movie.releaseYear} <span style={{color: 'var(--text-faint)'}}>•</span> ⭐ {movie.tmdbRating}
@@ -60,6 +58,8 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
 
             <div className={styles.actions}>
                 <button 
+                    type="button"
+                    aria-label={`${movie.watched ? 'Marcar como não assistido' : 'Marcar como assistido'}: ${movie.title}`}
                     onClick={() => {
                         triggerHaptic('light');
                         onToggleWatched(movie.id, movie.watched);
@@ -84,6 +84,8 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
                     )}
                 </button>
                 <button 
+                    type="button"
+                    aria-label={`Remover ${movie.title} da lista`}
                     onClick={() => {
                         triggerHaptic('warning');
                         onDelete(movie.id);

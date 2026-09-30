@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './HistoryModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     const { addToast } = useToast();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -28,8 +30,8 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
         if (!listCode || isCleaning) return;
         setIsCleaning(true);
         try {
-            const res = await api.delete(`/lists/${listCode}/history/cleanup?days=7`);
-            addToast(res.data.message || 'Histórico com mais de 7 dias limpo com sucesso!', 'success');
+            const res = await api.delete(`/lists/${listCode}/history/cleanup?days=30`);
+            addToast(res.data.message || 'Histórico antigo arquivado com sucesso!', 'success');
             await fetchHistory();
         } catch (error) {
             console.error(error);
@@ -68,8 +70,8 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
 
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="history-modal-title" tabIndex={-1}>
+                <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar histórico">✕</button>
 
                 <div className={styles.header}>
                     <div className={styles.headerTopRow}>
@@ -80,17 +82,17 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 onClick={handleCleanupOld}
                                 disabled={isCleaning}
                                 className={styles.btnClearOld}
-                                title="Limpar sorteios realizados há mais de 7 dias"
+                                title="Arquivar sorteios realizados há mais de 30 dias"
                             >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                 </svg>
-                                {isCleaning ? 'Limpando...' : 'Limpar (+7 dias)'}
+                                {isCleaning ? 'Arquivando...' : 'Arquivar (+30 dias)'}
                             </button>
                         )}
                     </div>
-                    <h3 className={styles.title}>Histórico de Sorteios</h3>
+                    <h3 id="history-modal-title" className={styles.title}>Histórico de Sorteios</h3>
                     <p className={styles.subtitle}>Filmes sorteados e selecionados nas sessões anteriores</p>
                 </div>
 
@@ -111,7 +113,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 </svg>
                             </div>
                             <h4>Nenhum sorteio registrado ainda</h4>
-                            <p>Use a Roleta ou o Match da Galera para sortear o primeiro filme do grupo.</p>
+                            <p>Use a Roleta ou o Modo Descoberta para sortear o primeiro filme do grupo.</p>
                         </div>
                     ) : (
                         <div className={styles.timeline}>
@@ -119,8 +121,18 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                 <div 
                                     key={item.id} 
                                     className={styles.historyItem}
+                                    role={item.movie_id ? 'button' : undefined}
+                                    tabIndex={item.movie_id ? 0 : undefined}
+                                    aria-label={item.movie_id ? `Ver detalhes de ${item.movie_title}` : undefined}
                                     onClick={() => {
                                         if (item.movie_id) {
+                                            onClose();
+                                            onOpenInfo({ id: item.movie_id, title: item.movie_title, posterUrl: item.movie_poster });
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (item.movie_id && (e.key === 'Enter' || e.key === ' ')) {
+                                            e.preventDefault();
                                             onClose();
                                             onOpenInfo({ id: item.movie_id, title: item.movie_title, posterUrl: item.movie_poster });
                                         }
@@ -140,7 +152,7 @@ export function HistoryModal({ isOpen, onClose, listCode, onOpenInfo }) {
                                         <div className={styles.topRow}>
                                             <strong className={styles.movieTitle}>{item.movie_title}</strong>
                                             <span className={`${styles.typeBadge} ${item.draw_type === 'match' ? styles.badgeMatch : item.draw_type === 'discovery' ? styles.badgeDiscovery : styles.badgeRoulette}`}>
-                                                {item.draw_type === 'match' ? 'Match' : item.draw_type === 'discovery' ? 'Descoberta' : 'Roleta'}
+                                                {item.draw_type === 'match' ? 'Sessão antiga' : item.draw_type === 'discovery' ? 'Descoberta' : 'Roleta'}
                                             </span>
                                         </div>
                                         <span className={styles.date}>{formatDate(item.drawn_at)}</span>

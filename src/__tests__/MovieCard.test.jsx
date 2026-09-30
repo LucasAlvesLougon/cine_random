@@ -27,6 +27,16 @@ describe('MovieCard', () => {
         expect(screen.getByText(/8.6/)).toBeInTheDocument();
     });
 
+    it('abre a ficha do filme por teclado a partir do pôster ou título', () => {
+        const onOpenInfo = vi.fn();
+        render(<MovieCard movie={mockMovie} onToggleWatched={vi.fn()} onDelete={vi.fn()} onOpenInfo={onOpenInfo} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ver detalhes de Interestelar no pôster' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Ver detalhes de Interestelar' }));
+        expect(onOpenInfo).toHaveBeenCalledTimes(2);
+        expect(screen.getByRole('button', { name: 'Remover Interestelar da lista' })).toBeInTheDocument();
+    });
+
     it('deve chamar onToggleWatched ao clicar no botão de marcar assistido', () => {
         const handleToggle = vi.fn();
         render(

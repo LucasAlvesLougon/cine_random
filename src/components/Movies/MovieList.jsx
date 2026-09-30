@@ -2,11 +2,12 @@ import { useState, useMemo, useDeferredValue } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { MovieCard } from './MovieCard';
 import { CatalogFilterModal } from '../Modal/CatalogFilterModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import styles from './MovieList.module.css';
 
-export function MovieList({ onOpenInfo }) {
-    const { movies, toggleWatched, deleteMovie } = useMovies();
+export function MovieList({ onOpenInfo, onAddFirstMovie }) {
+    const { movies, totalMovies = movies.length, toggleWatched, deleteMovie, loadMoreMovies, hasMoreMovies, isLoadingMoreMovies } = useMovies();
+    const reduceMotion = useReducedMotion();
 
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('added_desc');
@@ -16,6 +17,7 @@ export function MovieList({ onOpenInfo }) {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     const deferredSearchTerm = useDeferredValue(searchTerm);
+    const selectedProviderSet = useMemo(() => new Set(selectedProviders), [selectedProviders]);
 
     const availableGenres = useMemo(() => {
         return Array.from(new Set(movies.flatMap(m => m.genres || []))).sort();
@@ -38,7 +40,7 @@ export function MovieList({ onOpenInfo }) {
             const matchesSearch = !query || movie.title.toLowerCase().includes(query);
             const matchesGenre = selectedGenre === '' || (movie.genres && movie.genres.includes(selectedGenre));
             const matchesProvider = selectedProviders.length === 0 || 
-                                  (movie.watchProviders && movie.watchProviders.some(p => selectedProviders.includes(p.name)));
+                                  (movie.watchProviders && movie.watchProviders.some(p => selectedProviderSet.has(p.name)));
             return matchesFilter && matchesSearch && matchesGenre && matchesProvider;
         }).sort((a, b) => {
         switch (sortBy) {
@@ -63,7 +65,7 @@ export function MovieList({ onOpenInfo }) {
                 return (b.id || 0) - (a.id || 0);
         }
         });
-    }, [movies, deferredSearchTerm, filter, sortBy, selectedGenre, selectedProviders]);
+    }, [movies, deferredSearchTerm, filter, sortBy, selectedGenre, selectedProviderSet, selectedProviders.length]);
 
     const activeFilterCount = (filter !== 'all' ? 1 : 0) + 
                               (sortBy !== 'added_desc' ? 1 : 0) + 
@@ -80,6 +82,7 @@ export function MovieList({ onOpenInfo }) {
                 </svg>
                 <input 
                     type="text" 
+                    aria-label="Buscar filme na lista"
                     placeholder="Buscar filme na lista..." 
                     className={styles.searchInput}
                     value={searchTerm}
@@ -104,7 +107,7 @@ export function MovieList({ onOpenInfo }) {
                     <line x1="9" y1="8" x2="15" y2="8"></line>
                     <line x1="17" y1="16" x2="23" y2="16"></line>
                 </svg>
-                <span>Filtros</span>
+                <span>Filtros do catálogo</span>
                 {activeFilterCount > 0 && (
                     <span className={styles.filterBadge}>{activeFilterCount}</span>
                 )}
@@ -126,27 +129,32 @@ export function MovieList({ onOpenInfo }) {
             availableProviders={availableProviders}
         />
 
-        {filteredMovies.length === 0 ? (
-            <p style={{ padding: '0 40px', color: 'var(--text-secondary)' }}>Nenhum filme encontrado para este filtro.</p>
+        {movies.length === 0 && totalMovies === 0 ? (
+            <div className={styles.emptyState} role="status">
+                <h2>Sua lista ainda não tem filmes</h2>
+                <p>Adicione o primeiro filme para começar a escolher com o grupo.</p>
+                <button type="button" onClick={onAddFirstMovie}>Adicionar o primeiro filme</button>
+            </div>
+        ) : filteredMovies.length === 0 ? (
+            <div className={styles.emptyState} role="status">
+                <h2>Nenhum filme corresponde à busca ou aos filtros</h2>
+                <p>{hasMoreMovies ? 'Nenhum filme carregado corresponde à busca ou aos filtros. Carregue mais filmes ou ajuste os filtros.' : 'Tente outro termo ou ajuste os filtros do catálogo.'}</p>
+            </div>
         ) : (
             <>
                 <div className={styles.resultsInfo}>
-                    <span>Exibindo <strong>{filteredMovies.length}</strong> {filteredMovies.length === 1 ? 'filme' : 'filmes'}</span>
+                    <span>Exibindo <strong>{filteredMovies.length}</strong> {filteredMovies.length === 1 ? 'filme' : 'filmes'} entre {movies.length} {movies.length === 1 ? 'carregado' : 'carregados'} ({totalMovies} na lista)</span>
                 </div>
-                <motion.div layout className={styles.grid}>
-                    <AnimatePresence mode='popLayout'>
+                <motion.div className={styles.grid}>
+                    <AnimatePresence>
                     {filteredMovies.map(movie => (
                         <motion.div
                             key={movie.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            className={styles.movieItem}
+                            initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ 
-                                layout: { type: 'spring', stiffness: 120, damping: 20 },
-                                opacity: { duration: 0.3 },
-                                scale: { duration: 0.3 }
-                            }}
+                            exit={reduceMotion ? undefined : { opacity: 0, scale: 0.9 }}
+                            transition={{ opacity: { duration: reduceMotion ? 0 : 0.2 }, scale: { duration: reduceMotion ? 0 : 0.2 } }}
                         >
                             <MovieCard
                                 movie={movie}
@@ -159,6 +167,13 @@ export function MovieList({ onOpenInfo }) {
                 </AnimatePresence>
             </motion.div>
             </>
+        )}
+        {hasMoreMovies && (
+            <div className={styles.loadMoreWrapper}>
+                <button type="button" className={styles.loadMoreButton} onClick={() => loadMoreMovies()} disabled={isLoadingMoreMovies}>
+                    {isLoadingMoreMovies ? 'Carregando...' : 'Carregar mais filmes'}
+                </button>
+            </div>
         )}
     </>
     );

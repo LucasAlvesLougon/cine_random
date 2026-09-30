@@ -1,7 +1,7 @@
 {
   "name": "Cine Random - Sorteador de Filmes",
   "short_name": "Cine Random",
-  "description": "Sorteie filmes para assistir com amigos, dê match no Match da Galera e organize seu Cine Clube.",
+  "description": "Sorteie filmes para assistir com amigos e organize seu Cine Clube.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

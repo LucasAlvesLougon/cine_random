@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useToast } from '../../contexts/ToastContext';
+import { getListInviteUrl } from '../../utils/share';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 import styles from './ShareCardModal.module.css';
 
 export function ShareCardModal({ isOpen, onClose, movie, listCode }) {
+    const dialogRef = useDialogFocus(isOpen && !!movie, onClose);
     const { addToast } = useToast();
     const [copied, setCopied] = useState(false);
 
@@ -13,7 +16,8 @@ export function ShareCardModal({ isOpen, onClose, movie, listCode }) {
         ? movie.watchProviders.map(p => p.name).join(', ')
         : 'Confira onde assistir no app';
 
-    const shareText = `🍿 Hoje é dia de Sessão Pipoca no Cine Random!\n\n🎬 *${movie.title}* (${movie.releaseYear})\n⭐ Nota TMDB: ${movie.tmdbRating}\n📺 Onde Assistir: ${providersText}\n\nEntre na nossa lista no Cine Random com o código: *${listCode || 'CINE'}* 🎟️`;
+    const inviteUrl = listCode ? getListInviteUrl(listCode) : window.location.origin;
+    const shareText = `🍿 Hoje é dia de Sessão Pipoca no Cine Random!\n\n🎬 *${movie.title}* (${movie.releaseYear})\n⭐ Nota TMDB: ${movie.tmdbRating}\n📺 Onde Assistir: ${providersText}\n\nEntre na nossa lista: ${inviteUrl}\nCódigo alternativo: *${listCode || 'CINE'}* 🎟️`;
 
     const handleCopyText = async () => {
         try {
@@ -32,7 +36,7 @@ export function ShareCardModal({ isOpen, onClose, movie, listCode }) {
                 await navigator.share({
                     title: `Sessão Cine Random: ${movie.title}`,
                     text: shareText,
-                    url: window.location.href,
+                    url: inviteUrl,
                 });
             } catch {
                 // Compartilhamento cancelado pelo usuário
@@ -44,8 +48,8 @@ export function ShareCardModal({ isOpen, onClose, movie, listCode }) {
 
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Convite da sessão de cinema" tabIndex={-1}>
+                <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar convite da sessão">✕</button>
 
                 <div className={styles.cardPreview}>
                     {movie.backdropUrl ? (

@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmModal } from './ConfirmModal';
-import { shareContent } from '../../utils/share';
+import { shareListInvite } from '../../utils/share';
 import styles from './MembersModal.module.css';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
+    const dialogRef = useDialogFocus(isOpen, onClose);
     const { addToast } = useToast();
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -36,13 +38,11 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
     if (!isOpen) return null;
 
     const handleCopyCode = async () => {
-        const res = await shareContent({
-            title: `Cine Random - Lista ${listCode}`,
-            text: `🍿 Entre no meu Cine Clube no Cine Random com o código: ${listCode}`,
-            url: window.location.origin
-        });
-        if (res.method === 'clipboard') {
-            addToast(`Código ${listCode} copiado para convidar amigos!`, 'success');
+        try {
+            const res = await shareListInvite({ code: listCode, name: `Lista ${listCode}` });
+            if (res.method === 'clipboard') addToast('Link de convite copiado!', 'success');
+        } catch {
+            addToast('Não foi possível compartilhar o convite.', 'error');
         }
     };
 
@@ -60,12 +60,12 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
 
     return createPortal(
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <button className={styles.closeBtn} onClick={onClose}>✕</button>
+            <div ref={dialogRef} className={styles.modal} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="members-modal-title" tabIndex={-1}>
+                <button className={styles.closeBtn} onClick={onClose} aria-label="Fechar participantes">✕</button>
 
                 <div className={styles.header}>
                     <span className={styles.badge}>Cine Clube</span>
-                    <h3 className={styles.title}>Participantes da Lista</h3>
+                    <h3 id="members-modal-title" className={styles.title}>Participantes da Lista</h3>
                     <p className={styles.subtitle}>Membros que podem votar, adicionar e sortear filmes</p>
                 </div>
 
@@ -100,6 +100,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
                                                 setMemberToRemove(member);
                                             }}
                                             title="Remover participante da lista"
+                                            aria-label={`Remover ${member.email} da lista`}
                                         >
                                             ✕
                                         </button>
@@ -112,7 +113,7 @@ export function MembersModal({ isOpen, onClose, listCode, isOwner }) {
 
                 <div className={styles.footer}>
                     <button onClick={handleCopyCode} className={styles.btnInvite}>
-                        Copiar Código de Convite ({listCode})
+                        Copiar Link de Convite
                     </button>
                 </div>
 

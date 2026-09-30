@@ -87,6 +87,28 @@ describe('SidebarDrawer and Dedicated Filter Modals', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    it('filtros do sorteio recebem foco, prendem Tab e fecham com Escape', () => {
+        const opener = document.createElement('button');
+        document.body.appendChild(opener);
+        opener.focus();
+        const onClose = vi.fn();
+        const props = {
+            isOpen: true, onClose, includeWatched: false, setIncludeWatched: vi.fn(),
+            selectedProviders: [], setSelectedProviders: vi.fn(), availableProviders: [],
+        };
+        const { rerender } = render(<ListDrawFilterModal {...props} />);
+        const dialog = screen.getByRole('dialog', { name: 'Filtros de Sorteio da Lista' });
+        expect(dialog).toContainElement(document.activeElement);
+        screen.getByRole('button', { name: 'Aplicar Filtros' }).focus();
+        fireEvent.keyDown(document, { key: 'Tab' });
+        expect(screen.getByRole('button', { name: 'Fechar filtros do sorteio' })).toHaveFocus();
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(onClose).toHaveBeenCalledTimes(1);
+        rerender(<ListDrawFilterModal {...props} isOpen={false} />);
+        expect(opener).toHaveFocus();
+        opener.remove();
+    });
+
     it('DiscoverFilterModal deve aplicar gênero e década apenas ao clicar em Aplicar', () => {
         const setGenre = vi.fn();
         const setDecade = vi.fn();

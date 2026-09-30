@@ -193,21 +193,21 @@
 }
 
 .badgeRoulette {
-    background: rgba(0, 122, 255, 0.2);
-    color: #2997ff;
-    border: 1px solid rgba(0, 122, 255, 0.3);
-}
-
-.badgeMatch {
-    background: rgba(255, 69, 58, 0.2);
-    color: #ff453a;
+    background: rgba(255, 69, 58, 0.16);
+    color: #ff8a83;
     border: 1px solid rgba(255, 69, 58, 0.3);
 }
 
+.badgeMatch {
+    background: rgba(255, 255, 255, 0.08);
+    color: #c0c0c4;
+    border: 1px solid var(--border);
+}
+
 .badgeDiscovery {
-    background: rgba(175, 82, 222, 0.2);
-    color: #bf5af2;
-    border: 1px solid rgba(175, 82, 222, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+    color: #c0c0c4;
+    border: 1px solid var(--border);
 }
 
 .date {

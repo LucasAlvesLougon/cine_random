@@ -4,10 +4,12 @@ import { useMovies } from '../../contexts/MoviesContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
+import { getUserCacheKey } from '../../utils/storage';
+import { shareListInvite } from '../../utils/share';
 import { HistoryModal } from '../Modal/HistoryModal';
 import { MembersModal } from '../Modal/MembersModal';
 
-const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
+const LIST_CACHE_PREFIX = 'cine_random_my_lists_cache';
 
 export function ListHeader({ 
     activeList, 
@@ -20,7 +22,7 @@ export function ListHeader({
     isMembersOpen = false,
     setIsMembersOpen = () => {}
 }) {
-    const { movies } = useMovies();
+    const { movies, totalMovies = movies.length } = useMovies();
     const { user } = useAuth();
     const { addToast } = useToast();
     const queryClient = useQueryClient();
@@ -35,23 +37,34 @@ export function ListHeader({
 
     const unwatchedCount = movies.filter(m => !m.watched).length;
     const watchedCount = movies.filter(m => m.watched).length;
+    const hasUnloadedMovies = totalMovies > movies.length;
+
+    const handleInvite = async () => {
+        try {
+            const result = await shareListInvite({ code: activeList.code, name: activeList.name });
+            if (result.method === 'clipboard') addToast('Link direto de convite copiado. O código também está na mensagem.', 'success');
+        } catch {
+            addToast('Não foi possível compartilhar o convite.', 'error');
+        }
+    };
 
     const handleRename = async (e) => {
         e.preventDefault();
         if (newListName.trim() && newListName !== activeList.name) {
             try {
-                await api.put(`/lists/${activeList.code}`, { name: newListName, code: activeList.code });
+                await api.put(`/lists/${activeList.code}`, { name: newListName });
                 setActiveList({ ...activeList, name: newListName });
-                queryClient.setQueryData(['my-lists'], (old = []) => 
+                const listQueryKey = ['my-lists', user?.id];
+                queryClient.setQueryData(listQueryKey, (old = []) =>
                     old.map(l => l.code === activeList.code ? { ...l, name: newListName } : l)
                 );
                 try {
-                    const current = queryClient.getQueryData(['my-lists']) || [];
-                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                    const current = queryClient.getQueryData(listQueryKey) || [];
+                    if (user?.id) localStorage.setItem(getUserCacheKey(LIST_CACHE_PREFIX, user.id), JSON.stringify(current));
                 } catch (err) {
                     console.error(err);
                 }
-                queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+                queryClient.invalidateQueries({ queryKey: listQueryKey });
                 addToast('Lista renomeada com sucesso!', 'success');
             } catch (error) {
                 addToast(error.response?.data?.detail || 'Erro ao renomear lista.', 'error');
@@ -86,8 +99,8 @@ export function ListHeader({
                         <button type="button" onClick={() => setIsEditingName(false)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', textTransform: 'uppercase' }}>Cancelar</button>
                     </form>
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                        <h2 className="activeListTitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
+                    <div className="activeListNameRow">
+                        <h2 className="activeListTitle">
                             {activeList.name}
                         </h2>
                         
@@ -111,13 +124,16 @@ export function ListHeader({
                         </button>
                     </div>
                 )}
+                <button type="button" className="inviteFriendsButton" onClick={handleInvite}>
+                    Convidar amigos
+                </button>
             </div>
 
             {/* Apenas estatísticas minimalistas da lista */}
             <div className="activeListStats">
                 <div className="statsPill">
-                    {movies.length} {movies.length === 1 ? 'filme' : 'filmes'}
-                    {movies.length > 0 && ` (${unwatchedCount} para ver • ${watchedCount} vistos)`}
+                    {totalMovies} {totalMovies === 1 ? 'filme' : 'filmes'} na lista
+                    {hasUnloadedMovies ? ` • ${movies.length} ${movies.length === 1 ? 'carregado' : 'carregados'}` : movies.length > 0 ? ` • ${unwatchedCount} para ver • ${watchedCount} ${watchedCount === 1 ? 'visto' : 'vistos'}` : ''}
                 </div>
             </div>
 

@@ -133,6 +133,10 @@
 
 /* Toggle Switch */
 .toggleRow {
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -175,7 +179,7 @@
 }
 
 .toggleSwitchActive {
-    background: #30d158;
+    background: var(--red);
 }
 
 .toggleKnob {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { MovieList } from './components/Movies/MovieList';
@@ -15,6 +15,8 @@ import { getPeriodOfDay } from './utils/time';
 import { GoogleLinkPasswordModal } from './components/Auth/GoogleLinkPasswordModal';
 import { GoogleLogin } from '@react-oauth/google';
 import { api } from './services/api';
+import { getUserCacheKey } from './utils/storage';
+import { useDialogFocus } from './hooks/useDialogFocus';
 import './App.css';
 
 const GoogleIcon = (props) => (
@@ -31,12 +33,14 @@ const GoogleIcon = (props) => (
 );
 
 const ACTIVE_LIST_STORAGE_KEY = 'cine_random_active_list';
-const MY_LISTS_CACHE_KEY = 'cine_random_my_lists_cache';
+const LIST_CACHE_PREFIX = 'cine_random_my_lists_cache';
 
 function App() {
   const { user, loginEmail, signupEmail, loginWithGoogle, confirmGoogleLink, loginDemo } = useAuth();
   const { addToast } = useToast();
   const queryClient = useQueryClient();
+  const listQueryKey = ['my-lists', user?.id];
+  const listsCacheKey = user?.id ? getUserCacheKey(LIST_CACHE_PREFIX, user.id) : null;
   
   // Persistência da lista ativa no localStorage para sobreviver a F5/refresh
   const [activeList, setActiveListState] = useState(() => {
@@ -65,15 +69,20 @@ function App() {
   useEffect(() => {
     if (!user && !localStorage.getItem('access_token')) {
       localStorage.removeItem(ACTIVE_LIST_STORAGE_KEY);
-      localStorage.removeItem(MY_LISTS_CACHE_KEY);
+      if (listsCacheKey) localStorage.removeItem(listsCacheKey);
       setActiveListState(null);
     }
-  }, [user]);
+  }, [user, listsCacheKey]);
 
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginView, setIsLoginView] = useState(true);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetToken] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
+  const [isPasswordResetView, setIsPasswordResetView] = useState(() => window.location.pathname === '/reset-password');
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
   const [listToDelete, setListToDelete] = useState(null);
   
   const period = getPeriodOfDay();
@@ -98,6 +107,31 @@ function App() {
     }
   };
 
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setIsResetSubmitting(true);
+    try {
+      if (resetToken) {
+        await api.post('/auth/password-reset/confirm', {
+          token: resetToken,
+          new_password: resetPassword,
+        });
+        addToast('Senha redefinida. Faça login com a nova senha.', 'success');
+        window.history.replaceState({}, '', '/');
+        setIsPasswordResetView(false);
+        setIsLoginView(true);
+        setResetPassword('');
+      } else {
+        await api.post('/auth/password-reset/request', { email: resetEmail });
+        addToast('Se o email estiver cadastrado, enviaremos as instruções.', 'success');
+      }
+    } catch (error) {
+      addToast(error.response?.data?.detail || 'Não foi possível processar a recuperação.', 'error');
+    } finally {
+      setIsResetSubmitting(false);
+    }
+  };
+
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGoogleLinkModalOpen, setIsGoogleLinkModalOpen] = useState(false);
   const [isGoogleLinkSubmitting, setIsGoogleLinkSubmitting] = useState(false);
@@ -106,6 +140,7 @@ function App() {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
   const isDemoAuthEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
+  const demoDialogRef = useDialogFocus(isDemoAuthEnabled && isGoogleModalOpen, () => setIsGoogleModalOpen(false));
 
   const handleGoogleCredential = async (credentialResponse) => {
     setIsGoogleLoading(true);
@@ -171,8 +206,10 @@ function App() {
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const addMovieInputRef = useRef(null);
+  const inviteCode = window.location.pathname.match(/^\/join\/([A-Za-z0-9_-]+)\/?$/)?.[1] || '';
 
-  if (user && !activeList) {
+  if (user && (!activeList || inviteCode)) {
     return (
       <Layout 
         activeList={null}
@@ -204,10 +241,13 @@ function App() {
             setIsHistoryOpen={setIsHistoryOpen}
           />
           <div className='actionPanels'>
-              <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
+              <AddMovie onOpenInfo={setSelectedMovie} listCode={activeList?.code} inputRef={addMovieInputRef} />
               <DiscoverRoulette onOpenInfo={setSelectedMovie} listCode={activeList?.code} />
           </div>
-          <MovieList onOpenInfo={setSelectedMovie} />
+          <MovieList onOpenInfo={setSelectedMovie} onAddFirstMovie={() => {
+            addMovieInputRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+            addMovieInputRef.current?.focus();
+          }} />
           
           <InfoModal 
             isOpen={!!selectedMovie} 
@@ -221,12 +261,12 @@ function App() {
             onConfirm={async () => {
                 try {
                   await api.delete(`/lists/${listToDelete.code}`);
-                  queryClient.setQueryData(['my-lists'], (old = []) => old.filter(l => l.code !== listToDelete.code));
+                  queryClient.setQueryData(listQueryKey, (old = []) => old.filter(l => l.code !== listToDelete.code));
                   try {
-                    const current = queryClient.getQueryData(['my-lists']) || [];
-                    localStorage.setItem(MY_LISTS_CACHE_KEY, JSON.stringify(current));
+                    const current = queryClient.getQueryData(listQueryKey) || [];
+                    if (listsCacheKey) localStorage.setItem(listsCacheKey, JSON.stringify(current));
                   } catch (e) { console.error(e); }
-                  queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+                  queryClient.invalidateQueries({ queryKey: listQueryKey });
                   setActiveList(null);
                   addToast("Lista excluída com sucesso.", "success");
                 } catch (error) {
@@ -241,44 +281,35 @@ function App() {
         <div className='loginHero'>
           <div className='loginCard'>
             <h1 className='loginTitle'>Sua {period} de Cinema.</h1>
-            <p className='loginSubtitle'>Acesse sua conta para organizar seus filmes.</p>
+            <p className='loginSubtitle'>{inviteCode ? `Entre ou crie uma conta para aceitar o convite da lista ${inviteCode}.` : 'Monte uma lista de filmes com amigos e sorteie o filme da próxima sessão.'}</p>
             
-            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <input 
-                type='email' 
-                placeholder='Seu email' 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }}
-                required 
-              />
-              <input 
-                type='password' 
-                placeholder='Sua senha' 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }}
-                required 
-              />
-              <button type='submit' className='loginBtnBig' style={{ marginTop: '0.5rem' }}>
-                {isLoginView ? 'Entrar com Email' : 'Criar Conta'}
-              </button>
-            </form>
-            
-            <p 
-              onClick={() => setIsLoginView(!isLoginView)}
-              style={{ cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '1.5rem' }}
-            >
-              {isLoginView ? 'Ainda não tem conta? Criar' : 'Já tem conta? Fazer login'}
-            </p>
+            {isPasswordResetView ? (
+              <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0, color: 'white' }}>{resetToken ? 'Escolha uma nova senha' : 'Recuperar senha'}</h2>
+                {!resetToken && <input type='email' aria-label='Email para recuperar senha' placeholder='Seu email' value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                {resetToken && <input type='password' aria-label='Nova senha' placeholder='Nova senha (mínimo 8 caracteres)' value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} minLength={8} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />}
+                <button type='submit' className='loginBtnBig' disabled={isResetSubmitting}>{isResetSubmitting ? 'Enviando...' : resetToken ? 'Salvar nova senha' : 'Enviar instruções'}</button>
+                <button type='button' onClick={() => setIsPasswordResetView(false)} className='loginTextButton'>Voltar para o login</button>
+              </form>
+            ) : (
+              <>
+                <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                  <input type='email' aria-label='Seu email' placeholder='Seu email' value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <input type='password' aria-label='Sua senha' placeholder='Sua senha' value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #333', background: '#111', color: 'white' }} required />
+                  <button type='submit' className='loginBtnBig' style={{ marginTop: '0.5rem' }}>{isLoginView ? 'Entrar com Email' : 'Criar Conta'}</button>
+                </form>
+                {isLoginView && <button type='button' onClick={() => setIsPasswordResetView(true)} className='loginTextButton'>Esqueci minha senha</button>}
+                <button type='button' onClick={() => setIsLoginView(!isLoginView)} className='loginTextButton loginSwitchButton'>{isLoginView ? 'Ainda não tem conta? Criar conta' : 'Já tem conta? Fazer login'}</button>
+              </>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+            {!isPasswordResetView && <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
               <span style={{ color: '#666', fontSize: '0.9rem' }}>OU</span>
               <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
-            </div>
+            </div>}
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            {!isPasswordResetView && <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               {isGoogleLoading ? (
                 <button type="button" className="googleLoginBtn" disabled>
                   <span className="googleSpinner" />
@@ -312,14 +343,14 @@ function App() {
                   Simular contas Google / Demo
                 </button>
               </div>}
-            </div>
+            </div>}
           </div>
         </div>
       )}
 
       {isDemoAuthEnabled && isGoogleModalOpen && (
         <div className="googleModalOverlay" onClick={() => setIsGoogleModalOpen(false)}>
-          <div className="googleModalContent" onClick={(e) => e.stopPropagation()}>
+          <div ref={demoDialogRef} className="googleModalContent" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Escolher conta de demonstração" tabIndex={-1}>
             <button
               type="button"
               className="googleModalClose"
@@ -384,6 +415,7 @@ function App() {
               >
                 <input
                   type="email"
+                  aria-label="Outro email para demonstração"
                   placeholder="outro@gmail.com"
                   value={customGoogleEmail}
                   onChange={(e) => setCustomGoogleEmail(e.target.value)}

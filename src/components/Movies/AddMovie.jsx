@@ -2,27 +2,30 @@ import { useState, useEffect, useRef } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { fetchMovieDetails, searchMoviesAutocomplete, fetchMovieDetailsById } from '../../services/tmdb';
 import { DrawModal } from '../Modal/DrawModal';
-import { MatchModal } from '../Modal/MatchModal';
 import { ListDrawFilterModal } from '../Modal/ListDrawFilterModal';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './AddMovie.module.css';
 
-export function AddMovie({ onOpenInfo, listCode }) {
+export function AddMovie({ onOpenInfo, listCode, inputRef }) {
     const { addToast } = useToast();
     const [movieTitle, setMovieTitle] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isPreparingDraw, setIsPreparingDraw] = useState(false);
     const dropdownRef = useRef(null);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
     const [selectedProviders, setSelectedProviders] = useState([]);
-    const { movies, addMovie } = useMovies();
+    const { movies, totalMovies = movies.length, hasMoreMovies = false, addMovie, getAllMoviesForDraw } = useMovies();
+    const eligibleMovies = movies.filter(m => (includeWatched || !m.watched) && (
+        selectedProviders.length === 0 || m.watchProviders?.some(p => selectedProviders.includes(p.name))
+    ));
+    const canDraw = totalMovies > 0 && (hasMoreMovies || eligibleMovies.length > 0);
 
     // Debounced autocomplete search
     useEffect(() => {
@@ -111,12 +114,12 @@ export function AddMovie({ onOpenInfo, listCode }) {
     };
 
     const handleDrawFromList = async () => {
+        setIsPreparingDraw(true);
         try {
-            let listToDraw = includeWatched ? movies : movies.filter(m => !m.watched);
-            
-            if (selectedProviders.length > 0) {
-                listToDraw = listToDraw.filter(m => m.watchProviders && m.watchProviders.some(p => selectedProviders.includes(p.name)));
-            }
+            const allMovies = await getAllMoviesForDraw();
+            const listToDraw = allMovies.filter(m => (includeWatched || !m.watched) && (
+                selectedProviders.length === 0 || m.watchProviders?.some(p => selectedProviders.includes(p.name))
+            ));
 
             if (listToDraw.length === 0) {
                 if (selectedProviders.length > 0) {
@@ -127,19 +130,22 @@ export function AddMovie({ onOpenInfo, listCode }) {
                 return;
             }
             
-            setUnwatchedMovies(listToDraw);
             const randomIndex = Math.floor(Math.random() * listToDraw.length);
+            const chosen = listToDraw[randomIndex];
+            setUnwatchedMovies(listToDraw.length > 15 ? [...listToDraw.slice(0, 14), chosen] : listToDraw);
             
             setWinner(null);
             setIsModalOpen(true);
             
             setTimeout(() => {
-                setWinner(listToDraw[randomIndex]);
+                setWinner(chosen);
             }, 300);
             
         } catch (error) {
             console.error(error);
-            addToast("Erro ao processar o sorteio.", 'error');
+            addToast("Não foi possível carregar a lista completa para o sorteio. Tente novamente.", 'error');
+        } finally {
+            setIsPreparingDraw(false);
         }
     };
 
@@ -149,12 +155,12 @@ export function AddMovie({ onOpenInfo, listCode }) {
     <div className={styles.container}>
         <div className={styles.header}>
             <div className={styles.headerTop}>
-                <h3>Sua Lista do Grupo</h3>
+                <h3>Escolher da lista do grupo</h3>
                 <button 
                     type="button" 
                     onClick={() => setIsFilterModalOpen(true)}
                     className={`${styles.btnFilterDraw} ${activeFilterCount > 0 ? styles.btnFilterDrawActive : ''}`}
-                    title="Configurar filtros do sorteio (Assistidos / Streamings)"
+                    title="Configurar filtros do sorteio da lista"
                 >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -167,17 +173,25 @@ export function AddMovie({ onOpenInfo, listCode }) {
                         <line x1="9" y1="8" x2="15" y2="8"></line>
                         <line x1="17" y1="16" x2="23" y2="16"></line>
                     </svg>
-                    Filtros {activeFilterCount > 0 && <span className={styles.filterBadge}>{activeFilterCount}</span>}
+                    Filtros do sorteio {activeFilterCount > 0 && <span className={styles.filterBadge}>{activeFilterCount}</span>}
                 </button>
             </div>
-            <p>Adicione filmes para assistir com seus amigos ou faça um sorteio com o que vocês já têm.</p>
+            <p>O sorteio escolhe apenas entre os filmes salvos pelo grupo.</p>
         </div>
         
         <div className={styles.actionsBlock}>
+            <div className={styles.drawButtonsGrid}>
+                <button type="button" onClick={handleDrawFromList} className={styles.drawBtn} disabled={!canDraw || isPreparingDraw}>
+                    <span aria-hidden="true">✦</span> {isPreparingDraw ? 'Preparando sorteio...' : 'Sortear da lista'}
+                </button>
+            </div>
+            {!canDraw && <p className={styles.drawHint}>{totalMovies === 0 ? 'Adicione um filme para começar o sorteio.' : 'Nenhum filme disponível com estes filtros. Inclua assistidos ou ajuste os streamings.'}</p>}
             <form className={styles.form} onSubmit={handleAddMovie}>
                 <div className={styles.inputWrapper} ref={dropdownRef}>
                     <input
+                        ref={inputRef}
                         type="text"
+                        aria-label="Buscar filme para adicionar à lista"
                         placeholder="Buscar e adicionar filme..."
                         value={movieTitle}
                         onChange={(e) => setMovieTitle(e.target.value)}
@@ -189,10 +203,12 @@ export function AddMovie({ onOpenInfo, listCode }) {
                     {suggestions.length > 0 && (
                         <div className={styles.suggestionsDropdown}>
                             {suggestions.map((suggestion) => (
-                                <div
+                                <button
+                                    type="button"
                                     key={suggestion.id}
                                     className={styles.suggestionItem}
                                     onClick={() => handleAddFromSuggestion(suggestion)}
+                                    aria-label={`Adicionar ${suggestion.title} à lista`}
                                 >
                                     {suggestion.posterUrl ? (
                                         <img
@@ -210,34 +226,18 @@ export function AddMovie({ onOpenInfo, listCode }) {
                                             {suggestion.tmdbRating > 0 && <span>★ {suggestion.tmdbRating}</span>}
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        className={styles.btnQuickAdd}
-                                        title="Adicionar à lista"
-                                    >
+                                    <span className={styles.btnQuickAdd} aria-hidden="true">
                                         +
-                                    </button>
-                                </div>
+                                    </span>
+                                </button>
                             ))}
                         </div>
                     )}
                 </div>
                 <button type="submit" className={styles.button} disabled={loading}>
-                    {loading ? 'Buscando...' : 'Adicionar'}
+                    {loading ? 'Buscando...' : 'Adicionar filme'}
                 </button>
             </form>
-
-            <div className={styles.drawButtonsGrid}>
-                <button onClick={handleDrawFromList} className={styles.drawBtn}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                    </svg>
-                    Me Surpreenda
-                </button>
-                <button onClick={() => setIsMatchModalOpen(true)} className={styles.matchBtn}>
-                    Match da Galera
-                </button>
-            </div>
         </div>
 
         <ListDrawFilterModal 
@@ -259,13 +259,6 @@ export function AddMovie({ onOpenInfo, listCode }) {
             listCode={listCode}
         />
 
-        <MatchModal 
-            isOpen={isMatchModalOpen}
-            onClose={() => setIsMatchModalOpen(false)}
-            movies={movies}
-            onOpenInfo={onOpenInfo}
-            listCode={listCode}
-        />
     </div>
     );
 }

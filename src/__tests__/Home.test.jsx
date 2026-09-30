@@ -62,7 +62,7 @@ describe('Home Component', () => {
             { id: 1, name: 'Lista Cacheada 1', code: 'CACH01' },
             { id: 2, name: 'Lista Cacheada 2', code: 'CACH02' }
         ];
-        localStorage.setItem('cine_random_my_lists_cache', JSON.stringify(cachedLists));
+        localStorage.setItem('cine_random_my_lists_cache_1', JSON.stringify(cachedLists));
         api.get.mockResolvedValue({ data: cachedLists });
 
         renderWithProviders(<Home onSelectList={vi.fn()} />);
@@ -98,8 +98,16 @@ describe('Home Component', () => {
             expect(screen.getByText('Sci-Fi Favoritos')).toBeInTheDocument();
         });
 
-        fireEvent.click(screen.getByText('Sci-Fi Favoritos'));
+        fireEvent.click(screen.getByRole('button', { name: 'Abrir lista Sci-Fi Favoritos' }));
         expect(onSelectList).toHaveBeenCalledWith(mockList);
+    });
+
+    it('expõe a abertura de lista e a criação como botões acessíveis', async () => {
+        api.get.mockResolvedValue({ data: [{ id: 5, name: 'Sci-Fi Favoritos', code: 'SCIFI5' }] });
+        renderWithProviders(<Home onSelectList={vi.fn()} />);
+
+        expect(await screen.findByRole('button', { name: /Abrir lista Sci-Fi Favoritos/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Nova Lista/i })).toBeInTheDocument();
     });
 
     it('deve permitir abrir o formulário e criar uma nova lista', async () => {
@@ -122,5 +130,32 @@ describe('Home Component', () => {
             expect(api.post).toHaveBeenCalledWith('/lists/', expect.objectContaining({ name: 'Comédias 90s' }));
             expect(screen.getByText('Comédias 90s')).toBeInTheDocument();
         });
+    });
+
+    it('aceita um convite direto após autenticação e abre a lista', async () => {
+        const invitedList = { id: 7, name: 'Sessão de Sexta', code: 'ABC123' };
+        const onSelectList = vi.fn();
+        window.history.replaceState({}, '', '/join/ABC123');
+        api.get.mockResolvedValue({ data: [invitedList] });
+        api.post.mockResolvedValue({ data: invitedList });
+        renderWithProviders(<Home onSelectList={onSelectList} />);
+
+        await waitFor(() => expect(api.post).toHaveBeenCalledWith('/lists/join/ABC123'));
+        await waitFor(() => expect(window.location.pathname).toBe('/'));
+        expect(onSelectList).toHaveBeenCalledWith(invitedList);
+        window.history.replaceState({}, '', '/');
+    });
+
+    it('abre a lista existente quando o convidado já participa dela', async () => {
+        const invitedList = { id: 7, name: 'Sessão de Sexta', code: 'ABC123' };
+        const onSelectList = vi.fn();
+        window.history.replaceState({}, '', '/join/ABC123');
+        api.get.mockResolvedValue({ data: [invitedList] });
+        api.post.mockRejectedValue({ response: { status: 400, data: { detail: 'Você já está nesta lista.' } } });
+        renderWithProviders(<Home onSelectList={onSelectList} />);
+
+        await waitFor(() => expect(onSelectList).toHaveBeenCalledWith(invitedList));
+        expect(window.location.pathname).toBe('/');
+        window.history.replaceState({}, '', '/');
     });
 });
