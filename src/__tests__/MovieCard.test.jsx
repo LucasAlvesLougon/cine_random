@@ -1,10 +1,25 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MovieCard } from '../components/Movies/MovieCard';
+import { fetchExtraMovieDetails } from '../services/tmdb';
+
+vi.mock('../services/tmdb', () => ({
+    fetchExtraMovieDetails: vi.fn().mockResolvedValue({ watchProviders: [], trailerKey: null, director: null, cast: [] }),
+    movieDetailsQueryKey: (id) => ['tmdb-movie-details', id],
+}));
+
+function renderWithQuery(ui) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(ui, {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+    });
+}
 
 describe('MovieCard', () => {
     const mockMovie = {
         id: 1,
+        tmdbId: 603,
         title: 'Interestelar',
         posterUrl: 'https://image.tmdb.org/t/p/w500/interstellar.jpg',
         releaseYear: '2014',
@@ -13,7 +28,7 @@ describe('MovieCard', () => {
     };
 
     it('deve renderizar o título, ano de lançamento e avaliação', () => {
-        render(
+        renderWithQuery(
             <MovieCard 
                 movie={mockMovie} 
                 onToggleWatched={vi.fn()} 
@@ -29,7 +44,7 @@ describe('MovieCard', () => {
 
     it('abre a ficha do filme por teclado a partir do pôster ou título', () => {
         const onOpenInfo = vi.fn();
-        render(<MovieCard movie={mockMovie} onToggleWatched={vi.fn()} onDelete={vi.fn()} onOpenInfo={onOpenInfo} />);
+        renderWithQuery(<MovieCard movie={mockMovie} onToggleWatched={vi.fn()} onDelete={vi.fn()} onOpenInfo={onOpenInfo} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Ver detalhes de Interestelar no pôster' }));
         fireEvent.click(screen.getByRole('button', { name: 'Ver detalhes de Interestelar' }));
@@ -39,7 +54,7 @@ describe('MovieCard', () => {
 
     it('deve chamar onToggleWatched ao clicar no botão de marcar assistido', () => {
         const handleToggle = vi.fn();
-        render(
+        renderWithQuery(
             <MovieCard 
                 movie={mockMovie} 
                 onToggleWatched={handleToggle} 
@@ -56,7 +71,7 @@ describe('MovieCard', () => {
 
     it('deve chamar onDelete ao clicar no botão de remover', () => {
         const handleDelete = vi.fn();
-        render(
+        renderWithQuery(
             <MovieCard 
                 movie={mockMovie} 
                 onToggleWatched={vi.fn()} 
@@ -80,7 +95,7 @@ describe('MovieCard', () => {
             ]
         };
 
-        render(
+        renderWithQuery(
             <MovieCard 
                 movie={movieWithProviders} 
                 onToggleWatched={vi.fn()} 
@@ -93,6 +108,21 @@ describe('MovieCard', () => {
         expect(screen.getByAltText('Max')).toBeInTheDocument();
     });
 
+    it('pré-carrega detalhes ao passar o mouse sobre o pôster', async () => {
+        renderWithQuery(
+            <MovieCard
+                movie={mockMovie}
+                onToggleWatched={vi.fn()}
+                onDelete={vi.fn()}
+                onOpenInfo={vi.fn()}
+            />
+        );
+
+        fireEvent.mouseEnter(screen.getByRole('button', { name: 'Ver detalhes de Interestelar no pôster' }));
+
+        await waitFor(() => expect(fetchExtraMovieDetails).toHaveBeenCalledWith(603));
+    });
+
     it('deve exibir a média de notas do grupo quando houver avaliações', () => {
         const movieWithComments = {
             ...mockMovie,
@@ -102,7 +132,7 @@ describe('MovieCard', () => {
             ]
         };
 
-        render(
+        renderWithQuery(
             <MovieCard 
                 movie={movieWithComments} 
                 onToggleWatched={vi.fn()} 

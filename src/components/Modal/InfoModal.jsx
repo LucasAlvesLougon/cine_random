@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import styles from './InfoModal.module.css';
-import { fetchExtraMovieDetails } from '../../services/tmdb';
+import { fetchExtraMovieDetails, movieDetailsQueryKey } from '../../services/tmdb';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { CommentSection } from '../Comments/CommentSection';
@@ -12,10 +13,6 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
     const dialogRef = useDialogFocus(isOpen && !!movie, onClose);
     const { addToast } = useToast();
     const { movies, addMovie } = useMovies();
-    const [providers, setProviders] = useState([]);
-    const [trailerKey, setTrailerKey] = useState(null);
-    const [director, setDirector] = useState(movie?.director || null);
-    const [cast, setCast] = useState(movie?.cast || []);
     const [isAdding, setIsAdding] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
     const trailerDialogRef = useDialogFocus(isOpen && showTrailer, () => setShowTrailer(false));
@@ -29,32 +26,25 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
         setBannerLoaded(false);
         setPosterLoaded(false);
         setShowTrailer(false);
-        setDirector(movie?.director || null);
-        setCast(movie?.cast || []);
     }, [movie?.tmdbId, isOpen]);
 
-    useEffect(() => {
-        if (!isOpen || !movie) return;
-        
-        if (movie.watchProviders && movie.trailerKey && movie.director !== undefined && movie.cast !== undefined) {
-            setProviders(movie.watchProviders);
-            setTrailerKey(movie.trailerKey);
-            setDirector(movie.director);
-            setCast(movie.cast || []);
-        } else if (movie.tmdbId) {
-            fetchExtraMovieDetails(movie.tmdbId).then(extras => {
-                setProviders(extras.watchProviders);
-                setTrailerKey(extras.trailerKey);
-                setDirector(extras.director);
-                setCast(extras.cast || []);
-            });
-        } else {
-            setProviders([]);
-            setTrailerKey(null);
-            setDirector(null);
-            setCast([]);
-        }
-    }, [isOpen, movie]);
+    const hasEmbeddedDetails = Boolean(
+        movie
+        && movie.watchProviders !== undefined
+        && movie.trailerKey !== undefined
+        && movie.director !== undefined
+        && movie.cast !== undefined
+    );
+    const { data: fetchedExtras, isLoading: isLoadingExtras } = useQuery({
+        queryKey: movieDetailsQueryKey(movie?.tmdbId),
+        queryFn: () => fetchExtraMovieDetails(movie.tmdbId),
+        enabled: Boolean(isOpen && movie?.tmdbId && !hasEmbeddedDetails),
+        staleTime: 10 * 60 * 1000,
+    });
+    const providers = fetchedExtras?.watchProviders ?? movie?.watchProviders ?? [];
+    const trailerKey = fetchedExtras?.trailerKey ?? movie?.trailerKey ?? null;
+    const director = fetchedExtras?.director ?? movie?.director ?? null;
+    const cast = fetchedExtras?.cast ?? movie?.cast ?? [];
 
     const handleAddToList = async () => {
         try {
@@ -221,12 +211,18 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
                             </div>
                         </div>
                     )}
+                    {isLoadingExtras && cast.length === 0 && (
+                        <div className={styles.castBlock} role="status" aria-live="polite">
+                            <span className={styles.castHeader}>Elenco Principal</span>
+                            <div className={styles.castLoading}>Carregando elenco...</div>
+                        </div>
+                    )}
                 </div>
 
                 {/* --- COMENTÁRIOS / LETTERBOXD --- */}
                 {movie.id ? (
                     <div className={styles.commentsContainer}>
-                        <CommentSection movieId={movie.id} initialComments={movie.comments || []} />
+                        <CommentSection movieId={movie.id} />
                     </div>
                 ) : (
                     <div className={styles.commentsContainer}>

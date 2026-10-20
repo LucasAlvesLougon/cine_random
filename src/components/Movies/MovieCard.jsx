@@ -1,18 +1,41 @@
 import { useState, memo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { triggerHaptic } from '../../utils/haptics';
+import { fetchExtraMovieDetails, movieDetailsQueryKey } from '../../services/tmdb';
 import styles from './MovieCard.module.css';
 
 // Componente memoizado para evitar re-renderizacoes desnecessarias na lista
 export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDelete, onOpenInfo }) {
     const [imgLoaded, setImgLoaded] = useState(false);
+    const queryClient = useQueryClient();
+    const commentCount = movie.commentCount ?? movie.comments?.length ?? 0;
 
-    const groupRating = movie.comments && movie.comments.length > 0
-        ? (movie.comments.reduce((acc, c) => acc + (c.rating || 0), 0) / movie.comments.length).toFixed(1)
+    const groupRating = movie.groupRating != null
+        ? Number(movie.groupRating).toFixed(1)
+        : movie.comments && movie.comments.length > 0
+            ? (movie.comments.reduce((acc, c) => acc + (c.rating || 0), 0) / movie.comments.length).toFixed(1)
         : null;
+
+    const prefetchDetails = () => {
+        if (!movie.tmdbId) return;
+        void queryClient.prefetchQuery({
+            queryKey: movieDetailsQueryKey(movie.tmdbId),
+            queryFn: () => fetchExtraMovieDetails(movie.tmdbId),
+            staleTime: 10 * 60 * 1000,
+        });
+    };
 
     return (
     <div className={styles.card}>
-        <button type="button" className={styles.posterWrapper} onClick={() => onOpenInfo(movie)} aria-label={`Ver detalhes de ${movie.title} no pôster`}>
+        <button
+            type="button"
+            className={styles.posterWrapper}
+            onClick={() => onOpenInfo(movie)}
+            onMouseEnter={prefetchDetails}
+            onFocus={prefetchDetails}
+            onPointerDown={prefetchDetails}
+            aria-label={`Ver detalhes de ${movie.title} no pôster`}
+        >
             {movie.posterUrl ? (
                 <img 
                     src={movie.posterUrl} 
@@ -40,7 +63,15 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
 
         <div className={styles.info}>
             <h3 className={styles.title}>
-                <button type="button" className={styles.titleButton} onClick={() => onOpenInfo(movie)} aria-label={`Ver detalhes de ${movie.title}`}>
+                <button
+                    type="button"
+                    className={styles.titleButton}
+                    onClick={() => onOpenInfo(movie)}
+                    onMouseEnter={prefetchDetails}
+                    onFocus={prefetchDetails}
+                    onPointerDown={prefetchDetails}
+                    aria-label={`Ver detalhes de ${movie.title}`}
+                >
                     {movie.title}
                 </button>
             </h3>
@@ -49,7 +80,7 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
                 {groupRating && (
                     <>
                         <span style={{color: 'var(--text-faint)'}}> • </span>
-                        <span className={styles.groupRating} title={`Média do Grupo: ${groupRating} (${movie.comments.length} avaliações)`}>
+                        <span className={styles.groupRating} title={`Média do Grupo: ${groupRating} (${commentCount} avaliações)`}>
                             👥 ★ {groupRating}
                         </span>
                     </>

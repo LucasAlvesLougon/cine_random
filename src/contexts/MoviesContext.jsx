@@ -77,26 +77,13 @@ export function MoviesProvider({ children, listCode }) {
     }, [moviePages]);
     const totalMovies = moviePages?.pages?.[0]?.total ?? movies.length;
 
-    const getAllMoviesForDraw = useCallback(async () => {
-        const refreshed = await fetchMovies();
-        if (refreshed.error) throw refreshed.error;
-        let data = refreshed.data;
-        while (data?.pages?.at(-1)?.has_next) {
-            const previousPageCount = data.pages.length;
-            const next = await fetchNextPage();
-            if (next.error) throw next.error;
-            data = next.data;
-            if (!data || data.pages.length <= previousPageCount) {
-                throw new Error('Não foi possível carregar a lista completa para o sorteio.');
-            }
-        }
-        const seen = new Set();
-        return (data?.pages || []).flatMap(page => page.items || []).filter(movie => {
-            if (seen.has(movie.id)) return false;
-            seen.add(movie.id);
-            return true;
+    const getDrawCandidates = useCallback(async (includeWatched = false) => {
+        if (!listCode) return [];
+        const response = await api.get(`/lists/${listCode}/draw-candidates`, {
+            params: { include_watched: includeWatched },
         });
-    }, [fetchMovies, fetchNextPage]);
+        return response.data?.items || [];
+    }, [listCode]);
 
     const updateMoviePages = useCallback((updateItems, firstPageOnly = false, totalDelta = 0) => {
         queryClient.setQueryData(queryKey, current => {
@@ -255,7 +242,7 @@ export function MoviesProvider({ children, listCode }) {
     const contextValue = useMemo(() => ({
         movies,
         totalMovies,
-        getAllMoviesForDraw,
+        getDrawCandidates,
         addMovie,
         toggleWatched,
         deleteMovie,
@@ -266,7 +253,7 @@ export function MoviesProvider({ children, listCode }) {
     }), [
         movies,
         totalMovies,
-        getAllMoviesForDraw,
+        getDrawCandidates,
         addMovie,
         toggleWatched,
         deleteMovie,

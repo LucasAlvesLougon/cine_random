@@ -1,20 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
-import { formatUserName } from '../../utils/format';
+import { getCommentAuthor } from './commentAuthor';
 import { buildCommentPayload } from './commentPayload';
 import styles from './CommentSection.module.css';
 
 export function CommentSection({ movieId, initialComments = [] }) {
     const { addToast } = useToast();
-    const [comments, setComments] = useState(initialComments);
+    const queryClient = useQueryClient();
+    const commentsQueryKey = ['movie-comments', movieId];
+    const { data: comments = [], isLoading } = useQuery({
+        queryKey: commentsQueryKey,
+        queryFn: async () => (await api.get(`/lists/movies/${movieId}/comments`)).data,
+        enabled: Boolean(movieId),
+        initialData: initialComments.length > 0 ? initialComments : undefined,
+        staleTime: 60 * 1000,
+    });
     const [text, setText] = useState('');
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
-
-    useEffect(() => {
-        setComments(initialComments);
-    }, [initialComments]);
 
     const handleAddComment = async (e) => {
         e.preventDefault();
@@ -25,7 +30,7 @@ export function CommentSection({ movieId, initialComments = [] }) {
                 `/lists/movies/${movieId}/comments`,
                 buildCommentPayload(text, rating)
             );
-            setComments([response.data, ...comments]);
+            queryClient.setQueryData(commentsQueryKey, current => [response.data, ...(current || [])]);
             setText('');
             setRating(5);
         } catch (error) {
@@ -56,13 +61,15 @@ export function CommentSection({ movieId, initialComments = [] }) {
             )}
 
             <div className={styles.commentList}>
-                {comments.length === 0 ? (
+                {isLoading && comments.length === 0 ? (
+                    <p className={styles.empty}>Carregando avaliações...</p>
+                ) : comments.length === 0 ? (
                     <p className={styles.empty}>Ninguém avaliou este filme ainda. Seja o primeiro!</p>
                 ) : (
                     comments.map(comment => (
                         <div key={comment.id} className={styles.commentItem}>
                             <div className={styles.commentHeader}>
-                                <strong className={styles.commentAuthor}>{formatUserName(comment.user_id) || comment.user_name}</strong>
+                                <strong className={styles.commentAuthor}>{getCommentAuthor(comment)}</strong>
                                 <span className={styles.commentStars}>
                                     {Array(comment.rating).fill('★').join('')}
                                 </span>

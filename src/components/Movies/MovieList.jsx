@@ -1,4 +1,4 @@
-import { useState, useMemo, useDeferredValue } from 'react';
+import { useState, useMemo, useDeferredValue, useEffect, useRef } from 'react';
 import { useMovies } from '../../contexts/MoviesContext';
 import { MovieCard } from './MovieCard';
 import { CatalogFilterModal } from '../Modal/CatalogFilterModal';
@@ -8,6 +8,7 @@ import styles from './MovieList.module.css';
 export function MovieList({ onOpenInfo, onAddFirstMovie }) {
     const { movies, totalMovies = movies.length, toggleWatched, deleteMovie, loadMoreMovies, hasMoreMovies, isLoadingMoreMovies } = useMovies();
     const reduceMotion = useReducedMotion();
+    const loadMoreSentinelRef = useRef(null);
 
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('added_desc');
@@ -15,6 +16,19 @@ export function MovieList({ onOpenInfo, onAddFirstMovie }) {
     const [selectedGenre, setSelectedGenre] = useState('');
     const [selectedProviders, setSelectedProviders] = useState([]);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+    useEffect(() => {
+        const sentinel = loadMoreSentinelRef.current;
+        if (!sentinel || !hasMoreMovies || typeof IntersectionObserver === 'undefined') return undefined;
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting) && !isLoadingMoreMovies) {
+                void loadMoreMovies();
+            }
+        }, { rootMargin: '0px 0px 400px 0px' });
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [hasMoreMovies, isLoadingMoreMovies, loadMoreMovies]);
 
     const deferredSearchTerm = useDeferredValue(searchTerm);
     const selectedProviderSet = useMemo(() => new Set(selectedProviders), [selectedProviders]);
@@ -170,6 +184,7 @@ export function MovieList({ onOpenInfo, onAddFirstMovie }) {
         )}
         {hasMoreMovies && (
             <div className={styles.loadMoreWrapper}>
+                <div ref={loadMoreSentinelRef} aria-hidden="true" />
                 <button type="button" className={styles.loadMoreButton} onClick={() => loadMoreMovies()} disabled={isLoadingMoreMovies}>
                     {isLoadingMoreMovies ? 'Carregando...' : 'Carregar mais filmes'}
                 </button>
