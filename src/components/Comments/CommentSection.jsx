@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { formatUserName } from '../../utils/format';
+import { buildCommentPayload } from './commentPayload';
 import styles from './CommentSection.module.css';
 
 export function CommentSection({ movieId, initialComments = [] }) {
-    const { user } = useAuth();
+    const { addToast } = useToast();
     const [comments, setComments] = useState(initialComments);
     const [text, setText] = useState('');
     const [rating, setRating] = useState(5);
@@ -20,17 +21,22 @@ export function CommentSection({ movieId, initialComments = [] }) {
         if (!text.trim()) return;
 
         try {
-            const response = await api.post(`/lists/movies/${movieId}/comments`, {
-                user_id: user?.email || 'anonimo',
-                user_name: formatUserName(user?.email),
-                text: text,
-                rating: rating
-            });
+            const response = await api.post(
+                `/lists/movies/${movieId}/comments`,
+                buildCommentPayload(text, rating)
+            );
             setComments([response.data, ...comments]);
             setText('');
             setRating(5);
         } catch (error) {
             console.error("Erro ao adicionar comentário:", error);
+            const detail = error.response?.data?.detail;
+            addToast(
+                typeof detail === 'string'
+                    ? detail
+                    : 'Não foi possível publicar o comentário.',
+                'error'
+            );
         }
     };
 
