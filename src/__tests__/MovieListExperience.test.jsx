@@ -3,13 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MovieList } from '../components/Movies/MovieList';
 import { AddMovie } from '../components/Movies/AddMovie';
+import { prefetchMovieDetails } from '../services/tmdb';
 
 const movieState = vi.hoisted(() => ({ current: {} }));
 vi.mock('../contexts/MoviesContext', () => ({ useMovies: () => movieState.current }));
 vi.mock('../contexts/ToastContext', () => ({ useToast: () => ({ addToast: vi.fn() }) }));
 vi.mock('../services/tmdb', () => ({
     fetchMovieDetails: vi.fn(), searchMoviesAutocomplete: vi.fn(), fetchMovieDetailsById: vi.fn(),
-    fetchExtraMovieDetails: vi.fn(), movieDetailsQueryKey: (id) => ['tmdb-movie-details', id],
+    prefetchMovieDetails: vi.fn().mockResolvedValue(undefined),
 }));
 
 function renderWithQuery(ui) {
@@ -21,6 +22,7 @@ function renderWithQuery(ui) {
 
 describe('experiência da lista de filmes', () => {
     beforeEach(() => {
+        vi.clearAllMocks();
         movieState.current = {
             movies: [], totalMovies: 0, hasMoreMovies: false, isLoadingMoreMovies: false,
             toggleWatched: vi.fn(), deleteMovie: vi.fn(), loadMoreMovies: vi.fn(), addMovie: vi.fn(),
@@ -94,5 +96,9 @@ describe('experiência da lista de filmes', () => {
 
         await waitFor(() => expect(getDrawCandidates).toHaveBeenCalledWith(false));
         expect(getDrawCandidates).toHaveBeenCalledTimes(1);
+        await waitFor(() => expect(prefetchMovieDetails).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ tmdbId: 603 }),
+        ));
     });
 });

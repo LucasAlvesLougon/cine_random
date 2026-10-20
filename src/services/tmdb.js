@@ -1,6 +1,37 @@
 import { api } from './api';
 
+export const MOVIE_DETAILS_STALE_TIME = 10 * 60 * 1000;
 export const movieDetailsQueryKey = (tmdbId) => ['tmdb-movie-details', tmdbId];
+
+export function getEmbeddedMovieDetails(movie) {
+    if (!movie || movie.director === undefined || movie.cast === undefined) return null;
+    return {
+        watchProviders: movie.watchProviders || [],
+        trailerKey: movie.trailerKey ?? null,
+        director: movie.director ?? null,
+        cast: movie.cast || [],
+    };
+}
+
+export function getMovieDetailsQueryOptions(tmdbId) {
+    return {
+        queryKey: movieDetailsQueryKey(tmdbId),
+        queryFn: () => fetchExtraMovieDetails(tmdbId),
+        staleTime: MOVIE_DETAILS_STALE_TIME,
+    };
+}
+
+export function prefetchMovieDetails(queryClient, movie) {
+    if (!queryClient || !movie?.tmdbId) return Promise.resolve();
+
+    const embeddedDetails = getEmbeddedMovieDetails(movie);
+    if (embeddedDetails) {
+        queryClient.setQueryData(movieDetailsQueryKey(movie.tmdbId), embeddedDetails);
+        return Promise.resolve(embeddedDetails);
+    }
+
+    return queryClient.prefetchQuery(getMovieDetailsQueryOptions(movie.tmdbId));
+}
 
 async function tmdbGet(path, params = {}) {
     const response = await api.get(`/tmdb${path}`, { params });

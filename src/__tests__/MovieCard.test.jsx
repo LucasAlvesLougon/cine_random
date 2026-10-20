@@ -2,11 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MovieCard } from '../components/Movies/MovieCard';
-import { fetchExtraMovieDetails } from '../services/tmdb';
+import { prefetchMovieDetails } from '../services/tmdb';
 
 vi.mock('../services/tmdb', () => ({
-    fetchExtraMovieDetails: vi.fn().mockResolvedValue({ watchProviders: [], trailerKey: null, director: null, cast: [] }),
-    movieDetailsQueryKey: (id) => ['tmdb-movie-details', id],
+    prefetchMovieDetails: vi.fn().mockResolvedValue(undefined),
 }));
 
 function renderWithQuery(ui) {
@@ -120,7 +119,7 @@ describe('MovieCard', () => {
 
         fireEvent.mouseEnter(screen.getByRole('button', { name: 'Ver detalhes de Interestelar no pôster' }));
 
-        await waitFor(() => expect(fetchExtraMovieDetails).toHaveBeenCalledWith(603));
+        await waitFor(() => expect(prefetchMovieDetails).toHaveBeenCalledWith(expect.anything(), mockMovie));
     });
 
     it('deve exibir a média de notas do grupo quando houver avaliações', () => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import styles from './InfoModal.module.css';
-import { fetchExtraMovieDetails, movieDetailsQueryKey } from '../../services/tmdb';
+import { getMovieDetailsQueryOptions } from '../../services/tmdb';
 import { useMovies } from '../../contexts/MoviesContext';
 import { useToast } from '../../contexts/ToastContext';
 import { CommentSection } from '../Comments/CommentSection';
@@ -36,10 +36,8 @@ export function InfoModal({ isOpen, onClose, movie, listCode }) {
         && movie.cast !== undefined
     );
     const { data: fetchedExtras, isLoading: isLoadingExtras } = useQuery({
-        queryKey: movieDetailsQueryKey(movie?.tmdbId),
-        queryFn: () => fetchExtraMovieDetails(movie.tmdbId),
+        ...getMovieDetailsQueryOptions(movie?.tmdbId),
         enabled: Boolean(isOpen && movie?.tmdbId && !hasEmbeddedDetails),
-        staleTime: 10 * 60 * 1000,
     });
     const providers = fetchedExtras?.watchProviders ?? movie?.watchProviders ?? [];
     const trailerKey = fetchedExtras?.trailerKey ?? movie?.trailerKey ?? null;

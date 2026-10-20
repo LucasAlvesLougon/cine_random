@@ -1,7 +1,7 @@
 import { useState, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { triggerHaptic } from '../../utils/haptics';
-import { fetchExtraMovieDetails, movieDetailsQueryKey } from '../../services/tmdb';
+import { prefetchMovieDetails } from '../../services/tmdb';
 import styles from './MovieCard.module.css';
 
 // Componente memoizado para evitar re-renderizacoes desnecessarias na lista
@@ -17,12 +17,7 @@ export const MovieCard = memo(function MovieCard({ movie, onToggleWatched, onDel
         : null;
 
     const prefetchDetails = () => {
-        if (!movie.tmdbId) return;
-        void queryClient.prefetchQuery({
-            queryKey: movieDetailsQueryKey(movie.tmdbId),
-            queryFn: () => fetchExtraMovieDetails(movie.tmdbId),
-            staleTime: 10 * 60 * 1000,
-        });
+        void prefetchMovieDetails(queryClient, movie);
     };
 
     return (
