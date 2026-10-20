@@ -26,6 +26,11 @@ async function mockApi(page, pages = [[]]) {
             const total = pages.flat().length;
             return reply({ items, total, page: pageNumber, page_size: 50, has_next: pageNumber < pages.length });
         }
+        if (path === '/lists/ABC123/draw-candidates') {
+            const includeWatched = url.searchParams.get('include_watched') === 'true';
+            const items = pages.flat().filter(item => includeWatched || !item.watched);
+            return reply({ items, total: items.length });
+        }
         if (path === '/lists/ABC123/ws-ticket') return reply({ ticket: 'local-test-ticket' });
         if (path === '/lists/ABC123/history') return reply(request.method() === 'POST' ? { id: 1 } : []);
         if (path === '/lists/ABC123/members') return reply([{ id: 1, email: 'teste@cine.local', is_owner: true }]);
@@ -90,8 +95,7 @@ test('celular: catálogo paginado, filtros, pôster por teclado e sorteio', asyn
 
     await page.getByRole('textbox', { name: 'Buscar filme na lista' }).fill('Alien');
     await expect(page.getByText(/Nenhum filme carregado corresponde/)).toBeVisible();
-    await page.getByRole('button', { name: 'Carregar mais filmes' }).click();
-    await expect(page.getByText(/60 filmes na lista.*59 para ver.*1 visto/)).toBeVisible();
+    await expect(page.getByText(/60 filmes na lista.*59 para ver.*1 visto/)).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('button', { name: 'Ver detalhes de Alien no pôster' })).toBeVisible();
     await page.getByRole('button', { name: 'Ver detalhes de Alien no pôster' }).focus();
     await page.keyboard.press('Enter');
@@ -116,17 +120,22 @@ test('convite aberto sem sessão continua após o login', async ({ page }) => {
     await expect(page).toHaveURL('/');
 });
 
-test('sorteio consulta páginas ainda não carregadas antes de escolher', async ({ page }) => {
+test('sorteio consulta candidatos sem depender das páginas visuais', async ({ page }) => {
     const first = Array.from({ length: 50 }, (_, index) => movie(index + 1));
     const second = Array.from({ length: 10 }, (_, index) => movie(index + 51));
     await mockApi(page, [first, second]);
     await seedSession(page);
-    let requestedSecondPage = false;
+    let trackingDraw = false;
+    let requestedSecondPageDuringDraw = false;
+    let requestedDrawCandidates = false;
     page.on('request', request => {
-        if (request.url().includes('/lists/ABC123/movies') && request.url().includes('page=2')) requestedSecondPage = true;
+        if (trackingDraw && request.url().includes('/lists/ABC123/movies') && request.url().includes('page=2')) requestedSecondPageDuringDraw = true;
+        if (request.url().includes('/lists/ABC123/draw-candidates')) requestedDrawCandidates = true;
     });
     await page.goto('/');
     await expect(page.getByText(/60 filmes na lista.*50 carregados/)).toBeVisible();
+    trackingDraw = true;
     await page.getByRole('button', { name: 'Sortear da lista' }).click();
-    await expect.poll(() => requestedSecondPage).toBe(true);
+    await expect.poll(() => requestedDrawCandidates).toBe(true);
+    expect(requestedSecondPageDuringDraw).toBe(false);
 });

@@ -1,5 +1,7 @@
 import { api } from './api';
 
+export const movieDetailsQueryKey = (tmdbId) => ['tmdb-movie-details', tmdbId];
+
 async function tmdbGet(path, params = {}) {
     const response = await api.get(`/tmdb${path}`, { params });
     return response.data;

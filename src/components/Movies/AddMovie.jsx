@@ -21,7 +21,7 @@ export function AddMovie({ onOpenInfo, listCode, inputRef }) {
     const [unwatchedMovies, setUnwatchedMovies] = useState([]);
     const [includeWatched, setIncludeWatched] = useState(false);
     const [selectedProviders, setSelectedProviders] = useState([]);
-    const { movies, totalMovies = movies.length, hasMoreMovies = false, addMovie, getAllMoviesForDraw } = useMovies();
+    const { movies, totalMovies = movies.length, hasMoreMovies = false, addMovie, getDrawCandidates } = useMovies();
     const eligibleMovies = movies.filter(m => (includeWatched || !m.watched) && (
         selectedProviders.length === 0 || m.watchProviders?.some(p => selectedProviders.includes(p.name))
     ));
@@ -116,8 +116,8 @@ export function AddMovie({ onOpenInfo, listCode, inputRef }) {
     const handleDrawFromList = async () => {
         setIsPreparingDraw(true);
         try {
-            const allMovies = await getAllMoviesForDraw();
-            const listToDraw = allMovies.filter(m => (includeWatched || !m.watched) && (
+            const allMovies = await getDrawCandidates(includeWatched);
+            const listToDraw = allMovies.filter(m => (
                 selectedProviders.length === 0 || m.watchProviders?.some(p => selectedProviders.includes(p.name))
             ));
 
@@ -143,7 +143,7 @@ export function AddMovie({ onOpenInfo, listCode, inputRef }) {
             
         } catch (error) {
             console.error(error);
-            addToast("Não foi possível carregar a lista completa para o sorteio. Tente novamente.", 'error');
+            addToast("Não foi possível carregar os candidatos do sorteio. Tente novamente.", 'error');
         } finally {
             setIsPreparingDraw(false);
         }

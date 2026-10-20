@@ -216,6 +216,14 @@
     letter-spacing: 0.05em;
 }
 
+.castLoading {
+    color: var(--text-secondary);
+    font-size: 14px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
 .castRow {
     display: flex;
     gap: 12px;
