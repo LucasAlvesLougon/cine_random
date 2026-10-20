@@ -5,11 +5,20 @@ import { api } from '../../services/api';
 import { triggerHaptic } from '../../utils/haptics';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import { useReducedMotion } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
+import { prefetchMovieDetails } from '../../services/tmdb';
 
 export function DrawModal({ isOpen, onClose, winnerMovie, unwatchedMovies, onOpenInfo, listCode }) {
     const dialogRef = useDialogFocus(isOpen, onClose);
     const reduceMotion = useReducedMotion();
+    const queryClient = useQueryClient();
     const hasRecordedRef = useRef(false);
+
+    useEffect(() => {
+        if (winnerMovie?.tmdbId) {
+            void prefetchMovieDetails(queryClient, winnerMovie);
+        }
+    }, [queryClient, winnerMovie]);
 
     useEffect(() => {
         hasRecordedRef.current = false;
